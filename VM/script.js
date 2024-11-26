@@ -17,6 +17,7 @@ let l1Changed = false;
 let showArrows = false; // Track arrows visibility
 let modals = {}; // Store modal elements
 let showAllModals = false; // Track visibility of all modals
+let highlightPage = false;
 
 function setup() {
   createCanvas(1500, 700);
@@ -72,15 +73,15 @@ function setup() {
 
   // Nakreslenie Page Directory 1
   hoverElements.push({ label: 'PPN', x: 100 + 25, y: 200 + 145, w: 50, h: 50, key: 'PPN1' });
-  drawPageDirectory(100, 200, parseInt(editableElements.L2), parseInt(editableElements.L2Index), editableElements.SATP);
+  drawPageDirectory(100, 200, parseInt(editableElements.L2), parseInt(editableElements.L2Index), editableElements.SATP, 220);
 
   // Nakreslenie Page Directory 2
   hoverElements.push({ label: 'PPN', x: 400 + 25, y: 200 + 145, w: 50, h: 50, key: 'PPN2' });
-  drawPageDirectory(400, 300, parseInt(editableElements.L1), parseInt(editableElements.L1Index), editableElements.PPN1);
+  drawPageDirectory(400, 300, parseInt(editableElements.L1), parseInt(editableElements.L1Index), editableElements.PPN1, 220);
 
   // Nakreslenie Page Directory 3
   hoverElements.push({ label: 'PPN', x: 700 + 25, y: 200 + 145, w: 50, h: 50, key: 'PPN3' });
-  drawPageDirectory(700, 400, parseInt(editableElements.L0), parseInt(editableElements.L0Index), editableElements.PPN2);
+  drawPageDirectory(700, 400, parseInt(editableElements.L0), parseInt(editableElements.L0Index), editableElements.PPN2, 220);
 
   // Nakreslenie fyzickej sekcie adresy
   drawPhysicalAddress(950, 50);
@@ -141,7 +142,7 @@ function draw() {
 
     line(100 + 95, 200, 100 + 95, 200 + 300);
   } else {
-    drawPageDirectory(100, 200, parseInt(editableElements.L2), parseInt(editableElements.L2Index), editableElements.SATP);
+    drawPageDirectory(100, 200, parseInt(editableElements.L2), parseInt(editableElements.L2Index), editableElements.SATP, 220);
   }
 
   if (editableElements.L1 === '0') {
@@ -159,10 +160,10 @@ function draw() {
     line(400 + 95, 200, 400 + 95, 200 + 300);
   } else {
     if (editableElements.L2 === '0'){
-      drawPageDirectory(400, 200, parseInt(editableElements.L1), parseInt(editableElements.L1Index), editableElements.SATP);
+      drawPageDirectory(400, 200, parseInt(editableElements.L1), parseInt(editableElements.L1Index), editableElements.SATP, 220);
     }
     else {
-      drawPageDirectory(400, 200, parseInt(editableElements.L1), parseInt(editableElements.L1Index), editableElements.PPN1);
+      drawPageDirectory(400, 200, parseInt(editableElements.L1), parseInt(editableElements.L1Index), editableElements.PPN1, 220);
     }
   }
 
@@ -181,10 +182,10 @@ function draw() {
     line(700 + 95, 200, 700 + 95, 200 + 300);
   } else {
     if (editableElements.L1 === '0'){
-      drawPageDirectory(700, 200, parseInt(editableElements.L0), parseInt(editableElements.L0Index), editableElements.SATP);
+      drawPageDirectory(700, 200, parseInt(editableElements.L0), parseInt(editableElements.L0Index), editableElements.SATP, 220);
     }
     else {
-      drawPageDirectory(700, 200, parseInt(editableElements.L0), parseInt(editableElements.L0Index), editableElements.PPN2);
+      drawPageDirectory(700, 200, parseInt(editableElements.L0), parseInt(editableElements.L0Index), editableElements.PPN2, 220);
     }
   }
   drawPhysicalAddress(950, 50);
@@ -243,7 +244,8 @@ function draw() {
         if (editableElements.L2Index === ''){
           
         }else{
-          highlightLIndexRow(element.key);
+          //highlightLIndexRow(element.key, editableElements.L2);
+          drawPageDirectory(100, 200, parseInt(editableElements.L2), parseInt(editableElements.L2Index), editableElements.SATP, (255, 255, 0, 150));
         }
       }
 
@@ -251,7 +253,9 @@ function draw() {
         if (editableElements.L1Index === ''){
           
         }else{
-          highlightLIndexRow(element.key);
+          //highlightLIndexRow(element.key, editableElements.L1);
+          drawPageDirectory(400, 200, parseInt(editableElements.L1), parseInt(editableElements.L1Index), editableElements.L2, (255, 255, 0, 150));
+
         }
       }
 
@@ -259,13 +263,11 @@ function draw() {
         if (editableElements.L0Index === ''){
           
         }else{
-          highlightLIndexRow(element.key);
+          //highlightLIndexRow(element.key, editableElements.L0);
+          drawPageDirectory(700, 200, parseInt(editableElements.L0), parseInt(editableElements.L0Index), editableElements.L1, (255, 255, 0, 150));
+
         }
       }
-
-      // if (['L2Index', 'L1Index', 'L0Index'].includes(element.key)){
-      //   highlightLIndexRow(element.key);
-      // }
 
       if (['SATP', 'PPN1', 'PPN2', 'PPN3'].includes(element.key)) {
         highlightAddress(editableElements[element.key]);
@@ -386,14 +388,18 @@ function createModal(x, y, content, width, height) {
   return modal;
 }
 
-function highlightLIndexRow(level) {
+function highlightLIndexRow(level, Lnum) {
   let x = 100; // x position of the first page directory
   let y = 200; // y position of the first page directory
   let numEntries = 8;
   let entryHeight = 300 / numEntries;
   let middleIndex = Math.floor(numEntries / 2);
 
-  // Adjust y position based on the level
+  // if(parseInt(level) === editableElements.L2){ {
+  //   y+=100;
+  // }
+
+  // Adjust x position based on the level
   if (level === 'L1Index') {
     x += 300; // Move to the second page directory
   } else if (level === 'L0Index') {
@@ -453,13 +459,13 @@ function highlightAddress(address) {
 
   // Find the position of the address
   let x, y;
-  if (address === editableElements.SATP) {
+  if (address === editableElements.SATP && editableElements.L2 !== '0') {
     x = 100;
     y = 200;
-  } else if (address === editableElements.PPN1) {
+  } else if ((address === editableElements.PPN1 || address === editableElements.SATP)  && editableElements.L1 !== '0') {
     x = 400;
     y = 200;
-  } else if (address === editableElements.PPN2) {
+  } else if ((address === editableElements.PPN2 || address === editableElements.SATP) && editableElements.L0 !== '0') {
     x = 700;
     y = 200;
   } else if (address === editableElements.PPN3) {
@@ -494,7 +500,7 @@ function drawVirtualAddress(x, y) {
   text('Virtual address', x + 50, y - 30);
 }
 
-function drawPageDirectory(x, y, Lnum, Lindex, PPN) {
+function drawPageDirectory(x, y, Lnum, Lindex, PPN, color) {
   fill(240);            // Jemne šedá pre Page Directory
   stroke(0);
   rect(x, y, 150, 300); // Cela Page Directory with increased height
@@ -506,14 +512,29 @@ function drawPageDirectory(x, y, Lnum, Lindex, PPN) {
     line(x, y + i * entryHeight, x + 150, y + i * entryHeight);
   }
 
+  // Find which index should be highlighted
+  let highlightIndex = -1;
+  if (Lindex === (2 ** Lnum - 1)) {
+    highlightIndex = 0;
+  } else if (Lindex === (2 ** Lnum - 2)) {
+    highlightIndex = 1;
+  } else if (Lindex === (2 ** Lnum - 3)) {
+    highlightIndex = 2;
+  } else if (Lindex === (2 ** Lnum + 1 - 2 ** Lnum)) {
+    highlightIndex = numEntries - 2;
+  } else if (Lindex === 0) {
+    highlightIndex = numEntries - 1;
+  } else {
+    highlightIndex = Math.floor(numEntries / 2);
+  }
+
   // Delenie PPN a Flags
-  let middleIndex = Math.floor(numEntries / 2);
-  line(x + 100, y + middleIndex * entryHeight, x + 100, y + (middleIndex + 1) * entryHeight);
+  line(x + 100, y + highlightIndex * entryHeight, x + 100, y + (highlightIndex + 1) * entryHeight);
 
   // Šedý riadok pre PPN a Flags
-  fill(220);
+  fill(color);
   noStroke();
-  rect(x, y + middleIndex * entryHeight, 150, entryHeight);
+  rect(x, y + highlightIndex * entryHeight, 150, entryHeight);
   fill(255);
   stroke(0);
 
@@ -522,47 +543,30 @@ function drawPageDirectory(x, y, Lnum, Lindex, PPN) {
   // Názov Flags
   textSize(14);
   fill(0);
-  text("Flags", x + 110, y + middleIndex * entryHeight + entryHeight / 2 + 5);
+  text("Flags", x + 110, y + highlightIndex * entryHeight + entryHeight / 2 + 5);
 
   // Číselné označenie pre viacero riadkov
-  text(2**Lnum - 1, x - 25, y + entryHeight / 2 + 5);
-  text(2**Lnum - 2, x - 25, y + (numEntries - 7) * entryHeight + entryHeight / 2 + 5);
-  text(2**Lnum - 3, x - 25, y + (numEntries - 6) * entryHeight + entryHeight / 2 + 5);
+  text(2 ** Lnum - 1, x - 25, y + entryHeight / 2 + 5);
+  text(2 ** Lnum - 2, x - 25, y + (numEntries - 7) * entryHeight + entryHeight / 2 + 5);
+  text(2 ** Lnum - 3, x - 25, y + (numEntries - 6) * entryHeight + entryHeight / 2 + 5);
   text("↑", x - 10, y + (numEntries - 5) * entryHeight + entryHeight / 2 + 5);
   text(Lindex, x - 25, y + (numEntries - 4) * entryHeight + entryHeight / 2 + 5);
   text("↑", x - 10, y + (numEntries - 3) * entryHeight + entryHeight / 2 + 5);
-  text(2**Lnum + 1 - 2**Lnum, x - 10, y + (numEntries - 2) * entryHeight + entryHeight / 2 + 5);
+  text(2 ** Lnum + 1 - 2 ** Lnum, x - 10, y + (numEntries - 2) * entryHeight + entryHeight / 2 + 5);
   text("0", x - 10, y + (numEntries - 1) * entryHeight + entryHeight / 2 + 5);
 
   // Display PPN in hexadecimal
   if (editableElements[`PPN${Lnum}`]) {
-    text(`PPN: 0x${editableElements[`PPN${Lnum}`]}`, x + 10, y + middleIndex * entryHeight + entryHeight / 2 + 5);
+    fill(0);
+    text(`PPN: 0x${editableElements[`PPN${Lnum}`]}`, x + 10, y + highlightIndex * entryHeight + entryHeight / 2 + 5);
   }
 
   // Názov Page Directory
   textSize(14);
   text("Page Directory", x + 25, y + 300 + 20);
   text("Adress: " + PPN, x, y - 10);
-
-  // Draw triangles above and below the page directory
-  drawTriangle(x + 75, y - 45, 'up', 15);
-  drawTriangle(x + 75, y + 345, 'down', 15);
-
-  drawTriangle(x + 55, y + 135, 'up', 10);
-  drawTriangle(x + 55, y + 205, 'down', 10);
 }
 
-// Helper function to draw a triangle
-function drawTriangle(x, y, direction, sizeT) {
-  fill(0);
-  noStroke();
-  let size = sizeT;
-  if (direction === 'up') {
-    triangle(x, y, x - size, y + size, x + size, y + size);
-  } else if (direction === 'down') {
-    triangle(x, y, x - size, y - size, x + size, y - size);
-  }
-}
 
 function drawPhysicalAddress(x, y) {
   fill(250, 128, 114);      // Jemne červená pre fyzickú adresu
