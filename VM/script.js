@@ -251,7 +251,7 @@ function draw() {
           
         }else{
           //highlightLIndexRow(element.key, editableElements.L1);
-          drawPageDirectory(400, 200, parseInt(editableElements.L1), parseInt(editableElements.L1Index), editableElements.L2, (255, 255, 0, 150), 'PPN2');
+          drawPageDirectory(400, 200, parseInt(editableElements.L1), parseInt(editableElements.L1Index), editableElements.PPN1, (255, 255, 0, 150), 'PPN2');
 
         }
       }
@@ -261,7 +261,7 @@ function draw() {
           
         }else{
           //highlightLIndexRow(element.key, editableElements.L0);
-          drawPageDirectory(700, 200, parseInt(editableElements.L0), parseInt(editableElements.L0Index), editableElements.L1, (255, 255, 0, 150), 'PPN3');
+          drawPageDirectory(700, 200, parseInt(editableElements.L0), parseInt(editableElements.L0Index), editableElements.PPN2, (255, 255, 0, 150), 'PPN3');
 
         }
       }
@@ -555,7 +555,7 @@ function drawPageDirectory(x, y, Lnum, Lindex, PPN, color, key) {
   // Názov Page Directory
   textSize(14);
   text("Page Directory", x + 25, y + 300 + 20);
-  text("Adress: " + PPN, x, y - 10);
+  text("Address: " + PPN, x, y - 10);
 }
 
 
@@ -572,7 +572,7 @@ function drawPhysicalAddress(x, y) {
 
   // Display PPN3 value
   textSize(14);
-  text(`0x${editableElements.PPN3}`, x + 10, y + 25);
+  text(`${editableElements.PPN3}`, x + 10, y + 25);
 
   textSize(14);
   text('Physical Address', x + 20, y - 10);
@@ -626,7 +626,14 @@ function mousePressed() {
       }
 
       activeElement = element.key;
-      let newValue = prompt("Zadaj novú hodnotu " + element.label + ":", editableElements[element.key]);
+      let currentValue = editableElements[element.key];
+
+      // Remove '0x' prefix for display in the prompt
+      if (['PPN1', 'PPN2', 'PPN3', 'SATP'].includes(element.key) && currentValue.startsWith('0x')) {
+        currentValue = currentValue.slice(2);
+      }
+
+      let newValue = prompt("Zadaj novú hodnotu " + element.label + ":", currentValue);
       if (newValue !== null) {
         if (['L0', 'L1', 'L2'].includes(element.key)) {
           if (/^[0-9]$/.test(newValue)) {
@@ -656,8 +663,6 @@ function mousePressed() {
           } else {
             alert("Hodnota musí byť platné hexadecimálne číslo.");
           }
-        } else {
-          editableElements[element.key] = newValue;
         }
       }
     }
