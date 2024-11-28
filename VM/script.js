@@ -18,6 +18,14 @@ let showArrows = false; // Track arrows visibility
 let modals = {}; // Store modal elements
 let showAllModals = false; // Track visibility of all modals
 let highlightPage = false;
+let ArrowsPositions = {
+  pageDirectory1L2: {  y: 360 },
+  pageDirectory1L2Index: { y: 400 },
+  pageDirectory1L1: { y: 200 },
+  pageDirectory1L1Index: { y: 200 },
+  pageDirectory1L0: { y: 200 },
+  pageDirectory1L0Index: { y: 200 },
+};
 
 function setup() {
   createCanvas(1500, 700);
@@ -286,9 +294,9 @@ function drawArrows() {
 
   if (editableElements.L2 !== '0') {
     // Arrow from L2 to L2Index Page Directory (multiple corners)
-    drawMultiCornerArrow([[125, 115], [125, 120], [50, 120], [50, 360], [90, 360]], [0, 0, 255]);
+    drawMultiCornerArrow([[125, 115], [125, 120], [50, 120], [50, ArrowsPositions.pageDirectory1L2.y], [90, ArrowsPositions.pageDirectory1L2.y]], [0, 0, 255]);
     // Arrow from L2 PPN to L1 Page Directory (multiple corners)
-    drawMultiCornerArrow([[150, 388], [150, 400], [300, 400], [300, 185], [390, 185]], [255, 0, 0]);
+    drawMultiCornerArrow([[150, ArrowsPositions.pageDirectory1L2Index.y - 12], [150, ArrowsPositions.pageDirectory1L2Index.y], [300, ArrowsPositions.pageDirectory1L2Index.y], [300, 185], [390, 185]], [255, 0, 0]);
   } else {
     drawMultiCornerArrow([[60, 600], [60, 185], [390, 185], [], [390, 185]], [255, 0, 0]);
   }
@@ -482,6 +490,15 @@ function drawVirtualAddress(x, y) {
 }
 
 function drawPageDirectory(x, y, Lnum, Lindex, PPN, color, key) {
+
+  // if (key === 'PPN1') {
+  //   pageDirectoryPositions.pageDirectory1 = { x, y };
+  // } else if (key === 'PPN2') {
+  //   pageDirectoryPositions.pageDirectory2 = { x, y };
+  // } else if (key === 'PPN3') {
+  //   pageDirectoryPositions.pageDirectory3 = { x, y };
+  // }
+
   fill(240);            // Jemne šedá pre Page Directory
   stroke(0);
   rect(x, y, 150, 300); // Cela Page Directory with increased height
