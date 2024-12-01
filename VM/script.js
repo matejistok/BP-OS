@@ -652,47 +652,58 @@ function mousePressed() {
       if (editableElements.L0 === '0' && element.key === 'PPN3') {
         continue;
       }
-
+      
       activeElement = element.key;
       let currentValue = editableElements[element.key];
-
-      // Remove '0x' prefix for display in the prompt
+      
+      // Remove '0x' prefix for display in the input box
       if (['PPN1', 'PPN2', 'PPN3', 'SATP'].includes(element.key) && currentValue.startsWith('0x')) {
         currentValue = currentValue.slice(2);
       }
-
-      let newValue = prompt("Zadaj novú hodnotu " + element.label + ":", currentValue);
-      if (newValue !== null) {
-        if (['L0', 'L1', 'L2'].includes(element.key)) {
-          if (/^[0-9]$/.test(newValue)) {
-            editableElements[element.key] = newValue;
-            if (element.key === 'L1' && editableElements.L2 === '0' && newValue !== '9') {
-              l1Changed = true;
+      
+      // Create an input box at the clicked position
+      let inputBox = createInput(currentValue);
+      inputBox.position(element.x, element.y);
+      inputBox.size(element.w, element.h); // Set the size to match the clicked element
+      inputBox.elt.focus();
+      
+      // Add an event listener to handle the Enter key press
+      inputBox.elt.addEventListener('keydown', function(event) {
+        if (event.key === 'Enter') {
+          let newValue = inputBox.value();
+          if (['L0', 'L1', 'L2'].includes(element.key)) {
+            if (/^[0-9]$/.test(newValue)) {
+              editableElements[element.key] = newValue;
+              if (element.key === 'L1' && editableElements.L2 === '0' && newValue !== '9') {
+                l1Changed = true;
+              }
+            } else {
+              alert("Hodnota musí byť číslo od 0 do 9.");
             }
-          } else {
-            alert("Hodnota musí byť číslo od 0 do 9.");
+          } else if (['L2Index', 'L1Index', 'L0Index'].includes(element.key)) {
+            const maxIndex = Math.pow(2, parseInt(editableElements[element.key.replace('Index', '')]));
+            if (/^[0-9]+$/.test(newValue) && parseInt(newValue) < maxIndex) {
+              editableElements[element.key] = newValue;
+            } else {
+              alert(`Hodnota musí byť číslo od 0 do ${maxIndex - 1}.`);
+            }
+          } else if (['PPN1', 'PPN2', 'PPN3'].includes(element.key)) {
+            if (/^[0-9a-fA-F]+$/.test(newValue)) {
+              editableElements[element.key] = '0x' + newValue.toUpperCase();
+            } else {
+              alert("Hodnota musí byť platné hexadecimálne číslo.");
+            }
+          } else if (element.key === 'SATP') {
+            if (/^[0-9a-fA-F]+$/.test(newValue)) {
+              editableElements[element.key] = '0x' + newValue.toUpperCase();
+            } else {
+              alert("Hodnota musí byť platné hexadecimálne číslo.");
+            }
           }
-        } else if (['L2Index', 'L1Index', 'L0Index'].includes(element.key)) {
-          const maxIndex = Math.pow(2, parseInt(editableElements[element.key.replace('Index', '')]));
-          if (/^[0-9]+$/.test(newValue) && parseInt(newValue) < maxIndex) {
-            editableElements[element.key] = newValue;
-          } else {
-            alert(`Hodnota musí byť číslo od 0 do ${maxIndex - 1}.`);
-          }
-        } else if (['PPN1', 'PPN2', 'PPN3'].includes(element.key)) {
-          if (/^[0-9a-fA-F]+$/.test(newValue)) {
-            editableElements[element.key] = '0x' + newValue.toUpperCase();
-          } else {
-            alert("Hodnota musí byť platné hexadecimálne číslo.");
-          }
-        } else if (element.key === 'SATP') {
-          if (/^[0-9a-fA-F]+$/.test(newValue)) {
-            editableElements[element.key] = '0x' + newValue.toUpperCase();
-          } else {
-            alert("Hodnota musí byť platné hexadecimálne číslo.");
-          }
+          inputBox.remove();
+          redraw();
         }
-      }
+      });
     }
   }
 }
