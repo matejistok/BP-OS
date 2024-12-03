@@ -428,15 +428,15 @@ function highlightRowLabels(level) {
 
   for(let i = 0; i < num; i++) {
     // Draw rectangles behind the text
-    rect(x - 30, y + entryHeight / 2 - 10, 30, 20);
-    rect(x - 30, y + (numEntries - 7) * entryHeight + entryHeight / 2 - 10, 30, 20);
-    rect(x - 30, y + (numEntries - 6) * entryHeight + entryHeight / 2 - 10, 30, 20);
-    rect(x - 30, y + (numEntries - 5) * entryHeight + entryHeight / 2 - 10, 30, 20);
-    rect(x - 30, y + (numEntries - 4) * entryHeight + entryHeight / 2 - 10, 30, 20);
-    rect(x - 30, y + (numEntries - 3) * entryHeight + entryHeight / 2 - 10, 30, 20);
-    rect(x - 30, y + (numEntries - 2) * entryHeight + entryHeight / 2 - 10, 30, 20);
-    rect(x - 30, y + (numEntries - 1) * entryHeight + entryHeight / 2 - 10, 30, 20);
-
+    // rect(x - 30, y + entryHeight / 2 - 10, 30, 20);
+    // rect(x - 30, y + (numEntries - 7) * entryHeight + entryHeight / 2 - 10, 30, 20);
+    // rect(x - 30, y + (numEntries - 6) * entryHeight + entryHeight / 2 - 10, 30, 20);
+    // rect(x - 30, y + (numEntries - 5) * entryHeight + entryHeight / 2 - 10, 30, 20);
+    // rect(x - 30, y + (numEntries - 4) * entryHeight + entryHeight / 2 - 10, 30, 20);
+    // rect(x - 30, y + (numEntries - 3) * entryHeight + entryHeight / 2 - 10, 30, 20);
+    // rect(x - 30, y + (numEntries - 2) * entryHeight + entryHeight / 2 - 10, 30, 20);
+    // rect(x - 30, y + (numEntries - 1) * entryHeight + entryHeight / 2 - 10, 30, 20);
+    rect(x - 30, y + entryHeight / 2 - 10, 30, entryHeight * numEntries);
     x += 300;
   }
 }
