@@ -515,6 +515,7 @@ function drawPageDirectory(x, y, Lnum, Lindex, PPN, color, key, pdnumber) {
   for (let i = 1; i < numEntries; i++) {
     line(x, y + i * entryHeight, x + 150, y + i * entryHeight);
   }
+  let displayText = (Lindex === 2 ** Lnum + 1 - 2 ** Lnum || Lindex === 0 || Lindex === 2 ** Lnum - 1 || Lindex === 2 ** Lnum - 2 || Lindex === 2 ** Lnum - 3) ? "↑" : Lindex;
 
   // Find which index should be highlighted
   let highlightIndex = -1;
@@ -573,7 +574,7 @@ function drawPageDirectory(x, y, Lnum, Lindex, PPN, color, key, pdnumber) {
     text(2 ** Lnum - 2, x - 25, y + (numEntries - 7) * entryHeight + entryHeight / 2 + 5);
     text(2 ** Lnum - 3, x - 25, y + (numEntries - 6) * entryHeight + entryHeight / 2 + 5);
     text("↑", x - 25, y + (numEntries - 5) * entryHeight + entryHeight / 2 + 5);
-    text(Lindex, x - 25, y + (numEntries - 4) * entryHeight + entryHeight / 2 + 5);
+    text(displayText, x - 25, y + (numEntries - 4) * entryHeight + entryHeight / 2 + 5);
     text("↑", x - 25, y + (numEntries - 3) * entryHeight + entryHeight / 2 + 5);
     text(2 ** Lnum + 1 - 2 ** Lnum, x - 25, y + (numEntries - 2) * entryHeight + entryHeight / 2 + 5);
     text("0", x - 25, y + (numEntries - 1) * entryHeight + entryHeight / 2 + 5);
