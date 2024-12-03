@@ -71,9 +71,9 @@ function setup() {
   );
 
   // Nakreslenie virtuálnej sekcie adresy
-  hoverElements.push({ label: 'L2', x: 100, y: 20, w: 50, h: 40, highlight: [1, 2, 3], key: 'L2' });
-  hoverElements.push({ label: 'L1', x: 150, y: 20, w: 50, h: 40, highlight: [2, 3], key: 'L1' });
-  hoverElements.push({ label: 'L0', x: 200, y: 20, w: 50, h: 40, highlight: [3], key: 'L0' });
+  hoverElements.push({ label: 'L2', x: 103, y: 25, w: 45, h: 25, highlight: [1, 2, 3], key: 'L2' });
+  hoverElements.push({ label: 'L1', x: 153, y: 25, w: 45, h: 25, highlight: [2, 3], key: 'L1' });
+  hoverElements.push({ label: 'L0', x: 203, y: 25, w: 45, h: 25, highlight: [3], key: 'L0' });
   hoverElements.push({ label: 'L2Index', x: 100, y: 50, w: 50, h: 40, highlight: [1, 2, 3], key: 'L2Index' });
   hoverElements.push({ label: 'L1Index', x: 150, y: 50, w: 50, h: 40, highlight: [2, 3], key: 'L1Index' });
   hoverElements.push({ label: 'L0Index', x: 200, y: 50, w: 50, h: 40, highlight: [3], key: 'L0Index' });
@@ -539,11 +539,11 @@ function drawPageDirectory(x, y, Lnum, Lindex, PPN, color, key, pdnumber) {
   // Create or update the hover element
   let hoverElement = hoverElements.find(el => el.key === key);
   if (!hoverElement) {
-    hoverElement = { label: 'PPN', x: x + 20, y: y + highlightIndex * entryHeight + entryHeight / 2 - 25, w: 50, h: 50, key: key };
+    hoverElement = { label: 'PPN', x: x + 5, y: y + highlightIndex * entryHeight + entryHeight / 2 + 15, w: 85, h: 30, key: key };
     hoverElements.push(hoverElement);
   } else {
-    hoverElement.x = x + 20;
-    hoverElement.y = y + highlightIndex * entryHeight + entryHeight / 2 - 25;
+    hoverElement.x = x + 5;
+    hoverElement.y = y + highlightIndex * entryHeight + entryHeight / 2 - 15;
   }
 
   line(x + 95, y, x + 95, y + 300);
@@ -652,60 +652,83 @@ function mousePressed() {
       if (editableElements.L0 === '0' && element.key === 'PPN3') {
         continue;
       }
-      
+
       activeElement = element.key;
       let currentValue = editableElements[element.key];
-      
+
       // Remove '0x' prefix for display in the input box
       if (['PPN1', 'PPN2', 'PPN3', 'SATP'].includes(element.key) && currentValue.startsWith('0x')) {
         currentValue = currentValue.slice(2);
       }
-      
+
       // Create an input box at the clicked position
       let inputBox = createInput(currentValue);
-      inputBox.position(element.x, element.y);
-      inputBox.size(element.w, element.h); // Set the size to match the clicked element
+      inputBox.position(element.x + 17, element.y +13);
+      inputBox.size(element.w - 5, element.h - 5); // Set the size to match the clicked element
       inputBox.elt.focus();
-      
+      inputBox.elt.select(); // Automatically select the content
+
       // Add an event listener to handle the Enter key press
-      inputBox.elt.addEventListener('keydown', function(event) {
-        if (event.key === 'Enter') {
-          let newValue = inputBox.value();
-          if (['L0', 'L1', 'L2'].includes(element.key)) {
-            if (/^[0-9]$/.test(newValue)) {
-              editableElements[element.key] = newValue;
-              if (element.key === 'L1' && editableElements.L2 === '0' && newValue !== '9') {
-                l1Changed = true;
+      inputBox.elt.addEventListener('keydown', (function(inputBox, element) {
+        return function(event) {
+          if (event.key === 'Enter') {
+            let newValue = inputBox.value();
+            if (['L0', 'L1', 'L2'].includes(element.key)) {
+              if (/^[0-9]$/.test(newValue)) {
+                editableElements[element.key] = newValue;
+                if (element.key === 'L1' && editableElements.L2 === '0' && newValue !== '9') {
+                  l1Changed = true;
+                }
+              } else {
+                alert("Hodnota musí byť číslo od 0 do 9.");
               }
-            } else {
-              alert("Hodnota musí byť číslo od 0 do 9.");
+            } else if (['L2Index', 'L1Index', 'L0Index'].includes(element.key)) {
+              const maxIndex = Math.pow(2, parseInt(editableElements[element.key.replace('Index', '')]));
+              if (/^[0-9]+$/.test(newValue) && parseInt(newValue) < maxIndex) {
+                editableElements[element.key] = newValue;
+              } else {
+                alert(`Hodnota musí byť číslo od 0 do ${maxIndex - 1}.`);
+              }
+            } else if (['PPN1', 'PPN2', 'PPN3'].includes(element.key)) {
+              if (/^[0-9a-fA-F]+$/.test(newValue)) {
+                editableElements[element.key] = '0x' + newValue.toUpperCase();
+              } else {
+                alert("Hodnota musí byť platné hexadecimálne číslo.");
+              }
+            } else if (element.key === 'SATP') {
+              if (/^[0-9a-fA-F]+$/.test(newValue)) {
+                editableElements[element.key] = '0x' + newValue.toUpperCase();
+              } else {
+                alert("Hodnota musí byť platné hexadecimálne číslo.");
+              }
             }
-          } else if (['L2Index', 'L1Index', 'L0Index'].includes(element.key)) {
-            const maxIndex = Math.pow(2, parseInt(editableElements[element.key.replace('Index', '')]));
-            if (/^[0-9]+$/.test(newValue) && parseInt(newValue) < maxIndex) {
-              editableElements[element.key] = newValue;
-            } else {
-              alert(`Hodnota musí byť číslo od 0 do ${maxIndex - 1}.`);
-            }
-          } else if (['PPN1', 'PPN2', 'PPN3'].includes(element.key)) {
-            if (/^[0-9a-fA-F]+$/.test(newValue)) {
-              editableElements[element.key] = '0x' + newValue.toUpperCase();
-            } else {
-              alert("Hodnota musí byť platné hexadecimálne číslo.");
-            }
-          } else if (element.key === 'SATP') {
-            if (/^[0-9a-fA-F]+$/.test(newValue)) {
-              editableElements[element.key] = '0x' + newValue.toUpperCase();
-            } else {
-              alert("Hodnota musí byť platné hexadecimálne číslo.");
-            }
+            inputBox.remove();
+            redraw();
           }
+        };
+      })(inputBox, element));
+
+      // Add an event listener to handle clicks outside the input box
+      document.addEventListener('mousedown', function handleClickOutside(event) {
+        if (!inputBox.elt.contains(event.target)) {
           inputBox.remove();
+          activeElement = null;
           redraw();
+          document.removeEventListener('mousedown', handleClickOutside);
         }
       });
+
+      break;
     }
   }
+}
+
+function mouseMoved() {
+  redraw();
+}
+
+function mouseMoved() {
+  redraw();
 }
 
 function mouseMoved() {
