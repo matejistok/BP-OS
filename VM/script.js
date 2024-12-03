@@ -14,9 +14,9 @@ let editableElements = {
 };
 let activeElement = null;
 let l1Changed = false;
-let showArrows = false; // Track arrows visibility
-let modals = {}; // Store modal elements
-let showAllModals = false; // Track visibility of all modals
+let showArrows = false;
+let modals = {};
+let showAllModals = false;
 let highlightPage = false;
 let ArrowsPositions = {
   pageDirectory1L2: {  y: 360 },
@@ -27,6 +27,7 @@ let ArrowsPositions = {
   pageDirectory1L0Index: { y: 400 },
 };
 
+//First inicialization of canvas and elements
 function setup() {
   createCanvas(1500, 700);
   background(255);
@@ -34,18 +35,17 @@ function setup() {
 
   // Button to toggle arrows
   let toggleArrowsButton = createButton('Sipky');
-  toggleArrowsButton.position(width - 120, 20); // Top-right position
+  toggleArrowsButton.position(width - 120, 20);
   toggleArrowsButton.mousePressed(() => {
-    showArrows = !showArrows; // Toggle arrows
-    redraw(); // Refresh canvas
+    showArrows = !showArrows;                                   // Toggle arrows
+    redraw();                                                   // Refresh canvas
   });
 
-  // Create a single button to toggle all modals
+  // Button to toggle all modals
   let toggleButton = createButton('Pomocka');
   toggleButton.position(width - 70, 20);
   toggleButton.mousePressed(() => toggleAllModals());
 
-  // Create modals but keep them hidden initially
   modals.modal1 = createModal(
     260,
     15,
@@ -70,7 +70,7 @@ function setup() {
     50
   );
 
-  // Nakreslenie virtuálnej sekcie adresy
+  // Drawing of Virtual Address
   hoverElements.push({ label: 'L2', x: 103, y: 25, w: 45, h: 25, highlight: [1, 2, 3], key: 'L2' });
   hoverElements.push({ label: 'L1', x: 153, y: 25, w: 45, h: 25, highlight: [2, 3], key: 'L1' });
   hoverElements.push({ label: 'L0', x: 203, y: 25, w: 45, h: 25, highlight: [3], key: 'L0' });
@@ -79,22 +79,19 @@ function setup() {
   hoverElements.push({ label: 'L0Index', x: 200, y: 50, w: 50, h: 40, highlight: [3], key: 'L0Index' });
   drawVirtualAddress(50, 50);
 
-  // Nakreslenie Page Directory 1
+  // Page Directory 1
   drawPageDirectory(100, 200, parseInt(editableElements.L2), parseInt(editableElements.L2Index), editableElements.SATP, 220, 'PPN1', 'PD1');
 
-  // Nakreslenie Page Directory 2
+  // Page Directory 2
   drawPageDirectory(400, 300, parseInt(editableElements.L1), parseInt(editableElements.L1Index), editableElements.PPN1, 220), 'PPN2', 'PD2';
 
-  // Nakreslenie Page Directory 3
+  // Page Directory 3
   drawPageDirectory(700, 400, parseInt(editableElements.L0), parseInt(editableElements.L0Index), editableElements.PPN2, 220, 'PPN3', 'PD3');
 
-  // Nakreslenie fyzickej sekcie adresy
   drawPhysicalAddress(950, 50);
 
-  // Nakreslenie virtuálnej pamäťovej sekcie
   drawVirtualMemorySpace(1200, 50); 
 
-  // Nakreslenie SATP
   hoverElements.push({ label: 'SATP', x: 50, y: 600, w: 100, h: 40, key: 'SATP' });
   drawSATP(50, 600);
 }
@@ -121,26 +118,22 @@ function draw() {
   // Update Memory value based on L2, L1, and L0
   if (editableElements.L2 === '0') {
     if (editableElements.L1 === '0') {
-      // If L2 and L1 are both 0, calculate memory based on L0
       editableElements.Memory = (Math.pow(2, parseInt(editableElements.L0)) * 0.000004).toFixed(6);
     } else {
-      // If L2 is 0 and L1 is not 0
       editableElements.Memory = (Math.pow(2, parseInt(editableElements.L1)) * 0.002).toString();
     }
   } else {
-    // If L2 is not 0, calculate memory based on L2
     editableElements.Memory = Math.pow(2, parseInt(editableElements.L2)).toString();
   }
 
-  // Check if L2 is 0
+  // Disable Page Directory 1
   if (editableElements.L2 === '0') {
-    fill(245);            // Jemne šedá pre Page Directory
+    fill(245);                                              // Gray colour for Page Directory
     stroke(150,150,150);
-    rect(100, 200, 150, 300); // Cela Page Directory with increased height
+    rect(100, 200, 150, 300);                              
 
-    // Horizontal Dividers
-    let numEntries = 8; // Total number of entries
-    let entryHeight = 300 / numEntries; // Height of each entry
+    let numEntries = 8;                                     // Rows in Page Directory
+    let entryHeight = 300 / numEntries;                     // Height of each entry
     for (let i = 1; i < numEntries; i++) {
       line(100, 200 + i * entryHeight, 100 + 150, 200 + i * entryHeight);
     }
@@ -150,14 +143,14 @@ function draw() {
     drawPageDirectory(100, 200, parseInt(editableElements.L2), parseInt(editableElements.L2Index), editableElements.SATP, 220, 'PPN1', 'PD1');
   }
 
+  // Disable Page Directory 2  
   if (editableElements.L1 === '0') {
-    fill(245);            // Jemne šedá pre Page Directory
+    fill(245);            
     stroke(150,150,150);
-    rect(400, 200, 150, 300); // Cela Page Directory with increased height
+    rect(400, 200, 150, 300);
 
-    // Horizontal Dividers
-    let numEntries = 8; // Total number of entries
-    let entryHeight = 300 / numEntries; // Height of each entry
+    let numEntries = 8; 
+    let entryHeight = 300 / numEntries;
     for (let i = 1; i < numEntries; i++) {
       line(400, 200 + i * entryHeight, 400 + 150, 200 + i * entryHeight);
     }
@@ -172,14 +165,14 @@ function draw() {
     }
   }
 
+  // Disable Page Directory 3
   if (editableElements.L0 === '0') {
-    fill(245);            // Jemne šedá pre Page Directory
+    fill(245);            
     stroke(150,150,150);
-    rect(700, 200, 150, 300); // Cela Page Directory with increased height
+    rect(700, 200, 150, 300);
 
-    // Horizontal Dividers
-    let numEntries = 8; // Total number of entries
-    let entryHeight = 300 / numEntries; // Height of each entry
+    let numEntries = 8; 
+    let entryHeight = 300 / numEntries;
     for (let i = 1; i < numEntries; i++) {
       line(700, 200 + i * entryHeight, 700 + 150, 200 + i * entryHeight);
     }
@@ -196,26 +189,20 @@ function draw() {
   drawPhysicalAddress(950, 50);
   drawVirtualMemorySpace(1200, 50);
 
-  // Highlight part of the virtual memory space based on Memory value
-  let memoryValue = parseFloat(editableElements.Memory);
-
-  // Adjust the height calculation depending on the value of L2, L1, and L0
+  // Adjustable height calculated by depending on the value of L2, L1, and L0
   let highlightHeight;
 
   if (editableElements.L2 === '0') {
     if (editableElements.L1 === '0') {
-      // If L2 and L1 are both 0, use L0 to determine the highlight (should not exceed L1 = 1 highlight height)
       highlightHeight = highlightHeight/(2**Math.abs(parseInt(editableElements.L1 - 9)));
     } else {
-      // If L2 is 0 and L1 is not 0 (should not exceed L2 = 1 highlight height)
       highlightHeight = highlightHeight/(2**Math.abs(parseInt(editableElements.L0 - 9)));
     }
   } else {
-    // If L2 is not 0, use L2 to determine the highlight (full range)
     highlightHeight = 600/(2**Math.abs(parseInt(editableElements.L2 - 9)));
   }
 
-  // Ensure highlightHeight does not exceed total height
+  // highlightHeight does not exceed total height
   highlightHeight = min(highlightHeight, 600);
 
   for (let element of hoverElements) {
@@ -225,14 +212,12 @@ function draw() {
       mouseY > element.y &&
       mouseY < element.y + element.h
     ) {
-      // Skip highlighting if L2 is 0 and the element is in Page Directory 1
       if (editableElements.L2 === '0' && element.key === 'PPN1') {
         continue;
       }
-
+      // Highlight row labels of Page Directory
       if (['L2', 'L1', 'L0'].includes(element.key)) {
-        // Highlight row labels instead of the entire Page Directory
-        fill(255, 255, 0, 150); // Highlight color
+        fill(255, 255, 0, 150); // Highlight colour
         noStroke();
         rect(1200, 50, 250, highlightHeight);
         if(editableElements[element.key] === '0') {
@@ -240,7 +225,7 @@ function draw() {
           highlightRowLabels(element.key);
         }
       } else {
-        fill(255, 255, 0, 150); // Highlight color
+        fill(255, 255, 0, 150); // Highlight colour
         noStroke();
         rect(element.x, element.y, element.w, element.h);
       }
@@ -249,7 +234,6 @@ function draw() {
         if (editableElements.L2Index === ''){
           
         }else{
-          //highlightLIndexRow(element.key, editableElements.L2);
           drawPageDirectory(100, 200, parseInt(editableElements.L2), parseInt(editableElements.L2Index), editableElements.SATP, (255, 255, 0, 150), 'PPN1', 'PD1');
         }
       }
@@ -258,9 +242,7 @@ function draw() {
         if (editableElements.L1Index === ''){
           
         }else{
-          //highlightLIndexRow(element.key, editableElements.L1);
           drawPageDirectory(400, 200, parseInt(editableElements.L1), parseInt(editableElements.L1Index), editableElements.PPN1, (255, 255, 0, 150), 'PPN2', 'PD2');
-
         }
       }
 
@@ -268,9 +250,7 @@ function draw() {
         if (editableElements.L0Index === ''){
           
         }else{
-          //highlightLIndexRow(element.key, editableElements.L0);
           drawPageDirectory(700, 200, parseInt(editableElements.L0), parseInt(editableElements.L0Index), editableElements.PPN2, (255, 255, 0, 150), 'PPN3', 'PD3');
-
         }
       }
 
@@ -284,7 +264,7 @@ function draw() {
     text(editableElements[element.key], element.x + 10, (element.y + element.h / 2) + 5);
   }
 
-  // Draw arrows if modal is not shown
+  // Draw arrows
   if (showArrows) {
     drawArrows();
   }
@@ -293,37 +273,39 @@ function draw() {
 function drawArrows() {
 
   if (editableElements.L2 !== '0') {
-    // Arrow from L2 to L2Index Page Directory (multiple corners)
+    // Arrow from L2Index to PPN od Page Directory 1
     drawMultiCornerArrow([[125, 115], [125, 120], [50, 120], [50, ArrowsPositions.pageDirectory1L2.y], [70, ArrowsPositions.pageDirectory1L2.y]], [0, 0, 255]);
-    // Arrow from L2 PPN to L1 Page Directory (multiple corners)
+    // Arrow from PD1 PPN to Page Directory 2 Address
     drawMultiCornerArrow([[150, ArrowsPositions.pageDirectory1L2Index.y - 12], [150, ArrowsPositions.pageDirectory1L2Index.y], [300, ArrowsPositions.pageDirectory1L2Index.y], [300, 185], [390, 185]], [255, 0, 0]);
   } else {
+    // Arrow from SATP to Page Directory 2
     drawMultiCornerArrow([[60, 600], [60, 185], [390, 185], [], [390, 185]], [255, 0, 0]);
   }
 
   if (editableElements.L1 !== '0') {
-    // Arrow from L1 to L1Index Page Directory (multiple corners)
+    // Arrow from L1Index to PPN od Page Directory 2
     drawMultiCornerArrow([[175, 115], [175, 120], [330, 120], [330, ArrowsPositions.pageDirectory1L1.y], [360, ArrowsPositions.pageDirectory1L1.y]], [0, 0, 255]);
-    // Arrow from L1 PPN to L0 Page Directory (multiple corners)
+    // Arrow from PD2 PPN to Page Directory 3 Address
     drawMultiCornerArrow([[450, ArrowsPositions.pageDirectory1L1Index.y - 12], [450, ArrowsPositions.pageDirectory1L1Index.y], [600, ArrowsPositions.pageDirectory1L1Index.y], [600, 185], [690, 185]], [255, 0, 0]);
   } else {
+    // Arrow from SATP to Page Directory 3
     drawMultiCornerArrow([[60, 600], [60, 185], [690, 185], [], [690, 185]], [255, 0, 0]);
   }
 
-  // Arrow from L0 to L0Index Page Directory (multiple corners)
+  // Arrow from L0Index to PPN od Page Directory 3
   drawMultiCornerArrow([[], [240, 105], [630, 105], [630, ArrowsPositions.pageDirectory1L0.y], [660, ArrowsPositions.pageDirectory1L0.y]], [0, 0, 255]);
 
-  // Arrow from SATP to L2 Page Directory (multiple corners)
+  // Arrow from SATP to Page Directory 1
   drawMultiCornerArrow([[60, 600], [60, 185], [90, 185], [], [90, 185]], [255, 0, 0]);
 
-  // Arrow from L0 PPN to Physical Address (multiple corners)
+  // Arrow from PD3 PPN to Physical Address
   drawMultiCornerArrow([[750, ArrowsPositions.pageDirectory1L0Index.y - 12], [750, ArrowsPositions.pageDirectory1L0Index.y], [1000, ArrowsPositions.pageDirectory1L0Index.y], [1000, 95]], [255, 0, 0]);
 
   // Arrow for Offset in Physical Address
   drawMultiCornerArrow([[320, 70], [900, 70],[900, 130], [1080, 130], [1080, 95]], [255, 0, 0]);
 }
 
-// Helper function to draw arrows with multiple corners
+// Function to draw arrows with multiple corners
 function drawMultiCornerArrow(points, color) {
   stroke(color[0], color[1], color[2]);
   noFill();
@@ -341,7 +323,7 @@ function drawMultiCornerArrow(points, color) {
   drawArrowhead(x1, y1, x2, y2, color);
 }
 
-// Helper function to draw an arrowhead
+// Function to draw an arrowhead
 function drawArrowhead(x1, y1, x2, y2, color) {
   let arrowSize = 8;
   let angle = atan2(y2 - y1, x2 - x1);
@@ -382,20 +364,20 @@ function createModal(x, y, content, width, height) {
 }
 
 function highlightLIndexRow(level, Lnum) {
-  let x = 100; // x position of the first page directory
-  let y = 200; // y position of the first page directory
+  let x = 100;                                            // x position of the first page directory
+  let y = 200;                                            // y position of the first page directory
   let numEntries = 8;
   let entryHeight = 300 / numEntries;
   let middleIndex = Math.floor(numEntries / 2);
 
   // Adjust x position based on the level
   if (level === 'L1Index') {
-    x += 300; // Move to the second page directory
+    x += 300;                                             // Move to the second page directory
   } else if (level === 'L0Index') {
-    x += 600; // Move to the third page directory
+    x += 600;                                             // Move to the third page directory
   }
 
-  fill(255, 255, 0, 150); // Highlight color
+  fill(255, 255, 0, 150);                                 // Highlight colour
   noStroke();
   rect(x, y + middleIndex * entryHeight, 150, entryHeight);
   stroke(0);
@@ -420,29 +402,21 @@ function highlightRowLabels(level) {
     num = 1;
   }
 
-  fill(255, 255, 0, 150); // Highlight color for row labels
+  fill(255, 255, 0, 150);                                   // Highlight colour for row labels
   noStroke();
   textSize(14);
   let numEntries = 8;
   let entryHeight = 300 / numEntries;
 
+  // Highlight rectangle for labels
   for(let i = 0; i < num; i++) {
-    // Draw rectangles behind the text
-    // rect(x - 30, y + entryHeight / 2 - 10, 30, 20);
-    // rect(x - 30, y + (numEntries - 7) * entryHeight + entryHeight / 2 - 10, 30, 20);
-    // rect(x - 30, y + (numEntries - 6) * entryHeight + entryHeight / 2 - 10, 30, 20);
-    // rect(x - 30, y + (numEntries - 5) * entryHeight + entryHeight / 2 - 10, 30, 20);
-    // rect(x - 30, y + (numEntries - 4) * entryHeight + entryHeight / 2 - 10, 30, 20);
-    // rect(x - 30, y + (numEntries - 3) * entryHeight + entryHeight / 2 - 10, 30, 20);
-    // rect(x - 30, y + (numEntries - 2) * entryHeight + entryHeight / 2 - 10, 30, 20);
-    // rect(x - 30, y + (numEntries - 1) * entryHeight + entryHeight / 2 - 10, 30, 20);
     rect(x - 30, y + entryHeight / 2 - 10, 30, entryHeight * numEntries);
     x += 300;
   }
 }
 
 function highlightAddress(address) {
-  fill(255, 255, 0, 150); // Highlight color
+  fill(255, 255, 0, 150);                   // Highlight colour
   noStroke();
   textSize(14);
 
@@ -462,13 +436,13 @@ function highlightAddress(address) {
     y = 80;
   }
 
-  // Draw a rectangle behind the address text
+  // Highlight rectangle behind address
   rect(x, y - 20, 100, 20);
   fill(0);
 }
 
 function drawVirtualAddress(x, y) {
-  fill(173, 216, 230);      // Jemne modrá pre virtuálnu adresu
+  fill(173, 216, 230);      // Blue for virtual address
   stroke(0);
   rect(x, y, 50, 40);       // EXT
   rect(x + 50, y, 50, 40);  // L2
@@ -484,37 +458,29 @@ function drawVirtualAddress(x, y) {
   text('L0', x + 165, y + 60);  
   text('Offset', x + 220, y + 25);
 
-  // Názov virtuálnej adresy
   textSize(14);
   text('Virtual address', x + 50, y - 30);
 }
 
 function drawPageDirectory(x, y, Lnum, Lindex, PPN, color, key, pdnumber) {
 
-  // if (key === 'PPN1') {
-  //   pageDirectoryPositions.pageDirectory1 = { x, y };
-  // } else if (key === 'PPN2') {
-  //   pageDirectoryPositions.pageDirectory2 = { x, y };
-  // } else if (key === 'PPN3') {
-  //   pageDirectoryPositions.pageDirectory3 = { x, y };
-  // }
-
-  fill(240);            // Jemne šedá pre Page Directory
+  fill(240);                                        // Gray for Page Directory
   stroke(0);
-  rect(x, y, 150, 300); // Cela Page Directory with increased height
+  rect(x, y, 150, 300);                             // Directory with increased height
 
   // Horizontal Dividers
-  let numEntries = 8; // Total number of entries
+  let numEntries = 8;                               // Total number of entries
   if (Lnum === 1) {
     numEntries = 2;
   }
   if (Lnum === 2) {
     numEntries = 4;
   }
-  let entryHeight = 300 / numEntries; // Height of each entry
+  let entryHeight = 300 / numEntries;               // Height of each entry
   for (let i = 1; i < numEntries; i++) {
     line(x, y + i * entryHeight, x + 150, y + i * entryHeight);
   }
+  // Check if the size of Virtual address is 1 or 2 to resize the Page Directory 
   let displayText = (Lindex === 2 ** Lnum + 1 - 2 ** Lnum || Lindex === 0 || Lindex === 2 ** Lnum - 1 || Lindex === 2 ** Lnum - 2 || Lindex === 2 ** Lnum - 3) ? "↑" : Lindex;
 
   // Find which index should be highlighted
@@ -533,10 +499,10 @@ function drawPageDirectory(x, y, Lnum, Lindex, PPN, color, key, pdnumber) {
     highlightIndex = Math.floor(numEntries / 2);
   }
 
-  // Delenie PPN a Flags
+  // Divider PPN and Flags
   line(x + 100, y + highlightIndex * entryHeight, x + 100, y + (highlightIndex + 1) * entryHeight);
 
-  // Šedý riadok pre PPN a Flags
+  // Gray row PPN and Flags
   fill(color);
   noStroke();
   rect(x, y + highlightIndex * entryHeight, 150, entryHeight);
@@ -555,11 +521,12 @@ function drawPageDirectory(x, y, Lnum, Lindex, PPN, color, key, pdnumber) {
 
   line(x + 95, y, x + 95, y + 300);
 
-  // Názov Flags
+  // Flags
   textSize(14);
   fill(0);
   text("Flags", x + 110, y + highlightIndex * entryHeight + entryHeight / 2 + 5);
 
+  // Labels for Page Directory (Index)
   if(Lnum === 1){
     text("1", x - 25, y + (numEntries - 2) * entryHeight + entryHeight / 2 + 5);
     text("0", x - 25, y + (numEntries - 1) * entryHeight + entryHeight / 2 + 5);
@@ -569,7 +536,6 @@ function drawPageDirectory(x, y, Lnum, Lindex, PPN, color, key, pdnumber) {
     text("1", x - 25, y + (numEntries - 2) * entryHeight + entryHeight / 2 + 5);
     text("0", x - 25, y + (numEntries - 1) * entryHeight + entryHeight / 2 + 5);
   } else{
-    // Číselné označenie pre viacero riadkov
     text(2 ** Lnum - 1, x - 25, y + entryHeight / 2 + 5);
     text(2 ** Lnum - 2, x - 25, y + (numEntries - 7) * entryHeight + entryHeight / 2 + 5);
     text(2 ** Lnum - 3, x - 25, y + (numEntries - 6) * entryHeight + entryHeight / 2 + 5);
@@ -580,6 +546,7 @@ function drawPageDirectory(x, y, Lnum, Lindex, PPN, color, key, pdnumber) {
     text("0", x - 25, y + (numEntries - 1) * entryHeight + entryHeight / 2 + 5);
   }
 
+  // Relocation of the Arrows
   if(pdnumber === 'PD1'){
     ArrowsPositions.pageDirectory1L2.y = y + highlightIndex * entryHeight + entryHeight / 2;
     ArrowsPositions.pageDirectory1L2Index.y = y + highlightIndex * entryHeight + entryHeight / 2 + 25;
@@ -591,13 +558,6 @@ function drawPageDirectory(x, y, Lnum, Lindex, PPN, color, key, pdnumber) {
     ArrowsPositions.pageDirectory1L0Index.y = y + highlightIndex * entryHeight + entryHeight / 2 + 25;
   }
 
-  // Display PPN in hexadecimal
-  // if (editableElements[`PPN${Lnum}`]) {
-  //   fill(0);
-  //   text(`PPN: 0x${editableElements[`PPN${Lnum}`]}`, x + 10, y + highlightIndex * entryHeight + entryHeight / 2 + 5);
-  // }
-
-  // Názov Page Directory
   textSize(14);
   text("Page Directory", x + 25, y + 300 + 20);
   text("Address: " + PPN, x, y - 10);
@@ -605,14 +565,13 @@ function drawPageDirectory(x, y, Lnum, Lindex, PPN, color, key, pdnumber) {
 
 
 function drawPhysicalAddress(x, y) {
-  fill(250, 128, 114);      // Jemne červená pre fyzickú adresu
+  fill(250, 128, 114);                          // Red colour for Physical Address
   stroke(0);
-  rect(x, y, 100, 40);      // PPN
-  rect(x + 100, y, 70, 40); // Offset
+  rect(x, y, 100, 40);                          // PPN
+  rect(x + 100, y, 70, 40);                     // Offset
 
   fill(0);
   textSize(14);
-  // text('PPN', x + 35, y + 25);
   text('Offset', x + 115, y + 25);
 
   // Display PPN3 value
@@ -624,9 +583,9 @@ function drawPhysicalAddress(x, y) {
 }
 
 function drawVirtualMemorySpace(x, y) {
-  fill(255, 255, 255);      // Jemne zelená pre virtuálnu pamäťovú sekciu
+  fill(255, 255, 255);      
   stroke(0);
-  rect(x, y, 250, 600);     // Cela virtuálna pamäťová sekcia
+  rect(x, y, 250, 600);    
 
   fill(0);
   textSize(14);
@@ -639,13 +598,12 @@ function drawVirtualMemorySpace(x, y) {
 }
 
 function drawSATP(x, y) {
-  fill(173, 216, 230); // Jemne modrá pre SATP
+  fill(173, 216, 230);                          // Light blue SATP
   stroke(0);
-  rect(x, y, 100, 40); // SATP rectangle
+  rect(x, y, 100, 40);                          // SATP rectangle
 
   fill(0);
   textSize(14);
-  // text('SATP', x + 30, y + 25);
 
   // Display SATP value
   text(editableElements.SATP, x + 10, y + 25);
@@ -681,11 +639,11 @@ function mousePressed() {
       // Create an input box at the clicked position
       let inputBox = createInput(currentValue);
       inputBox.position(element.x + 17, element.y +13);
-      inputBox.size(element.w - 5, element.h - 5); // Set the size to match the clicked element
+      inputBox.size(element.w - 5, element.h - 5);                  // Set the size to match the clicked element
       inputBox.elt.focus();
-      inputBox.elt.select(); // Automatically select the content
+      inputBox.elt.select();                                        // Automatically select the content
 
-      // Add an event listener to handle the Enter key press
+      // An event listener to handle the Enter key press
       inputBox.elt.addEventListener('keydown', (function(inputBox, element) {
         return function(event) {
           if (event.key === 'Enter') {
@@ -725,7 +683,7 @@ function mousePressed() {
         };
       })(inputBox, element));
 
-      // Add an event listener to handle clicks outside the input box
+      // An event listener to handle clicks outside the input box
       document.addEventListener('mousedown', function handleClickOutside(event) {
         if (!inputBox.elt.contains(event.target)) {
           inputBox.remove();
@@ -738,14 +696,6 @@ function mousePressed() {
       break;
     }
   }
-}
-
-function mouseMoved() {
-  redraw();
-}
-
-function mouseMoved() {
-  redraw();
 }
 
 function mouseMoved() {
