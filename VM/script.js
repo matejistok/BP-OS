@@ -232,7 +232,7 @@ function draw() {
 
       if (['L2Index'].includes(element.key)){
         if (editableElements.L2Index === ''){
-          
+          editableElements.PPN1 = '1A2B';
         }else{
           drawPageDirectory(width * 0.07, height * 0.285, parseInt(editableElements.L2), parseInt(editableElements.L2Index), editableElements.SATP, (255, 255, 0, 150), 'PPN1', 'PD1');
         }
@@ -240,7 +240,7 @@ function draw() {
 
       if (['L1Index'].includes(element.key)){
         if (editableElements.L1Index === ''){
-          
+          editableElements.PPN2 = '3C4D';
         }else{
           drawPageDirectory(width * 0.27, height * 0.285, parseInt(editableElements.L1), parseInt(editableElements.L1Index), editableElements.PPN1, (255, 255, 0, 150), 'PPN2', 'PD2');
         }
@@ -248,7 +248,7 @@ function draw() {
 
       if (['L0Index'].includes(element.key)){
         if (editableElements.L0Index === ''){
-          
+          editableElements.PPN2 = '5E6F';
         }else{
           drawPageDirectory(width * 0.47, height * 0.285, parseInt(editableElements.L0), parseInt(editableElements.L0Index), editableElements.PPN2, (255, 255, 0, 150), 'PPN3', 'PD3');
         }
@@ -651,9 +651,8 @@ function mousePressed() {
       inputBox.position(element.x + width * 0.011, element.y + height * 0.018);
       inputBox.size(element.w - 5, element.h - 5);                  // Set the size to match the clicked element
       //inputBox.elt.focus();
-      inputBox.elt.select();                                        // Automatically select the content
+      //inputBox.elt.select();                                        // Automatically select the content
 
-      // Add a small delay before focusing the input box
       setTimeout(() => {
         inputBox.elt.focus();
         inputBox.elt.select(); // Automatically select the content
