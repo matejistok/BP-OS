@@ -431,19 +431,22 @@ function highlightAddress(address) {
   if (address === editableElements.SATP && editableElements.L2 !== '0') {
     x = width * 0.07;
     y = height * 0.285;
+    rect(x, y - 25, 110, 20);
   } else if ((address === editableElements.PPN1 || address === editableElements.SATP)  && editableElements.L1 !== '0') {
     x = width * 0.27;
     y = height * 0.285;
+    rect(x, y - 25, 110, 20);
   } else if ((address === editableElements.PPN2 || address === editableElements.SATP) && editableElements.L0 !== '0') {
     x = width * 0.47;
     y = height * 0.285;
+    rect(x, y - 25, 110, 20);
   } else if (address === editableElements.PPN3) {
     x = width * 0.635;
     y = height * 0.1;
+    rect(x, y - height * 0.029, 100, 39);
   }
 
   // Highlight rectangle behind address
-  rect(x, y - 20, 100, 20);
   fill(0);
 }
 
