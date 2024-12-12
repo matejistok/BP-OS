@@ -650,8 +650,14 @@ function mousePressed() {
       let inputBox = createInput(currentValue);
       inputBox.position(element.x + width * 0.011, element.y + height * 0.018);
       inputBox.size(element.w - 5, element.h - 5);                  // Set the size to match the clicked element
-      inputBox.elt.focus();
+      //inputBox.elt.focus();
       inputBox.elt.select();                                        // Automatically select the content
+
+      // Add a small delay before focusing the input box
+      setTimeout(() => {
+        inputBox.elt.focus();
+        inputBox.elt.select(); // Automatically select the content
+      }, 10);
 
       // An event listener to handle the Enter key press
       inputBox.elt.addEventListener('keydown', (function(inputBox, element) {
