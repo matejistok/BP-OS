@@ -105,14 +105,20 @@ function draw() {
   if (editableElements.L2 === '0') {
     editableElements.PPN1 = '';
     editableElements.L2Index = '';
+  } else if (editableElements.L2 !== '0' && editableElements.L2Index === '') {
+    editableElements.PPN1 = '1A2B';
   }
   if (editableElements.L1 === '0') {
     editableElements.PPN2 = '';
     editableElements.L1Index = '';
+  } else if (editableElements.L1 !== '0' && editableElements.L1Index === '') {
+    editableElements.PPN2 = '3C4D';
   }
   if (editableElements.L0 === '0') {
     editableElements.PPN3 = '';
     editableElements.L0Index = '';
+  } else if (editableElements.L0 !== '0' && editableElements.L0Index === '') {
+    editableElements.PPN3 = '5E6F';
   }
 
   // Update Memory value based on L2, L1, and L0
@@ -232,7 +238,7 @@ function draw() {
 
       if (['L2Index'].includes(element.key)){
         if (editableElements.L2Index === ''){
-          editableElements.PPN1 = '1A2B';
+          
         }else{
           drawPageDirectory(width * 0.07, height * 0.285, parseInt(editableElements.L2), parseInt(editableElements.L2Index), editableElements.SATP, (255, 255, 0, 150), 'PPN1', 'PD1');
         }
@@ -240,7 +246,7 @@ function draw() {
 
       if (['L1Index'].includes(element.key)){
         if (editableElements.L1Index === ''){
-          editableElements.PPN2 = '3C4D';
+         
         }else{
           drawPageDirectory(width * 0.27, height * 0.285, parseInt(editableElements.L1), parseInt(editableElements.L1Index), editableElements.PPN1, (255, 255, 0, 150), 'PPN2', 'PD2');
         }
@@ -248,7 +254,7 @@ function draw() {
 
       if (['L0Index'].includes(element.key)){
         if (editableElements.L0Index === ''){
-          editableElements.PPN2 = '5E6F';
+         
         }else{
           drawPageDirectory(width * 0.47, height * 0.285, parseInt(editableElements.L0), parseInt(editableElements.L0Index), editableElements.PPN2, (255, 255, 0, 150), 'PPN3', 'PD3');
         }
