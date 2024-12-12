@@ -29,7 +29,7 @@ let ArrowsPositions = {
 
 //First inicialization of canvas and elements
 function setup() {
-  createCanvas(1500, 700);
+  createCanvas(windowWidth * 0.975, windowHeight * 0.96);
   background(255);
   textSize(14);
 
@@ -71,36 +71,36 @@ function setup() {
   );
 
   // Drawing of Virtual Address
-  hoverElements.push({ label: 'L2', x: 103, y: 25, w: 45, h: 25, highlight: [1, 2, 3], key: 'L2' });
-  hoverElements.push({ label: 'L1', x: 153, y: 25, w: 45, h: 25, highlight: [2, 3], key: 'L1' });
-  hoverElements.push({ label: 'L0', x: 203, y: 25, w: 45, h: 25, highlight: [3], key: 'L0' });
-  hoverElements.push({ label: 'L2Index', x: 100, y: 50, w: 50, h: 40, highlight: [1, 2, 3], key: 'L2Index' });
-  hoverElements.push({ label: 'L1Index', x: 150, y: 50, w: 50, h: 40, highlight: [2, 3], key: 'L1Index' });
-  hoverElements.push({ label: 'L0Index', x: 200, y: 50, w: 50, h: 40, highlight: [3], key: 'L0Index' });
-  drawVirtualAddress(50, 50);
+  //hoverElements.push({ label: 'L2', x: width * 0.065, y: height, w: width * 0.04, h: height * 0.05, highlight: [1, 2, 3], key: 'L2' });
+  //hoverElements.push({ label: 'L1', x: width * 0.15, y: height * 0.03, w: width * 0.4, h: height * 0.05, highlight: [2, 3], key: 'L1' });
+  //hoverElements.push({ label: 'L0', x: width * 0.2, y: height * 0.03, w: width * 0.04, h: height * 0.05, highlight: [3], key: 'L0' });
+  //hoverElements.push({ label: 'L2Index', x: width * 0.065, y: height * 0.08, w: width * 0.04, h: height * 0.05, highlight: [1, 2, 3], key: 'L2Index' });
+  //hoverElements.push({ label: 'L1Index', x: width * 0.15, y: height * 0.26, w: width * 0.04, h: height * 0.05, highlight: [2, 3], key: 'L1Index' });
+  //hoverElements.push({ label: 'L0Index', x: width * 0.2, y: height * 0.26, w: width * 0.04, h: height * 0.05, highlight: [3], key: 'L0Index' });
+  drawVirtualAddress(width * 0.025, height * 0.008);
 
   // Page Directory 1
-  drawPageDirectory(100, 200, parseInt(editableElements.L2), parseInt(editableElements.L2Index), editableElements.SATP, 220, 'PPN1', 'PD1');
+  drawPageDirectory(width * 0.07, height * 0.285, parseInt(editableElements.L2), parseInt(editableElements.L2Index), editableElements.SATP, 220, 'PPN1', 'PD1');
 
   // Page Directory 2
-  drawPageDirectory(400, 300, parseInt(editableElements.L1), parseInt(editableElements.L1Index), editableElements.PPN1, 220), 'PPN2', 'PD2';
+  drawPageDirectory(width * 0.27, height * 0.285, parseInt(editableElements.L1), parseInt(editableElements.L1Index), editableElements.PPN1, 220, 'PPN2', 'PD2');
 
   // Page Directory 3
-  drawPageDirectory(700, 400, parseInt(editableElements.L0), parseInt(editableElements.L0Index), editableElements.PPN2, 220, 'PPN3', 'PD3');
+  drawPageDirectory(width * 0.47, height * 0.285, parseInt(editableElements.L0), parseInt(editableElements.L0Index), editableElements.PPN2, 220, 'PPN3', 'PD3');
 
-  drawPhysicalAddress(950, 50);
+  drawPhysicalAddress(width * 0.635, height * 0.07);
 
-  drawVirtualMemorySpace(1200, 50); 
+  drawVirtualMemorySpace(width * 0.8, height * 0.07); 
 
-  hoverElements.push({ label: 'SATP', x: 50, y: 600, w: 100, h: 40, key: 'SATP' });
-  drawSATP(50, 600);
+  //hoverElements.push({ label: 'SATP', x: 50, y: 600, w: 100, h: 40, key: 'SATP' });
+  drawSATP(width * 0.033, height * 0.857);
 }
 
 function draw() {
   clear();
   background(255);
-  drawVirtualAddress(50, 50);
-  drawSATP(50, 600);
+  drawVirtualAddress(width * 0.025, height * 0.08);
+  drawSATP(width * 0.033, height * 0.857);
 
   if (editableElements.L2 === '0') {
     editableElements.PPN1 = '';
@@ -140,7 +140,7 @@ function draw() {
 
     line(100 + 95, 200, 100 + 95, 200 + 300);
   } else {
-    drawPageDirectory(100, 200, parseInt(editableElements.L2), parseInt(editableElements.L2Index), editableElements.SATP, 220, 'PPN1', 'PD1');
+    drawPageDirectory(width * 0.07, height * 0.285, parseInt(editableElements.L2), parseInt(editableElements.L2Index), editableElements.SATP, 220, 'PPN1', 'PD1');
   }
 
   // Disable Page Directory 2  
@@ -158,10 +158,10 @@ function draw() {
     line(400 + 95, 200, 400 + 95, 200 + 300);
   } else {
     if (editableElements.L2 === '0'){
-      drawPageDirectory(400, 200, parseInt(editableElements.L1), parseInt(editableElements.L1Index), editableElements.SATP, 220, 'PPN2', 'PD2');
+      drawPageDirectory(width * 0.27, height * 0.285, parseInt(editableElements.L1), parseInt(editableElements.L1Index), editableElements.SATP, 220, 'PPN2', 'PD2');
     }
     else {
-      drawPageDirectory(400, 200, parseInt(editableElements.L1), parseInt(editableElements.L1Index), editableElements.PPN1, 220, 'PPN2', 'PD2');
+      drawPageDirectory(width * 0.27, height * 0.285, parseInt(editableElements.L1), parseInt(editableElements.L1Index), editableElements.PPN1, 220, 'PPN2', 'PD2');
     }
   }
 
@@ -180,14 +180,14 @@ function draw() {
     line(700 + 95, 200, 700 + 95, 200 + 300);
   } else {
     if (editableElements.L1 === '0'){
-      drawPageDirectory(700, 200, parseInt(editableElements.L0), parseInt(editableElements.L0Index), editableElements.SATP, 220, 'PPN3', 'PD3');
+      drawPageDirectory(width * 0.47, height * 0.285, parseInt(editableElements.L0), parseInt(editableElements.L0Index), editableElements.SATP, 220, 'PPN3', 'PD3');
     }
     else {
-      drawPageDirectory(700, 200, parseInt(editableElements.L0), parseInt(editableElements.L0Index), editableElements.PPN2, 220, 'PPN3', 'PD3');
+      drawPageDirectory(width * 0.47, height * 0.285, parseInt(editableElements.L0), parseInt(editableElements.L0Index), editableElements.PPN2, 220, 'PPN3', 'PD3');
     }
   }
-  drawPhysicalAddress(950, 50);
-  drawVirtualMemorySpace(1200, 50);
+  drawPhysicalAddress(width * 0.635, height * 0.07);
+  drawVirtualMemorySpace(width * 0.8, height * 0.07);
 
   // Adjustable height calculated by depending on the value of L2, L1, and L0
   let highlightHeight;
@@ -219,7 +219,7 @@ function draw() {
       if (['L2', 'L1', 'L0'].includes(element.key)) {
         fill(255, 255, 0, 150); // Highlight colour
         noStroke();
-        rect(1200, 50, 250, highlightHeight);
+        rect(width * 0.8, height * 0.0715, 250, highlightHeight);
         if(editableElements[element.key] === '0') {
         } else {
           highlightRowLabels(element.key);
@@ -234,7 +234,7 @@ function draw() {
         if (editableElements.L2Index === ''){
           
         }else{
-          drawPageDirectory(100, 200, parseInt(editableElements.L2), parseInt(editableElements.L2Index), editableElements.SATP, (255, 255, 0, 150), 'PPN1', 'PD1');
+          drawPageDirectory(width * 0.07, height * 0.285, parseInt(editableElements.L2), parseInt(editableElements.L2Index), editableElements.SATP, (255, 255, 0, 150), 'PPN1', 'PD1');
         }
       }
 
@@ -242,7 +242,7 @@ function draw() {
         if (editableElements.L1Index === ''){
           
         }else{
-          drawPageDirectory(400, 200, parseInt(editableElements.L1), parseInt(editableElements.L1Index), editableElements.PPN1, (255, 255, 0, 150), 'PPN2', 'PD2');
+          drawPageDirectory(width * 0.27, height * 0.285, parseInt(editableElements.L1), parseInt(editableElements.L1Index), editableElements.PPN1, (255, 255, 0, 150), 'PPN2', 'PD2');
         }
       }
 
@@ -250,7 +250,7 @@ function draw() {
         if (editableElements.L0Index === ''){
           
         }else{
-          drawPageDirectory(700, 200, parseInt(editableElements.L0), parseInt(editableElements.L0Index), editableElements.PPN2, (255, 255, 0, 150), 'PPN3', 'PD3');
+          drawPageDirectory(width * 0.47, height * 0.285, parseInt(editableElements.L0), parseInt(editableElements.L0Index), editableElements.PPN2, (255, 255, 0, 150), 'PPN3', 'PD3');
         }
       }
 
@@ -274,35 +274,35 @@ function drawArrows() {
 
   if (editableElements.L2 !== '0') {
     // Arrow from L2Index to PPN od Page Directory 1
-    drawMultiCornerArrow([[125, 115], [125, 120], [50, 120], [50, ArrowsPositions.pageDirectory1L2.y], [70, ArrowsPositions.pageDirectory1L2.y]], [0, 0, 255]);
+    drawMultiCornerArrow([[width * 0.085, height * 0.16], [width * 0.085, height * 0.175], [width * 0.035, height * 0.175], [width * 0.035, ArrowsPositions.pageDirectory1L2.y], [width * 0.05, ArrowsPositions.pageDirectory1L2.y]], [0, 0, 255]);
     // Arrow from PD1 PPN to Page Directory 2 Address
-    drawMultiCornerArrow([[150, ArrowsPositions.pageDirectory1L2Index.y - 12], [150, ArrowsPositions.pageDirectory1L2Index.y], [300, ArrowsPositions.pageDirectory1L2Index.y], [300, 185], [390, 185]], [255, 0, 0]);
+    drawMultiCornerArrow([[width * 0.1, ArrowsPositions.pageDirectory1L2Index.y - 12], [width * 0.1, ArrowsPositions.pageDirectory1L2Index.y], [width * 0.2, ArrowsPositions.pageDirectory1L2Index.y], [width * 0.2, height * 0.265], [width * 0.265, height * 0.265]], [255, 0, 0]);
   } else {
     // Arrow from SATP to Page Directory 2
-    drawMultiCornerArrow([[60, 600], [60, 185], [390, 185], [], [390, 185]], [255, 0, 0]);
+    drawMultiCornerArrow([[width * 0.04, height * 0.855], [width * 0.04, height * 0.265], [width * 0.26, height * 0.265], [], [width * 0.26, height * 0.265]], [255, 0, 0]);
   }
 
   if (editableElements.L1 !== '0') {
     // Arrow from L1Index to PPN od Page Directory 2
-    drawMultiCornerArrow([[175, 115], [175, 120], [330, 120], [330, ArrowsPositions.pageDirectory1L1.y], [360, ArrowsPositions.pageDirectory1L1.y]], [0, 0, 255]);
+    drawMultiCornerArrow([[width * 0.125, height * 0.16], [width * 0.125, height * 0.175], [width * 0.22, height * 0.175], [width * 0.22, ArrowsPositions.pageDirectory1L1.y], [width * 0.25, ArrowsPositions.pageDirectory1L1.y]], [0, 0, 255]);
     // Arrow from PD2 PPN to Page Directory 3 Address
-    drawMultiCornerArrow([[450, ArrowsPositions.pageDirectory1L1Index.y - 12], [450, ArrowsPositions.pageDirectory1L1Index.y], [600, ArrowsPositions.pageDirectory1L1Index.y], [600, 185], [690, 185]], [255, 0, 0]);
+    drawMultiCornerArrow([[width * 0.3, ArrowsPositions.pageDirectory1L1Index.y - 12], [width * 0.3, ArrowsPositions.pageDirectory1L1Index.y], [width * 0.4, ArrowsPositions.pageDirectory1L1Index.y], [width * 0.4, height * 0.265], [width * 0.46, height * 0.265]], [255, 0, 0]);
   } else {
     // Arrow from SATP to Page Directory 3
-    drawMultiCornerArrow([[60, 600], [60, 185], [690, 185], [], [690, 185]], [255, 0, 0]);
+    drawMultiCornerArrow([[width * 0.04, height * 0.855], [width * 0.04, height * 0.265], [width * 0.46, height * 0.265], [], [width * 0.46, height * 0.265]], [255, 0, 0]);
   }
 
   // Arrow from L0Index to PPN od Page Directory 3
-  drawMultiCornerArrow([[], [240, 105], [630, 105], [630, ArrowsPositions.pageDirectory1L0.y], [660, ArrowsPositions.pageDirectory1L0.y]], [0, 0, 255]);
+  drawMultiCornerArrow([[], [width * 0.175, height * 0.15], [width * 0.42,  height * 0.15], [width * 0.42, ArrowsPositions.pageDirectory1L0.y], [width * 0.45, ArrowsPositions.pageDirectory1L0.y]], [0, 0, 255]);
 
   // Arrow from SATP to Page Directory 1
-  drawMultiCornerArrow([[60, 600], [60, 185], [90, 185], [], [90, 185]], [255, 0, 0]);
+  drawMultiCornerArrow([[width * 0.04, height * 0.855], [width * 0.04, height * 0.265], [width * 0.06, height * 0.265], [], [width * 0.06, height * 0.265]], [255, 0, 0]);
 
   // Arrow from PD3 PPN to Physical Address
-  drawMultiCornerArrow([[750, ArrowsPositions.pageDirectory1L0Index.y - 12], [750, ArrowsPositions.pageDirectory1L0Index.y], [1000, ArrowsPositions.pageDirectory1L0Index.y], [1000, 95]], [255, 0, 0]);
+  drawMultiCornerArrow([[width * 0.5, ArrowsPositions.pageDirectory1L0Index.y - 12], [width * 0.5, ArrowsPositions.pageDirectory1L0Index.y], [width * 0.67, ArrowsPositions.pageDirectory1L0Index.y], [width * 0.67, height * 0.135]], [255, 0, 0]);
 
   // Arrow for Offset in Physical Address
-  drawMultiCornerArrow([[320, 70], [900, 70],[900, 130], [1080, 130], [1080, 95]], [255, 0, 0]);
+  drawMultiCornerArrow([[width * 0.24, height * 0.1], [width * 0.6, height * 0.1],[width * 0.6, height * 0.175], [width * 0.72, height * 0.175], [width * 0.72, height * 0.135]], [255, 0, 0]);
 }
 
 // Function to draw arrows with multiple corners
@@ -386,18 +386,18 @@ function highlightLIndexRow(level, Lnum) {
 function highlightRowLabels(level) {
   let x, y, Lnum, num;
   if (level === 'L2') {
-    x = 100;
-    y = 200;
+    x = width * 0.07;
+    y = height * 0.285;
     Lnum = parseInt(editableElements.L2);
     num = 3;
   } else if (level === 'L1') {
-    x = 400;
-    y = 200;
+    x = width * 0.27;
+    y = height * 0.285;
     Lnum = parseInt(editableElements.L1);
     num = 2;
   } else if (level === 'L0') {
-    x = 700;
-    y = 200;
+    x = width * 0.47;
+    y = height * 0.285;
     Lnum = parseInt(editableElements.L0);
     num = 1;
   }
@@ -411,7 +411,7 @@ function highlightRowLabels(level) {
   // Highlight rectangle for labels
   for(let i = 0; i < num; i++) {
     rect(x - 30, y + entryHeight / 2 - 10, 30, entryHeight * numEntries);
-    x += 300;
+    x += width * 0.2;
   }
 }
 
@@ -423,17 +423,17 @@ function highlightAddress(address) {
   // Find the position of the address
   let x, y;
   if (address === editableElements.SATP && editableElements.L2 !== '0') {
-    x = 100;
-    y = 200;
+    x = width * 0.07;
+    y = height * 0.285;
   } else if ((address === editableElements.PPN1 || address === editableElements.SATP)  && editableElements.L1 !== '0') {
-    x = 400;
-    y = 200;
+    x = width * 0.27;
+    y = height * 0.285;
   } else if ((address === editableElements.PPN2 || address === editableElements.SATP) && editableElements.L0 !== '0') {
-    x = 700;
-    y = 200;
+    x = width * 0.47;
+    y = height * 0.285;
   } else if (address === editableElements.PPN3) {
-    x = 950;
-    y = 80;
+    x = width * 0.635;
+    y = height * 0.1;
   }
 
   // Highlight rectangle behind address
@@ -442,24 +442,32 @@ function highlightAddress(address) {
 }
 
 function drawVirtualAddress(x, y) {
+  hoverElements.length = 0; // Clear hover elements
   fill(173, 216, 230);      // Blue for virtual address
   stroke(0);
-  rect(x, y, 50, 40);       // EXT
-  rect(x + 50, y, 50, 40);  // L2
-  rect(x + 100, y, 50, 40); // L1
-  rect(x + 150, y, 50, 40); // L0
-  rect(x + 200, y, 70, 40); // Offset
+  rect(x, y, width * 0.04, height * 0.05);       // EXT
+  rect(x + width * 0.04, y, width * 0.04, height * 0.05);  // L2
+  rect(x + width * 0.08, y, width * 0.04, height * 0.05); // L1
+  rect(x + width * 0.12, y, width * 0.04, height * 0.05); // L0
+  rect(x + width * 0.16, y, width * 0.07, height * 0.05); // Offset
 
   fill(0);
   textSize(14);
-  text('EXT', x + 15, y + 25);
-  text('L2', x + 65, y + 60); 
-  text('L1', x + 115, y + 60);  
-  text('L0', x + 165, y + 60);  
-  text('Offset', x + 220, y + 25);
+  text('EXT', x + width * 0.01, y + height * 0.030);
+  text('L2', x + width * 0.055, y + height * 0.075); 
+  text('L1', x + width * 0.095, y + height * 0.075);  
+  text('L0', x + width * 0.135, y + height * 0.075);  
+  text('Offset', x + width * 0.18, y + height * 0.03);
 
   textSize(14);
-  text('Virtual address', x + 50, y - 30);
+  text('Virtual address', x + width * 0.07, y - height * 0.04);
+
+  hoverElements.push({ label: 'L2', x: width * 0.075, y: height * 0.045, w: width * 0.02, h: height * 0.03, highlight: [1, 2, 3], key: 'L2' });
+  hoverElements.push({ label: 'L1', x: width * 0.115, y: height * 0.045, w: width * 0.02, h: height * 0.03, highlight: [2, 3], key: 'L1' });
+  hoverElements.push({ label: 'L0', x: width * 0.155, y: height * 0.045, w: width * 0.02, h: height * 0.03, highlight: [3], key: 'L0' });
+  hoverElements.push({ label: 'L2Index', x: width * 0.065, y: height * 0.08, w: width * 0.04, h: height * 0.05, highlight: [1, 2, 3], key: 'L2Index' });
+  hoverElements.push({ label: 'L1Index', x: width * 0.105, y: height * 0.08, w: width * 0.04, h: height * 0.05, highlight: [2, 3], key: 'L1Index' });
+  hoverElements.push({ label: 'L0Index', x: width * 0.145, y: height * 0.08, w: width * 0.04, h: height * 0.05, highlight: [3], key: 'L0Index' });
 }
 
 function drawPageDirectory(x, y, Lnum, Lindex, PPN, color, key, pdnumber) {
@@ -512,7 +520,7 @@ function drawPageDirectory(x, y, Lnum, Lindex, PPN, color, key, pdnumber) {
   // Create or update the hover element
   let hoverElement = hoverElements.find(el => el.key === key);
   if (!hoverElement) {
-    hoverElement = { label: 'PPN', x: x + 5, y: y + highlightIndex * entryHeight + entryHeight / 2 + 15, w: 85, h: 30, key: key };
+    hoverElement = { label: 'PPN', x: x + 5, y: y + highlightIndex * entryHeight + entryHeight / 2 - 15, w: 85, h: 30, key: key };
     hoverElements.push(hoverElement);
   } else {
     hoverElement.x = x + 5;
@@ -602,11 +610,13 @@ function drawSATP(x, y) {
   stroke(0);
   rect(x, y, 100, 40);                          // SATP rectangle
 
+  hoverElements.push({ label: 'SATP', x: x, y: y, w: 100, h: 40, key: 'SATP' });
+
   fill(0);
   textSize(14);
 
   // Display SATP value
-  text(editableElements.SATP, x + 10, y + 25);
+  // text(editableElements.SATP, x + 10, y + 25);
 }
 
 function mousePressed() {
@@ -638,7 +648,7 @@ function mousePressed() {
 
       // Create an input box at the clicked position
       let inputBox = createInput(currentValue);
-      inputBox.position(element.x + 17, element.y +13);
+      inputBox.position(element.x + width * 0.011, element.y + height * 0.018);
       inputBox.size(element.w - 5, element.h - 5);                  // Set the size to match the clicked element
       inputBox.elt.focus();
       inputBox.elt.select();                                        // Automatically select the content
@@ -696,6 +706,10 @@ function mousePressed() {
       break;
     }
   }
+}
+
+function windowResized() {
+  resizeCanvas(windowWidth * 0.975, windowHeight * 0.96);
 }
 
 function mouseMoved() {
