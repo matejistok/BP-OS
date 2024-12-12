@@ -34,7 +34,7 @@ function setup() {
   textSize(14);
 
   // Button to toggle arrows
-  let toggleArrowsButton = createButton('Sipky');
+  let toggleArrowsButton = createButton('Arrows');
   toggleArrowsButton.position(width - 120, 20);
   toggleArrowsButton.mousePressed(() => {
     showArrows = !showArrows;                                   // Toggle arrows
@@ -42,8 +42,8 @@ function setup() {
   });
 
   // Button to toggle all modals
-  let toggleButton = createButton('Pomocka');
-  toggleButton.position(width - 70, 20);
+  let toggleButton = createButton('Help');
+  toggleButton.position(width - 60, 20);
   toggleButton.mousePressed(() => toggleAllModals());
 
   modals.modal1 = createModal(
@@ -51,7 +51,7 @@ function setup() {
     15,
     'Velkost',
     300,
-    15
+    15,
   );
 
   modals.modal2 = createModal(
@@ -336,9 +336,9 @@ function drawArrowhead(x1, y1, x2, y2, color) {
   push();
   translate(x2, y2);
   rotate(angle);
-  stroke(color[0], color[1], color[2]);
-  line(0, 0, -arrowSize, arrowSize / 2);
-  line(0, 0, -arrowSize, -arrowSize / 2);
+  fill(color[0], color[1], color[2]);
+  noStroke();
+  triangle(0, 0, -arrowSize, arrowSize / 2, -arrowSize, -arrowSize / 2);
   pop();
 }
 
@@ -347,9 +347,14 @@ function toggleAllModals() {
   for (let modalKey in modals) {
     if (showAllModals) {
       modals[modalKey].style('display', 'block'); // Show modal
+      modals[modalKey].style('opacity', '1');
+      modals[modalKey].style('transform', 'scale(1)');
     } else {
-      modals[modalKey].style('display', 'none'); // Hide modal
+      modals[modalKey].style('opacity', '0');
+      modals[modalKey].style('transform', 'scale(0.9)');
+      setTimeout(() => modals[modalKey].style('display', 'none'), 300); // Hide after transition
     }
+    
   }
 }
 
@@ -361,11 +366,17 @@ function createModal(x, y, content, width, height) {
   `);
   modal.position(x, y); // Position on the canvas
   modal.size(width, height); // Width and height of the modal
-  modal.style('display', 'none'); // Initially hidden
-  modal.style('padding', '10px');
-  modal.style('border', '2px solid #000');
-  modal.style('background-color', '#f0f0f0');
-  modal.style('border-radius', '8px');
+  modal.style('padding', '20px');
+  modal.style('border', '2px solid #333'); // Darker border for better contrast
+  modal.style('background-color', '#ffffff'); // White background for cleaner look
+  modal.style('border-radius', '12px'); // Slightly more rounded corners
+  modal.style('box-shadow', '0 4px 8px rgba(0, 0, 0, 0.2)'); // Add shadow for depth
+  modal.style('font-family', 'Arial, sans-serif'); // Cleaner font
+  modal.style('color', '#333'); // Dark text for readability
+  modal.style('line-height', '1.5'); // Improve text readability
+  modal.style('text-align', 'center'); // Center text
+  modal.style('transition', 'opacity 0.3s ease, transform 0.3s ease'); // Smooth transitions
+
   return modal;
 }
 

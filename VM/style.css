@@ -4,9 +4,25 @@ body {
     align-items: center;
     height: 100vh;
     margin: 0;
+    font-family: Arial, sans-serif;
   }
   
   /* canvas {
     border: 1px solid black;
   } */
   
+  button {
+    background-color: #45515f;
+    color: white;
+    border: none;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+button:hover {
+    background-color: #98aec5;
+}
+
