@@ -1,30 +1,27 @@
 // We have only one dataBlock in our array:
 let dataBlocks = [
-  {
-    id: "dataBlock1",
-    x: 550,
-    y: 100,
-    w: 300,
-    h: 150,
-    label: "data"
-  },
-  {
-    id: "dataBlock2",
-    x: 950,
-    y: 320,
-    w: 300,
-    h: 150,
-    label: "data"
-  }
+  { id: "dataBlock1", x: 1250, y: 150, w: 300, h: 150, label: "data" }
 ];
 
 let canvas;
 
 // This array will hold the “active” arrows we want to draw.
-let activeArrows = []; 
+let activeArrows = [];
+let indirectArrowsVisible = false;
+let indirectArrows = [];
 
 // Initially, the data block is hidden
 let showDataBlock = false; 
+
+let movingData = null;
+
+let animationInProgress = false;
+
+let fileImg;
+
+function preload() {
+  fileImg = loadImage("folder.png"); // Ensure you have a file image named 'file.png'
+}
 
 function setup() {
   // Create a canvas that spans the full page behind content
@@ -52,8 +49,7 @@ function setup() {
     console.log("addr1Row element found");
     row1.addEventListener("click", () => {
       console.log("addr1Row clicked");
-      showDataBlock = true; // Show the data block
-      activeArrows = [{ start: "addr1Row", end: "dataBlock1" }]; // Draw arrow
+      startDataMove("addr1Row", "dataBlock1");
     });
   }
 
@@ -61,17 +57,9 @@ function setup() {
     console.log("addr2Row element found");
     row2.addEventListener("click", () => {
       console.log("addr2Row clicked");
-      showDataBlock = true; // Show the data block
-      activeArrows = [{ start: "addr2Row", end: "dataBlock1" }]; // Draw arrow
-    });
-  }
-
-  if (row12) {
-    console.log("addr12Row element found");
-    row12.addEventListener("click", () => {
-      console.log("addr12Row clicked");
-      showDataBlock = true; // Show the data block
-      activeArrows = [{ start: "addr12Row", end: "dataBlock1" }]; // Draw arrow
+      // showDataBlock = true; // Show the data block
+      // activeArrows = [{ start: "addr2Row", end: "dataBlock1" }]; // Draw arrow
+      startDataMove("addr2Row", "dataBlock1");
     });
   }
 
@@ -79,8 +67,15 @@ function setup() {
     console.log("indirectRow element found");
     indirectRow.addEventListener("click", () => {
       console.log("indirectRow clicked");
-      showDataBlock = true; // Show the data block
-      activeArrows = [{ start: "indirectRow", end: "indBlockAddr1" }]; // Draw arrow
+      // showDataBlock = true; // Show the data block
+      // activeArrows = [{ start: "indirectRow", end: "indBlockAddr1" }]; // Draw arrow
+      if (indirectArrowsVisible) {
+        indirectArrows = [];
+        indirectArrowsVisible = false;
+      } else {
+        indirectArrows = [{ start: "indirectRow", end: "indBlockAddr1" }];
+        indirectArrowsVisible = true;
+      }
     });
   }
 
@@ -88,8 +83,9 @@ function setup() {
     console.log("indBlockAddr1 element found");
     indBlockAddr1.addEventListener("click", () => {
       console.log("indBlockAddr1 clicked");
-      showDataBlock = true; // Show the data block
-      activeArrows = [{ start: "indBlockAddr1", end: "dataBlock2" }]; // Draw arrow
+      // showDataBlock = true; // Show the data block
+      // activeArrows = [{ start: "indBlockAddr1", end: "dataBlock2" }]; // Draw arrow
+      startDataMove("indBlockAddr1", "dataBlock1");
     });
   }
 
@@ -106,8 +102,8 @@ function setup() {
     console.log("indBlockAddr256 element found");
     indBlockAddr256.addEventListener("click", () => {
       console.log("indBlockAddr256 clicked");
-      showDataBlock = true; // Show the data block
-      activeArrows = [{ start: "indBlockAddr256", end: "dataBlock2" }]; // Draw arrow
+      // showDataBlock = true; // Show the data block
+      // activeArrows = [{ start: "indBlockAddr256", end: "dataBlock2" }]; // Draw arrow
     });
   }
 
@@ -115,8 +111,8 @@ function setup() {
     console.log("dIndirectRow element found");
     dIndirectRow.addEventListener("click", () => {
       console.log("dIndirectRow clicked");
-      showDataBlock = true; // Show the data block
-      activeArrows = [{ start: "dIndirectRow", end: "DAddr1Row" }]; // Draw arrow
+      // showDataBlock = true; // Show the data block
+      // activeArrows = [{ start: "dIndirectRow", end: "DAddr1Row" }]; // Draw arrow
     });
   }
 
@@ -124,8 +120,8 @@ function setup() {
     console.log("DAddr1Row element found");
     DAddr1Row.addEventListener("click", () => {
       console.log("DAddr1Row clicked");
-      showDataBlock = true; // Show the data block
-      activeArrows = [{ start: "DAddr1Row", end: "indBlock2Addr1" }]; // Draw arrow
+      // showDataBlock = true; // Show the data block
+      // activeArrows = [{ start: "DAddr1Row", end: "indBlock2Addr1" }]; // Draw arrow
     });
   }
 
@@ -133,8 +129,8 @@ function setup() {
     console.log("indBlock2Addr1 element found");
     indBlock2Addr1.addEventListener("click", () => {
       console.log("indBlock2Addr1 clicked");
-      showDataBlock = true; // Show the data block
-      activeArrows = [{ start: "indBlock2Addr1", end: "dataBlock2" }]; // Draw arrow
+      // showDataBlock = true; // Show the data block
+      // activeArrows = [{ start: "indBlock2Addr1", end: "dataBlock2" }]; // Draw arrow
     });
   }
 
@@ -142,8 +138,8 @@ function setup() {
     console.log("indBlock2Addr2 element found");
     indBlock2Addr2.addEventListener("click", () => {
       console.log("indBlock2Addr2 clicked");
-      showDataBlock = true; // Show the data block
-      activeArrows = [{ start: "indBlock2Addr2", end: "dataBlock2" }]; // Draw arrow
+      // showDataBlock = true; // Show the data block
+      // activeArrows = [{ start: "indBlock2Addr2", end: "dataBlock2" }]; // Draw arrow
     });
   }
 
@@ -151,8 +147,8 @@ function setup() {
     console.log("indBlock2Addr256 element found");
     indBlock2Addr256.addEventListener("click", () => {
       console.log("indBlock2Addr256 clicked");
-      showDataBlock = true; // Show the data block
-      activeArrows = [{ start: "indBlock2Addr256", end: "dataBlock2" }]; // Draw arrow
+      // showDataBlock = true; // Show the data block
+      // activeArrows = [{ start: "indBlock2Addr256", end: "dataBlock2" }]; // Draw arrow
     });
   }
 }
@@ -162,6 +158,9 @@ function draw() {
   clear();
   stroke(0);
   strokeWeight(2);
+
+  // Draw the file image as the data source
+  image(fileImg, 1325, 600, 160, 160);
 
   // Draw the data block only if it is visible
   if (showDataBlock) {
@@ -174,6 +173,17 @@ function draw() {
       drawArrowFromRowToBlock(arrow.start, arrow.end);
     }
   }
+
+  // Draw indirect arrows
+  for (let arrow of indirectArrows) {
+    drawArrowFromRowToBlock(arrow.start, arrow.end);
+  }
+
+  // Draw moving data if animation is in progress
+  if (movingData) {
+    drawDataBlock({ x: movingData.x - 50, y: movingData.y - 50, w: 100, h: 100, label: "data" });
+    moveData();
+  }
 }
 
 // Draw the data block rectangle with text
@@ -184,6 +194,54 @@ function drawDataBlock(block) {
   textSize(30);
   textAlign(CENTER, CENTER);
   text(block.label, block.x + block.w / 2, block.y + block.h / 2);
+}
+
+// Start animation of moving data
+function startDataMove(startElemId, targetBlockId) {
+  if (animationInProgress) return;
+  animationInProgress = true;
+
+  // Hide the data block first
+  showDataBlock = false;
+  movingData = {
+      x: dataBlocks[0].x + dataBlocks[0].w / 2,
+      y: dataBlocks[0].y + dataBlocks[0].h / 2,
+      targetX: 1400,
+      targetY: 600,
+      phase: "backToFile", // First phase: moving back to the file
+      source: startElemId
+  };
+}
+
+// Move data smoothly toward target
+function moveData() {
+  if (!movingData) return;
+
+  movingData.x += (movingData.targetX - movingData.x) * 0.1;
+  movingData.y += (movingData.targetY - movingData.y) * 0.1;
+
+  if (abs(movingData.x - movingData.targetX) < 1 && abs(movingData.y - movingData.targetY) < 1) {
+      if (movingData.phase === "backToFile") {
+          // Pause briefly before the next phase
+          setTimeout(() => {
+              movingData = {
+                  x: 1400,
+                  y: 650,
+                  targetX: dataBlocks[0].x + dataBlocks[0].w / 2,
+                  targetY: dataBlocks[0].y + dataBlocks[0].h / 2,
+                  phase: "toDataBlock",
+                  source: movingData.source
+              };
+          }, 100);
+      } else if (movingData.phase === "toDataBlock") {
+          // Animation complete, show data block and arrows
+          showDataBlock = true;
+          activeArrows = [];
+          activeArrows.push({ start: movingData.source, end: "dataBlock1" });
+          movingData = null;
+          animationInProgress = false;
+      }
+  }
 }
 
 /**
