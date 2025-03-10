@@ -150,6 +150,10 @@ function setup() {
         indirectArrows = [{ start: "DAddr1Row", end: "indBlock2Addr1", offsetStartX: 0, offsetStartY: 0, offsetEndX: -150, offsetEndY: 0 }];
         indirectArrowsVisible = true;
       }
+
+      document.getElementById("indBlock2Addr1").children[0].innerText = "267";
+      document.getElementById("indBlock2Addr2").children[0].innerText = "268";
+      document.getElementById("indBlock2Addr256").children[0].innerText = "522";
     });
   }
 
@@ -166,6 +170,10 @@ function setup() {
         indirectArrows = [{ start: "DAddr2Row", end: "indBlock2Addr1", offsetStartX: 0, offsetStartY: 0, offsetEndX: -150, offsetEndY: 0 }];
         indirectArrowsVisible = true;
       }
+
+      document.getElementById("indBlock2Addr1").children[0].innerText = "523";
+      document.getElementById("indBlock2Addr2").children[0].innerText = "524";
+      document.getElementById("indBlock2Addr256").children[0].innerText = "779";
     });
   }
 
@@ -182,6 +190,10 @@ function setup() {
         indirectArrows = [{ start: "DAddr256Row", end: "indBlock2Addr1", offsetStartX: 0, offsetStartY: 0, offsetEndX: -150, offsetEndY: 0 }];
         indirectArrowsVisible = true;
       }
+
+      document.getElementById("indBlock2Addr1").children[0].innerText = "65547";
+      document.getElementById("indBlock2Addr2").children[0].innerText = "65548";
+      document.getElementById("indBlock2Addr256").children[0].innerText = "65803";
     });
   }
 

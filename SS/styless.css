@@ -18,3 +18,22 @@
     left: 0;
     z-index: 0; /* behind the tables and blocks */
   }
+
+  .highlight {
+    background-color: yellow; /* Change this to your desired highlight color */
+  }
+
+  #addr1Row {
+    background-color: rgb(0, 0, 0); /* Ensure it has an initial background */
+  }
+  
+  #addr1Row:hover,
+  #addr2Row:hover,
+  #addr12Row:hover,
+  #indirectRow:hover,
+  #indBlockAddr1:hover,
+  #indBlockAddr2:hover,
+  #indBlockAddr256:hover {
+    background-color: yellow; /* Change background color on hover */
+    cursor: pointer; /* Change cursor to pointer on hover */
+  }

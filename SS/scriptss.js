@@ -23,6 +23,7 @@ function preload() {
   fileImg = loadImage("folder.png"); // Ensure you have a file image named 'file.png'
 }
 
+
 function setup() {
   // Create a canvas that spans the full page behind content
   canvas = createCanvas(windowWidth, document.body.scrollHeight);
@@ -30,6 +31,7 @@ function setup() {
 
   // Fix: Prevent canvas from capturing all mouse clicks
   canvas.style("pointer-events", "none");
+  console.log("Canvas pointer-events set to none");
 
   // Add click listeners for each row you want to connect
   const row1 = document.getElementById("addr1Row");

@@ -22,3 +22,21 @@
   .highlight {
     background-color: yellow; /* Change this to your desired highlight color */
   }
+
+  #addr1Row:hover,
+  #addr2Row:hover,
+  #addr12Row:hover,
+  #indirectRow:hover,
+  #indBlockAddr1:hover,
+  #indBlockAddr2:hover,
+  #indBlockAddr256:hover,
+  #dIndirectRow:hover,
+  #DAddr1Row:hover,
+  #DAddr2Row:hover,
+  #DAddr256Row:hover,
+  #indBlock2Addr1:hover,
+  #indBlock2Addr2:hover,
+  #indBlock2Addr256:hover {
+    background-color: yellow; /* Change background color on hover */
+    cursor: pointer; /* Change cursor to pointer on hover */
+  }
