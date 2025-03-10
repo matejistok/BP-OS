@@ -119,9 +119,6 @@ function draw() {
   stroke(0);
   strokeWeight(2);
 
-  // Draw the file image as the data source
-  image(fileImg, 1350, 600, 100, 100);
-
   // Draw the data block only if it is visible
   if (showDataBlock) {
     for (let block of dataBlocks) {
@@ -144,6 +141,9 @@ function draw() {
     drawDataBlock({ x: movingData.x - 50, y: movingData.y - 50, w: 100, h: 100, label: "data" });
     moveData();
   }
+
+  // Draw the file image as the data source
+  image(fileImg, 1340, 550, 160, 160);
 }
 
 // Draw the data block rectangle with text
@@ -167,7 +167,7 @@ function startDataMove(startElemId, targetBlockId) {
       x: dataBlocks[0].x + dataBlocks[0].w / 2,
       y: dataBlocks[0].y + dataBlocks[0].h / 2,
       targetX: 1400,
-      targetY: 600,
+      targetY: 670,
       phase: "backToFile", // First phase: moving back to the file
       source: startElemId
   };
@@ -186,7 +186,7 @@ function moveData() {
           setTimeout(() => {
               movingData = {
                   x: 1400,
-                  y: 650,
+                  y: 670,
                   targetX: dataBlocks[0].x + dataBlocks[0].w / 2,
                   targetY: dataBlocks[0].y + dataBlocks[0].h / 2,
                   phase: "toDataBlock",

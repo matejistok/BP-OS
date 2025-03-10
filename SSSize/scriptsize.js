@@ -26,7 +26,7 @@ $(document).ready(function () {
             $("#box-container").append(`
                 <div class="file-box btn btn-light d-flex justify-content-between align-items-center mt-2" data-id="${boxId}">
                     <span>Select type</span>
-                    <button class="btn btn-danger btn-sm remove-box">✖</button>
+                    <button class="btn btn-danger btn-sm remove-box">X</button>
                 </div>
             `);
             $("#error-msg2").hide(); // Hide error message

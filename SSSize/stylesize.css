@@ -12,3 +12,11 @@
     left: 0;
     z-index: 1000;
 }
+
+#formula, #maxFileSize {
+    font-size: 1.25rem; /* Increase font size */
+  }
+  
+  #formula h5, #maxFileSize h5 {
+    font-weight: bold;
+  }

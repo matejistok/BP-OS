@@ -51,7 +51,11 @@ function setup() {
     console.log("addr1Row element found");
     row1.addEventListener("click", () => {
       console.log("addr1Row clicked");
-      startDataMove("addr1Row", "dataBlock1");
+      // Check if the arrow already exists
+      const arrowExists = activeArrows.some(arrow => arrow.start === "addr1Row" && arrow.end === "dataBlock1");
+      if (!arrowExists) {
+        startDataMove("addr1Row", "dataBlock1");
+      }
     });
   }
 
@@ -61,7 +65,10 @@ function setup() {
       console.log("addr2Row clicked");
       // showDataBlock = true; // Show the data block
       // activeArrows = [{ start: "addr2Row", end: "dataBlock1" }]; // Draw arrow
-      startDataMove("addr2Row", "dataBlock1");
+      const arrowExists = activeArrows.some(arrow => arrow.start === "addr2Row" && arrow.end === "dataBlock1");
+      if (!arrowExists) {
+        startDataMove("addr2Row", "dataBlock1");
+      }
     });
   }
 
@@ -87,7 +94,10 @@ function setup() {
       console.log("indBlockAddr1 clicked");
       // showDataBlock = true; // Show the data block
       // activeArrows = [{ start: "indBlockAddr1", end: "dataBlock2" }]; // Draw arrow
-      startDataMove("indBlockAddr1", "dataBlock1");
+      const arrowExists = activeArrows.some(arrow => arrow.start === "indBlockAddr1" && arrow.end === "dataBlock1");
+      if (!arrowExists) {
+        startDataMove("indBlockAddr1", "dataBlock1");
+      }
     });
   }
 
@@ -212,9 +222,6 @@ function draw() {
   stroke(0);
   strokeWeight(2);
 
-  // Draw the file image as the data source
-  image(fileImg, 1325, 600, 160, 160);
-
   // Draw the data block only if it is visible
   if (showDataBlock) {
     for (let block of dataBlocks) {
@@ -237,6 +244,9 @@ function draw() {
     drawDataBlock({ x: movingData.x - 50, y: movingData.y - 50, w: 100, h: 100, label: "data" });
     moveData();
   }
+
+  // Draw the file image as the data source
+  image(fileImg, 1325, 600, 160, 160);
 }
 
 // Draw the data block rectangle with text
@@ -260,7 +270,7 @@ function startDataMove(startElemId, targetBlockId) {
       x: dataBlocks[0].x + dataBlocks[0].w / 2,
       y: dataBlocks[0].y + dataBlocks[0].h / 2,
       targetX: 1400,
-      targetY: 600,
+      targetY: 670,
       phase: "backToFile", // First phase: moving back to the file
       source: startElemId
   };
@@ -279,7 +289,7 @@ function moveData() {
           setTimeout(() => {
               movingData = {
                   x: 1400,
-                  y: 650,
+                  y: 670,
                   targetX: dataBlocks[0].x + dataBlocks[0].w / 2,
                   targetY: dataBlocks[0].y + dataBlocks[0].h / 2,
                   phase: "toDataBlock",
@@ -340,6 +350,12 @@ function lineWithArrowhead(x1, y1, x2, y2) {
   line(0, 0, -arrowSize, arrowSize / 2);
   pop();
 }
+
+document.querySelectorAll("tr").forEach(row => {
+  row.addEventListener("mouseover", () => {
+      console.log("Mouse is over:", row.id);
+  });
+});
 
 // Keep canvas size in sync with window size
 function windowResized() {

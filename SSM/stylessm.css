@@ -18,3 +18,7 @@
     left: 0;
     z-index: 0; /* behind the tables and blocks */
   }
+
+  .highlight {
+    background-color: yellow; /* Change this to your desired highlight color */
+  }
