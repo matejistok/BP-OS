@@ -1,0 +1,14 @@
+.file-box {
+    padding: 10px;
+    width: 200px;
+    border: 1px solid #ccc;
+    cursor: pointer;
+    position: relative;
+}
+
+.dropdown-menu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    z-index: 1000;
+}
