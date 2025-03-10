@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>File System</title>
+
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="stylessm.css">
+
+  <!-- p5.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
+
+  <!-- Your JavaScript file -->
+  <script src="scriptssm.js" defer></script>
+</head>
+<body>
+
+  <nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="#">File System</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarContent">
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                <!-- File System Dropdown -->
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="fileSystemDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        File System
+                    </a>
+                    <ul class="dropdown-menu" aria-labelledby="fileSystemDropdown">
+                        <li><a class="dropdown-item" href="../SS/FileSystem.html">File System Indirect</a></li>
+                        <li><a class="dropdown-item" href="../SSM/FileSystemMulti.html">File System Dindirect</a></li>
+                    </ul>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="../VM/index.html">Virtual Memory</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+  </nav>
+
+
+   <!-- Main container for the diagram -->
+   <div class="container diagram-section">
+    <!-- p5.js will draw arrows on this canvas -->
+    <canvas id="arrowCanvas"></canvas>
+
+    <div class="row w-100">
+      <!-- Left column: dinode table -->
+      <div class="col-md-4">
+        <h5>dinode</h5>
+        <table class="table table-bordered table-sm" style="max-width: 300px">
+          <tbody>
+            <tr id="typeRow" class="text-center"><td>type</td><td></td></tr>
+            <tr id="majorRow" class="text-center"><td>major</td><td></td></tr>
+            <tr id="minorRow" class="text-center"><td>minor</td><td></td></tr>
+            <tr id="nlinkRow" class="text-center"><td>nlink</td><td></td></tr>
+            <tr id="sizeRow" class="text-center"><td>size</td><td></td></tr>
+            <tr id="addr1Row" class="text-center">
+              <td>address 1</td>
+              <td class="col-1">0</td>
+            </tr>
+            <tr id="addr2Row" class="text-center">
+              <td>address 2</td>
+              <td class="col-1">1</td>
+            </tr>
+            <tr class="text-center"><td>...</td><td>...</td></tr>
+            <tr id="indirectRow" class="text-center">
+              <td>address 12 indirect</td>
+              <td class="col-1">11</td>
+            </tr>
+            <tr id="dIndirectRow" class="text-center">
+              <td>address 267 dindirect</td>
+              <td class="col-1">12</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <!-- New table under the first one -->
+        <h5>Double indirect block</h5>
+        <table class="table table-bordered table-sm" style="max-width: 300px">
+          <tbody>
+            <tr id="DAddr1Row" class="text-center">
+              <td class="col-1">267</td>
+              <td class="col-2">0</td>
+              <td class="col-3">0</td>
+              <td class="col-4"></td>
+            </tr>
+            <tr id="DAddr2Row" class="text-center">
+              <td class="col-1"></td>
+              <td class="col-2">1</td>
+              <td class="col-3">256</td>
+              <td class="col-4"></td>
+            </tr>
+            <tr class="text-center"><td colspan="4">...</td></tr>
+            <tr id="DAddr256Row" class="text-center">
+              <td class="col-1"></td>
+              <td class="col-2">255</td>
+              <td class="col-3"></td>
+              <td class="col-4"></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Middle column: indirect block table -->
+      <div class="col-md-4" style="margin-top:200px;">
+        <h5>indirect block</h5>
+        <table class="table table-bordered table-sm" style="max-width: 300px">
+          <tbody id="indirectTableBody">
+            <tr id="indBlockAddr1" class="text-center">
+              <td class="col-1">12</td>
+              <td class="col-2">0</td>
+              <td></td>
+            </tr>
+            <tr id="indBlockAddr2" class="text-center">
+              <td class="col-1">13</td>
+              <td class="col-2">1</td>
+              <td></td>
+            </tr>
+            <tr class="text-center"><td colspan="3">...</td></tr>
+            <tr id="indBlockAddr256" class="text-center">
+              <td class="col-1">266</td>
+              <td class="col-2">255</td>
+              <td></td>
+            </tr>
+          </tbody>
+        </table>
+
+        <!-- New table under the first one -->
+        <h5>indirect block</h5>
+        <table class="table table-bordered table-sm" style="max-width: 300px">
+          <tbody id="indirectTableBody">
+            <tr id="indBlock2Addr1" class="text-center">
+              <td class="col-1">267</td>
+              <td class="col-2">0</td>
+              <td class="col-3">0</td>
+              <td></td>
+            </tr>
+            <tr id="indBlock2Addr2" class="text-center">
+              <td class="col-1"></td>
+              <td class="col-2">1</td>
+              <td class="col-2">1</td>
+              <td></td>
+            </tr>
+            <tr class="text-center"><td colspan="4">...</td></tr>
+            <tr id="indBlock2Addr256" class="text-center">
+              <td class="col-1">522</td>
+              <td class="col-2">255</td>
+              <td class="col-2">255</td>
+              <td></td>
+            </tr>
+          </tbody>
+      </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

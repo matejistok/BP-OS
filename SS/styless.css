@@ -1,0 +1,20 @@
+.diagram-section {
+    position: relative;
+    margin-top: 40px;
+  }
+  /* Example “block” styling */
+  .data-block {
+    border: 1px solid #dee2e6; /* Bootstrap table border color */
+    padding: 8px;
+    margin-bottom: 8px;
+    border-radius: 0.25rem; /* Bootstrap table border radius */
+    background-color: #ffffff;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075); /* Bootstrap table box shadow */
+  }
+  /* So that p5 canvas can sit behind everything */
+  #arrowCanvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 0; /* behind the tables and blocks */
+  }
