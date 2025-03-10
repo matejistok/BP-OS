@@ -1,6 +1,6 @@
 // We have only one dataBlock in our array:
 let dataBlocks = [
-  { id: "dataBlock1", x: 1250, y: 150, w: 300, h: 150, label: "data" }
+  { id: "dataBlock1", x: 1250, y: 100, w: 300, h: 150, label: "data" }
 ];
 
 let canvas;
@@ -41,6 +41,8 @@ function setup() {
   const indBlockAddr256 = document.getElementById("indBlockAddr256");
   const dIndirectRow = document.getElementById("dIndirectRow");
   const DAddr1Row = document.getElementById("DAddr1Row");
+  const DAddr2Row = document.getElementById("DAddr2Row");
+  const DAddr256Row = document.getElementById("DAddr256Row");
   const indBlock2Addr1 = document.getElementById("indBlock2Addr1");
   const indBlock2Addr2 = document.getElementById("indBlock2Addr2");
   const indBlock2Addr256 = document.getElementById("indBlock2Addr256");
@@ -73,7 +75,7 @@ function setup() {
         indirectArrows = [];
         indirectArrowsVisible = false;
       } else {
-        indirectArrows = [{ start: "indirectRow", end: "indBlockAddr1" }];
+        indirectArrows = [{ start: "indirectRow", end: "indBlockAddr1", offsetStartX: 0, offsetStartY: 0, offsetEndX: -150, offsetEndY: 0 }];
         indirectArrowsVisible = true;
       }
     });
@@ -93,8 +95,9 @@ function setup() {
     console.log("indBlockAddr2 element found");
     indBlockAddr2.addEventListener("click", () => {
       console.log("indBlockAddr2 clicked");
-      showDataBlock = true; // Show the data block
-      activeArrows = [{ start: "indBlockAddr2", end: "dataBlock2" }]; // Draw arrow
+      // showDataBlock = true; // Show the data block
+      // activeArrows = [{ start: "indBlockAddr2", end: "dataBlock2" }]; // Draw arrow
+      startDataMove("indBlockAddr2", "dataBlock1");
     });
   }
 
@@ -104,6 +107,7 @@ function setup() {
       console.log("indBlockAddr256 clicked");
       // showDataBlock = true; // Show the data block
       // activeArrows = [{ start: "indBlockAddr256", end: "dataBlock2" }]; // Draw arrow
+      startDataMove("indBlockAddr256", "dataBlock1");
     });
   }
 
@@ -113,6 +117,13 @@ function setup() {
       console.log("dIndirectRow clicked");
       // showDataBlock = true; // Show the data block
       // activeArrows = [{ start: "dIndirectRow", end: "DAddr1Row" }]; // Draw arrow
+      if (indirectArrowsVisible) {
+        indirectArrows = [];
+        indirectArrowsVisible = false;
+      } else {
+        indirectArrows = [{ start: "dIndirectRow", end: "DAddr1Row", offsetStartX: -50, offsetStartY: 15, offsetEndX: 100, offsetEndY: -20 }];
+        indirectArrowsVisible = true;
+      }
     });
   }
 
@@ -122,6 +133,45 @@ function setup() {
       console.log("DAddr1Row clicked");
       // showDataBlock = true; // Show the data block
       // activeArrows = [{ start: "DAddr1Row", end: "indBlock2Addr1" }]; // Draw arrow
+      if (indirectArrowsVisible) {
+        indirectArrows = [];
+        indirectArrowsVisible = false;
+      } else {
+        indirectArrows = [{ start: "DAddr1Row", end: "indBlock2Addr1", offsetStartX: 0, offsetStartY: 0, offsetEndX: -150, offsetEndY: 0 }];
+        indirectArrowsVisible = true;
+      }
+    });
+  }
+
+  if (DAddr2Row) {
+    console.log("DAddr2Row element found");
+    DAddr2Row.addEventListener("click", () => {
+      console.log("DAddr2Row clicked");
+      // showDataBlock = true; // Show the data block
+      // activeArrows = [{ start: "DAddr2Row", end: "indBlock2Addr1" }]; // Draw arrow
+      if (indirectArrowsVisible) {
+        indirectArrows = [];
+        indirectArrowsVisible = false;
+      } else {
+        indirectArrows = [{ start: "DAddr2Row", end: "indBlock2Addr1", offsetStartX: 0, offsetStartY: 0, offsetEndX: -150, offsetEndY: 0 }];
+        indirectArrowsVisible = true;
+      }
+    });
+  }
+
+  if (DAddr256Row) {
+    console.log("DAddr256Row element found");
+    DAddr256Row.addEventListener("click", () => {
+      console.log("DAddr256Row clicked");
+      // showDataBlock = true; // Show the data block
+      // activeArrows = [{ start: "DAddr1Row", end: "indBlock2Addr1" }]; // Draw arrow
+      if (indirectArrowsVisible) {
+        indirectArrows = [];
+        indirectArrowsVisible = false;
+      } else {
+        indirectArrows = [{ start: "DAddr256Row", end: "indBlock2Addr1", offsetStartX: 0, offsetStartY: 0, offsetEndX: -150, offsetEndY: 0 }];
+        indirectArrowsVisible = true;
+      }
     });
   }
 
@@ -131,6 +181,7 @@ function setup() {
       console.log("indBlock2Addr1 clicked");
       // showDataBlock = true; // Show the data block
       // activeArrows = [{ start: "indBlock2Addr1", end: "dataBlock2" }]; // Draw arrow
+      startDataMove("indBlock2Addr1", "dataBlock1");
     });
   }
 
@@ -140,6 +191,7 @@ function setup() {
       console.log("indBlock2Addr2 clicked");
       // showDataBlock = true; // Show the data block
       // activeArrows = [{ start: "indBlock2Addr2", end: "dataBlock2" }]; // Draw arrow
+      startDataMove("indBlock2Addr2", "dataBlock1");
     });
   }
 
@@ -149,6 +201,7 @@ function setup() {
       console.log("indBlock2Addr256 clicked");
       // showDataBlock = true; // Show the data block
       // activeArrows = [{ start: "indBlock2Addr256", end: "dataBlock2" }]; // Draw arrow
+      startDataMove("indBlock2Addr256", "dataBlock1");
     });
   }
 }
@@ -170,13 +223,13 @@ function draw() {
 
     // Draw arrows only when the data block is visible
     for (let arrow of activeArrows) {
-      drawArrowFromRowToBlock(arrow.start, arrow.end);
+      drawArrowFromRowToBlock(arrow.start, arrow.end, 0, 0, 0, 0);
     }
   }
 
   // Draw indirect arrows
   for (let arrow of indirectArrows) {
-    drawArrowFromRowToBlock(arrow.start, arrow.end);
+    drawArrowFromRowToBlock(arrow.start, arrow.end, arrow.offsetStartX, arrow.offsetStartY, arrow.offsetEndX, arrow.offsetEndY);
   }
 
   // Draw moving data if animation is in progress
@@ -248,22 +301,22 @@ function moveData() {
  * Connect a table row (startElemId) to either another table row
  * or one of our data block rectangles (endElemId).
  */
-function drawArrowFromRowToBlock(startElemId, endElemId) {
+function drawArrowFromRowToBlock(startElemId, endElemId, offsetStartX, offsetStartY, offsetEndX, offsetEndY) {
   const startElem = document.getElementById(startElemId);
   if (!startElem) return;
 
   // Get the center of the start table cell
   let startRect = startElem.getBoundingClientRect();
-  let startX = startRect.left + startRect.width / 2 + 150;
-  let startY = startRect.top + startRect.height / 2 + window.scrollY;
+  let startX = startRect.left + startRect.width / 2 + 150 + offsetStartX;
+  let startY = startRect.top + startRect.height / 2 + window.scrollY + offsetStartY;
 
   // For the "end," we see if it's an element in the DOM
   const endElem = document.getElementById(endElemId);
   if (endElem) {
     // If there's a real element with that ID
     let endRect = endElem.getBoundingClientRect();
-    let endX = endRect.left + endRect.width / 2;
-    let endY = endRect.top + endRect.height / 2 + window.scrollY;
+    let endX = endRect.left + endRect.width / 2 + offsetEndX;
+    let endY = endRect.top + endRect.height / 2 + window.scrollY + offsetEndY;
     lineWithArrowhead(startX, startY, endX, endY);
   } else {
     // Otherwise, check our dataBlocks array

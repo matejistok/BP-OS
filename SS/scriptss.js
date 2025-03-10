@@ -130,13 +130,13 @@ function draw() {
 
     // Draw arrows only when the data block is visible
     for (let arrow of activeArrows) {
-      drawArrowFromRowToBlock(arrow.start, arrow.end);
+      drawArrowFromRowToBlock(arrow.start, arrow.end, 0, 0);
     }
   }
 
   // Draw indirect arrows
   for (let arrow of indirectArrow) {
-    drawArrowFromRowToBlock(arrow.start, arrow.end);
+    drawArrowFromRowToBlock(arrow.start, arrow.end, 0, 150);
   }
 
   // Draw moving data if animation is in progress
@@ -186,7 +186,7 @@ function moveData() {
           setTimeout(() => {
               movingData = {
                   x: 1400,
-                  y: 800,
+                  y: 650,
                   targetX: dataBlocks[0].x + dataBlocks[0].w / 2,
                   targetY: dataBlocks[0].y + dataBlocks[0].h / 2,
                   phase: "toDataBlock",
@@ -204,7 +204,7 @@ function moveData() {
   }
 }
 
-function drawArrowFromRowToBlock(startElemId, endElemId) {
+function drawArrowFromRowToBlock(startElemId, endElemId, offsetStart, offsetEnd) {
   const startElem = document.getElementById(startElemId);
   if (!startElem) return;
 
@@ -220,7 +220,7 @@ function drawArrowFromRowToBlock(startElemId, endElemId) {
     let endRect = endElem.getBoundingClientRect();
     let endX = endRect.left + endRect.width / 2;
     let endY = endRect.top + endRect.height / 2 + window.scrollY;
-    lineWithArrowhead(startX, startY, endX, endY);
+    lineWithArrowhead(startX, startY, endX - offsetEnd, endY);
   } else {
     // Otherwise, check our dataBlocks array
     let block = dataBlocks.find(b => b.id === endElemId);
