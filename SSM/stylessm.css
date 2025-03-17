@@ -2,7 +2,7 @@
     position: relative;
     margin-top: 40px;
   }
-  /* Example “block” styling */
+  
   .data-block {
     border: 1px solid #dee2e6; /* Bootstrap table border color */
     padding: 8px;
@@ -11,7 +11,7 @@
     background-color: #ffffff;
     box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075); /* Bootstrap table box shadow */
   }
-  /* So that p5 canvas can sit behind everything */
+
   #arrowCanvas {
     position: absolute;
     top: 0;
@@ -37,6 +37,10 @@
   #indBlock2Addr1:hover,
   #indBlock2Addr2:hover,
   #indBlock2Addr256:hover {
-    background-color: yellow; /* Change background color on hover */
+    background-color: rgb(255, 248, 152); /* Change background color on hover */
     cursor: pointer; /* Change cursor to pointer on hover */
+  }
+
+  td {
+    background-color: transparent !important;
   }

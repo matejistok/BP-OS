@@ -57,13 +57,19 @@
       <div class="col-md-4">
         <h5>dinode</h5>
         <table class="table table-bordered table-sm" style="max-width: 300px">
+          <!-- <thead>
+            <tr class="text-center">
+              <th>1</th>
+              <th>2</th>
+            </tr>
+          </thead> -->
           <tbody>
             <tr id="typeRow" class="text-center"><td>type</td><td></td></tr>
             <tr id="majorRow" class="text-center"><td>major</td><td></td></tr>
             <tr id="minorRow" class="text-center"><td>minor</td><td></td></tr>
             <tr id="nlinkRow" class="text-center"><td>nlink</td><td></td></tr>
             <tr id="sizeRow" class="text-center"><td>size</td><td></td></tr>
-            <tr id="addr1Row" class="text-center">
+            <tr id="addr1Row" class="text-center highlight-row">
               <td>address 1</td>
               <td class="col-1">0</td>
             </tr>
@@ -88,6 +94,13 @@
       <div class="col-md-4" style="margin-top:300px;">
         <h5>indirect block</h5>
         <table class="table table-bordered table-sm" style="max-width: 300px">
+          <thead>
+            <tr class="text-center">
+              <th class="col-1" style="background-color: #e7e7e7;">GČB</th>
+              <th class="col-2" style="background-color: #e7e7e7;">LČB</th>
+              <th style="background-color: #e7e7e7;"></th>
+            </tr>
+          </thead>
           <tbody id="indirectTableBody">
             <tr id="indBlockAddr1" class="text-center">
               <td class="col-1">12</td>

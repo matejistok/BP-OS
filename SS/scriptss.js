@@ -5,7 +5,7 @@ let dataBlocks = [
 
 let canvas;
 
-// This array will hold the “active” arrows we want to draw.
+// This array will hold the "active" arrows we want to draw.
 let activeArrows = [];
 let indirectArrowVisible = false;
 let indirectArrow = [];
@@ -19,8 +19,42 @@ let animationInProgress = false;
 
 let fileImg;
 
+// Function to highlight a row with grey background
+function highlightRow(rowId, highlight) {
+  const row = document.getElementById(rowId);
+  if (row) {
+    if (highlight) {
+      row.style.backgroundColor = "#e0e0e0"; // Light grey color
+    } else {
+      row.style.backgroundColor = ""; // Reset to default
+    }
+  }
+}
+
+// Clear all highlighted rows
+function clearAllHighlights() {
+  const rowIds = ["addr1Row", "addr2Row", "addr12Row", "indirectRow", 
+                  "indBlockAddr1", "indBlockAddr2", "indBlockAddr256"];
+  rowIds.forEach(id => highlightRow(id, false));
+}
+
+// Update row highlights based on active arrows
+function updateRowHighlights() {
+  clearAllHighlights();
+  
+  // Highlight rows with active arrows
+  activeArrows.forEach(arrow => {
+    highlightRow(arrow.start, true);
+  });
+  
+  // Highlight rows with indirect arrows
+  indirectArrow.forEach(arrow => {
+    highlightRow(arrow.start, true);
+  });
+}
+
 function preload() {
-  fileImg = loadImage("folder.png"); // Ensure you have a file image named 'file.png'
+  fileImg = loadImage("hdd.png"); // Ensure you have a file image named 'file.png'
 }
 
 
@@ -54,8 +88,6 @@ function setup() {
     console.log("addr2Row element found");
     row2.addEventListener("click", () => {
       console.log("addr2Row clicked");
-      // showDataBlock = true; // Show the data block
-      // activeArrows = [{ start: "addr2Row", end: "dataBlock1" }]; // Draw arrow
       startDataMove("addr2Row", "dataBlock1");
     });
   }
@@ -64,8 +96,6 @@ function setup() {
     console.log("addr12Row element found");
     row12.addEventListener("click", () => {
       console.log("addr12Row clicked");
-      // showDataBlock = true; // Show the data block
-      // activeArrows = [{ start: "addr12Row", end: "dataBlock1" }]; // Draw arrow
       startDataMove("addr12Row", "dataBlock1");
     });
   }
@@ -81,6 +111,7 @@ function setup() {
         indirectArrow = [{ start: "indirectRow", end: "indBlockAddr1" }];
         indirectArrowVisible = true;
       }
+      updateRowHighlights(); // Update highlights after changing indirectArrow
     });
   }
 
@@ -88,8 +119,6 @@ function setup() {
     console.log("indBlockAddr1 element found");
     indBlockAddr1.addEventListener("click", () => {
       console.log("indBlockAddr1 clicked");
-      // showDataBlock = true; // Show the data block
-      // activeArrows = [{ start: "indBlockAddr1", end: "dataBlock1" }]; // Draw arrow
       startDataMove("indBlockAddr1", "dataBlock1");
     });
   }
@@ -98,8 +127,6 @@ function setup() {
     console.log("indBlockAddr2 element found");
     indBlockAddr2.addEventListener("click", () => {
       console.log("indBlockAddr2 clicked");
-      // showDataBlock = true; // Show the data block
-      // activeArrows = [{ start: "indBlockAddr2", end: "dataBlock1" }]; // Draw arrow
       startDataMove("indBlockAddr2", "dataBlock1");
     });
   }
@@ -108,8 +135,6 @@ function setup() {
     console.log("indBlockAddr256 element found");
     indBlockAddr256.addEventListener("click", () => {
       console.log("indBlockAddr256 clicked");
-      // showDataBlock = true; // Show the data block
-      // activeArrows = [{ start: "indBlockAddr256", end: "dataBlock2" }]; // Draw arrow
       startDataMove("indBlockAddr256", "dataBlock1");
     });
   }
@@ -145,7 +170,9 @@ function draw() {
   }
 
   // Draw the file image as the data source
-  image(fileImg, 1340, 550, 160, 160);
+  let imgX = min(width - 220, 1310);
+  let imgY = 525;
+  image(fileImg, imgX, imgY, 180, 160);
 }
 
 // Draw the data block rectangle with text
@@ -184,6 +211,23 @@ function moveData() {
 
   if (abs(movingData.x - movingData.targetX) < 1 && abs(movingData.y - movingData.targetY) < 1) {
       if (movingData.phase === "backToFile") {
+          // Instead of clearing all highlights, only clear the active arrow highlights
+          // but preserve the indirect arrow highlights
+          
+          // First save which rows have indirect arrows
+          let indirectHighlightedRows = [];
+          indirectArrow.forEach(arrow => {
+              indirectHighlightedRows.push(arrow.start);
+          });
+          
+          // Clear all highlights
+          clearAllHighlights();
+          
+          // Restore indirect arrow highlights
+          indirectHighlightedRows.forEach(rowId => {
+              highlightRow(rowId, true);
+          });
+          
           // Pause briefly before the next phase
           setTimeout(() => {
               movingData = {
@@ -202,6 +246,9 @@ function moveData() {
           activeArrows.push({ start: movingData.source, end: "dataBlock1" });
           movingData = null;
           animationInProgress = false;
+          
+          // Update row highlights based on new activeArrows
+          updateRowHighlights();
       }
   }
 }

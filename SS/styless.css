@@ -22,10 +22,6 @@
   .highlight {
     background-color: yellow; /* Change this to your desired highlight color */
   }
-
-  #addr1Row {
-    background-color: rgb(0, 0, 0); /* Ensure it has an initial background */
-  }
   
   #addr1Row:hover,
   #addr2Row:hover,
@@ -34,6 +30,10 @@
   #indBlockAddr1:hover,
   #indBlockAddr2:hover,
   #indBlockAddr256:hover {
-    background-color: yellow; /* Change background color on hover */
+    background-color: rgb(255, 248, 152); /* Change background color on hover */
     cursor: pointer; /* Change cursor to pointer on hover */
+  }
+
+  td {
+    background-color: transparent !important;
   }

@@ -1,13 +1,42 @@
+let pointerSize = 4;
+
 $(document).ready(function () {
     // Validate block size input
     $("#blockSize").on("input", function () {
         let value = parseInt($(this).val());
-        if (value % 4 !== 0) {
+        let hasError = false;
+        
+        // Check if value is divisible by the current pointer size
+        if (isNaN(value) || value <= 0) {
+            $("#error-msg").text("Please enter a valid block size.");
             $("#error-msg").show();
+            hasError = true;
+        } else if (value % pointerSize !== 0) {
+            $("#error-msg").text(`Error: Block size must be divisible by ${pointerSize}!`);
+            $("#error-msg").show();
+            hasError = true;
+        } else if (value < pointerSize) {
+            $("#error-msg").text(`Error: Block size must be at least ${pointerSize} bytes (current pointer size)!`);
+            $("#error-msg").show();
+            hasError = true;
         } else {
             $("#error-msg").hide();
+            hasError = false;
         }
-        calculateMaxFileSize();
+        
+        // Toggle visibility of elements based on error state
+        if (hasError) {
+            $("#add-box").hide();
+            $("#formula").hide();
+            $("#maxFileSize").hide();
+            $("#box-container").hide();
+        } else {
+            $("#add-box").show();
+            $("#formula").show();
+            $("#maxFileSize").show();
+            $("#box-container").show();
+            calculateMaxFileSize();
+        }
     });
 
     // Add new box
@@ -70,11 +99,24 @@ $(document).ready(function () {
         }
     });
 
+    $('.pointer-size-btn').click(function() {
+        $('.pointer-size-btn').removeClass('active');
+        $(this).addClass('active');
+        
+        pointerSize = parseInt($(this).data('size'));
+        
+        // Update label text to reflect current pointer size requirement
+        $("label[for='blockSize']").text(`Block Size (must be divisible by ${pointerSize}):`);
+        
+        // Re-validate the current block size with new pointer size
+        $("#blockSize").trigger("input");
+    });
+
     // Function to calculate the maximum file size
     function calculateMaxFileSize() {
-        let blockSize = parseInt($("#blockSize").val());
-        if (isNaN(blockSize) || blockSize % 4 !== 0) {
-            $("#maxFileSize").text("Invalid block size");
+        let blockSize = parseInt($('#blockSize').val());
+        
+        if (isNaN(blockSize) || blockSize <= 0) {
             return;
         }
 
@@ -86,13 +128,13 @@ $(document).ready(function () {
                 maxSize += blockSize;
                 formula += ` + ${blockSize}`;
             } else if (type === "Nepriamy") {
-                let size = (blockSize / 4) * blockSize;
+                let size = (blockSize / pointerSize) * blockSize;
                 maxSize += size;
-                formula += ` + (${blockSize} / 4) * ${blockSize}`;
+                formula += ` + (${blockSize} / ${pointerSize}) * ${blockSize}`;
             } else if (type === "2x nepriamy") {
-                let size = (blockSize / 4) * (blockSize / 4) * blockSize;
+                let size = (blockSize / pointerSize) * (blockSize / pointerSize) * blockSize;
                 maxSize += size;
-                formula += ` + (${blockSize} / 4) * (${blockSize} / 4) * ${blockSize}`;
+                formula += ` + (${blockSize} / ${pointerSize}) * (${blockSize} / ${pointerSize}) * ${blockSize}`;
             }
         });
 

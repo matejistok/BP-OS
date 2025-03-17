@@ -17,6 +17,11 @@
     font-size: 1.25rem; /* Increase font size */
   }
   
-  #formula h5, #maxFileSize h5 {
+#formula h5, #maxFileSize h5 {
     font-weight: bold;
-  }
+}
+
+.pointer-size-btn.active {
+    background-color: #0d6efd;
+    color: white;
+}

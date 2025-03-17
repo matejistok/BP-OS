@@ -5,7 +5,7 @@ let dataBlocks = [
 
 let canvas;
 
-// This array will hold the “active” arrows we want to draw.
+// This array will hold the "active" arrows we want to draw.
 let activeArrows = [];
 let indirectArrowsVisible = false;
 let indirectArrows = [];
@@ -19,8 +19,66 @@ let animationInProgress = false;
 
 let fileImg;
 
+// Function to highlight a row with grey background
+function highlightRow(rowId, highlight) {
+  const row = document.getElementById(rowId);
+  if (row) {
+    if (highlight) {
+      // Apply grey background but preserve hover effect
+      row.setAttribute('data-highlighted', 'true');
+      row.style.backgroundColor = "#e0e0e0"; // Light grey color
+      
+      // Add a hover event listener
+      if (!row.hasHoverListeners) {
+        row.addEventListener('mouseenter', function() {
+          if (this.getAttribute('data-highlighted') === 'true') {
+            this.style.backgroundColor = "rgb(255, 248, 152)";
+          }
+        });
+        
+        row.addEventListener('mouseleave', function() {
+          if (this.getAttribute('data-highlighted') === 'true') {
+            this.style.backgroundColor = "#e0e0e0";
+          }
+        });
+        
+        row.hasHoverListeners = true;
+      }
+    } else {
+      // Reset to default
+      row.setAttribute('data-highlighted', 'false');
+      row.style.backgroundColor = "";
+    }
+  }
+}
+
+// Clear all highlighted rows
+function clearAllHighlights() {
+  const rowIds = ["addr1Row", "addr2Row", "addr12Row", "indirectRow", "dIndirectRow",
+                  "indBlockAddr1", "indBlockAddr2", "indBlockAddr256", 
+                  "DAddr1Row", "DAddr2Row", "DAddr256Row",
+                  "indBlock2Addr1", "indBlock2Addr2", "indBlock2Addr256"];
+  rowIds.forEach(id => highlightRow(id, false));
+}
+
+// Update row highlights based on active arrows and indirect arrows
+function updateRowHighlights() {
+  clearAllHighlights();
+  
+  // Highlight rows with active arrows
+  activeArrows.forEach(arrow => {
+    highlightRow(arrow.start, true);
+  });
+  
+  // Highlight rows with indirect arrows
+  indirectArrows.forEach(arrow => {
+    highlightRow(arrow.start, true);
+    highlightRow(arrow.end, true);
+  });
+}
+
 function preload() {
-  fileImg = loadImage("folder.png"); // Ensure you have a file image named 'file.png'
+  fileImg = loadImage("hdd.png"); // Ensure you have a file image named 'file.png'
 }
 
 function setup() {
@@ -55,6 +113,7 @@ function setup() {
       const arrowExists = activeArrows.some(arrow => arrow.start === "addr1Row" && arrow.end === "dataBlock1");
       if (!arrowExists) {
         startDataMove("addr1Row", "dataBlock1");
+        updateRowHighlights();
       }
     });
   }
@@ -68,6 +127,7 @@ function setup() {
       const arrowExists = activeArrows.some(arrow => arrow.start === "addr2Row" && arrow.end === "dataBlock1");
       if (!arrowExists) {
         startDataMove("addr2Row", "dataBlock1");
+        updateRowHighlights();
       }
     });
   }
@@ -76,15 +136,29 @@ function setup() {
     console.log("indirectRow element found");
     indirectRow.addEventListener("click", () => {
       console.log("indirectRow clicked");
-      // showDataBlock = true; // Show the data block
-      // activeArrows = [{ start: "indirectRow", end: "indBlockAddr1" }]; // Draw arrow
-      if (indirectArrowsVisible) {
-        indirectArrows = [];
-        indirectArrowsVisible = false;
+      
+      // Check if this arrow already exists
+      const arrowExists = indirectArrows.some(arrow => 
+        arrow.start === "indirectRow" && arrow.end === "indBlockAddr1");
+      
+      if (arrowExists) {
+        // Remove only this arrow
+        indirectArrows = indirectArrows.filter(arrow => 
+          !(arrow.start === "indirectRow" && arrow.end === "indBlockAddr1"));
       } else {
-        indirectArrows = [{ start: "indirectRow", end: "indBlockAddr1", offsetStartX: 0, offsetStartY: 0, offsetEndX: -150, offsetEndY: 0 }];
-        indirectArrowsVisible = true;
+        // Add this arrow without removing others
+        indirectArrows.push({ 
+          start: "indirectRow", 
+          end: "indBlockAddr1", 
+          offsetStartX: 0, 
+          offsetStartY: 0, 
+          offsetEndX: -150, 
+          offsetEndY: 0 
+        });
       }
+      
+      indirectArrowsVisible = indirectArrows.length > 0;
+      updateRowHighlights();
     });
   }
 
@@ -97,6 +171,7 @@ function setup() {
       const arrowExists = activeArrows.some(arrow => arrow.start === "indBlockAddr1" && arrow.end === "dataBlock1");
       if (!arrowExists) {
         startDataMove("indBlockAddr1", "dataBlock1");
+        updateRowHighlights();
       }
     });
   }
@@ -108,6 +183,7 @@ function setup() {
       // showDataBlock = true; // Show the data block
       // activeArrows = [{ start: "indBlockAddr2", end: "dataBlock2" }]; // Draw arrow
       startDataMove("indBlockAddr2", "dataBlock1");
+      updateRowHighlights();
     });
   }
 
@@ -118,6 +194,7 @@ function setup() {
       // showDataBlock = true; // Show the data block
       // activeArrows = [{ start: "indBlockAddr256", end: "dataBlock2" }]; // Draw arrow
       startDataMove("indBlockAddr256", "dataBlock1");
+      updateRowHighlights();
     });
   }
 
@@ -125,15 +202,29 @@ function setup() {
     console.log("dIndirectRow element found");
     dIndirectRow.addEventListener("click", () => {
       console.log("dIndirectRow clicked");
-      // showDataBlock = true; // Show the data block
-      // activeArrows = [{ start: "dIndirectRow", end: "DAddr1Row" }]; // Draw arrow
-      if (indirectArrowsVisible) {
-        indirectArrows = [];
-        indirectArrowsVisible = false;
+      
+      // Check if this arrow already exists
+      const arrowExists = indirectArrows.some(arrow => 
+        arrow.start === "dIndirectRow" && arrow.end === "DAddr1Row");
+      
+      if (arrowExists) {
+        // Remove only this arrow
+        indirectArrows = indirectArrows.filter(arrow => 
+          !(arrow.start === "dIndirectRow" && arrow.end === "DAddr1Row"));
       } else {
-        indirectArrows = [{ start: "dIndirectRow", end: "DAddr1Row", offsetStartX: -50, offsetStartY: 15, offsetEndX: 100, offsetEndY: -20 }];
-        indirectArrowsVisible = true;
+        // Add this arrow without removing others
+        indirectArrows.push({ 
+          start: "dIndirectRow", 
+          end: "DAddr1Row", 
+          offsetStartX: -50, 
+          offsetStartY: 15, 
+          offsetEndX: 100, 
+          offsetEndY: -20 
+        });
       }
+      
+      indirectArrowsVisible = indirectArrows.length > 0;
+      updateRowHighlights();
     });
   }
 
@@ -141,19 +232,38 @@ function setup() {
     console.log("DAddr1Row element found");
     DAddr1Row.addEventListener("click", () => {
       console.log("DAddr1Row clicked");
-      // showDataBlock = true; // Show the data block
-      // activeArrows = [{ start: "DAddr1Row", end: "indBlock2Addr1" }]; // Draw arrow
-      if (indirectArrowsVisible) {
-        indirectArrows = [];
-        indirectArrowsVisible = false;
+      
+      // Check if this arrow already exists
+      const arrowExists = indirectArrows.some(arrow => 
+        arrow.start === "DAddr1Row" && arrow.end === "indBlock2Addr1");
+      
+      if (arrowExists) {
+        // Remove only this arrow
+        indirectArrows = indirectArrows.filter(arrow => 
+          !(arrow.start === "DAddr1Row" && arrow.end === "indBlock2Addr1"));
       } else {
-        indirectArrows = [{ start: "DAddr1Row", end: "indBlock2Addr1", offsetStartX: 0, offsetStartY: 0, offsetEndX: -150, offsetEndY: 0 }];
-        indirectArrowsVisible = true;
+        // First remove any arrows from other DAddr rows to indBlock2Addr1
+        indirectArrows = indirectArrows.filter(arrow => 
+          !(arrow.end === "indBlock2Addr1" && 
+            (arrow.start === "DAddr2Row" || arrow.start === "DAddr256Row")));
+        
+        // Add this arrow
+        indirectArrows.push({ 
+          start: "DAddr1Row", 
+          end: "indBlock2Addr1", 
+          offsetStartX: 0, 
+          offsetStartY: 0, 
+          offsetEndX: -150, 
+          offsetEndY: 0 
+        });
+  
+        document.getElementById("indBlock2Addr1").children[0].innerText = "267";
+        document.getElementById("indBlock2Addr2").children[0].innerText = "268";
+        document.getElementById("indBlock2Addr256").children[0].innerText = "522";
       }
-
-      document.getElementById("indBlock2Addr1").children[0].innerText = "267";
-      document.getElementById("indBlock2Addr2").children[0].innerText = "268";
-      document.getElementById("indBlock2Addr256").children[0].innerText = "522";
+      
+      indirectArrowsVisible = indirectArrows.length > 0;
+      updateRowHighlights();
     });
   }
 
@@ -161,19 +271,38 @@ function setup() {
     console.log("DAddr2Row element found");
     DAddr2Row.addEventListener("click", () => {
       console.log("DAddr2Row clicked");
-      // showDataBlock = true; // Show the data block
-      // activeArrows = [{ start: "DAddr2Row", end: "indBlock2Addr1" }]; // Draw arrow
-      if (indirectArrowsVisible) {
-        indirectArrows = [];
-        indirectArrowsVisible = false;
+      
+      // Check if this arrow already exists
+      const arrowExists = indirectArrows.some(arrow => 
+        arrow.start === "DAddr2Row" && arrow.end === "indBlock2Addr1");
+      
+      if (arrowExists) {
+        // Remove only this arrow
+        indirectArrows = indirectArrows.filter(arrow => 
+          !(arrow.start === "DAddr2Row" && arrow.end === "indBlock2Addr1"));
       } else {
-        indirectArrows = [{ start: "DAddr2Row", end: "indBlock2Addr1", offsetStartX: 0, offsetStartY: 0, offsetEndX: -150, offsetEndY: 0 }];
-        indirectArrowsVisible = true;
+        // First remove any arrows from other DAddr rows to indBlock2Addr1
+        indirectArrows = indirectArrows.filter(arrow => 
+          !(arrow.end === "indBlock2Addr1" && 
+            (arrow.start === "DAddr1Row" || arrow.start === "DAddr256Row")));
+        
+        // Add this arrow
+        indirectArrows.push({ 
+          start: "DAddr2Row", 
+          end: "indBlock2Addr1", 
+          offsetStartX: 0, 
+          offsetStartY: 0, 
+          offsetEndX: -150, 
+          offsetEndY: 0 
+        });
+  
+        document.getElementById("indBlock2Addr1").children[0].innerText = "523";
+        document.getElementById("indBlock2Addr2").children[0].innerText = "524";
+        document.getElementById("indBlock2Addr256").children[0].innerText = "779";
       }
-
-      document.getElementById("indBlock2Addr1").children[0].innerText = "523";
-      document.getElementById("indBlock2Addr2").children[0].innerText = "524";
-      document.getElementById("indBlock2Addr256").children[0].innerText = "779";
+      
+      indirectArrowsVisible = indirectArrows.length > 0;
+      updateRowHighlights();
     });
   }
 
@@ -181,21 +310,41 @@ function setup() {
     console.log("DAddr256Row element found");
     DAddr256Row.addEventListener("click", () => {
       console.log("DAddr256Row clicked");
-      // showDataBlock = true; // Show the data block
-      // activeArrows = [{ start: "DAddr1Row", end: "indBlock2Addr1" }]; // Draw arrow
-      if (indirectArrowsVisible) {
-        indirectArrows = [];
-        indirectArrowsVisible = false;
+      
+      // Check if this arrow already exists
+      const arrowExists = indirectArrows.some(arrow => 
+        arrow.start === "DAddr256Row" && arrow.end === "indBlock2Addr1");
+      
+      if (arrowExists) {
+        // Remove only this arrow
+        indirectArrows = indirectArrows.filter(arrow => 
+          !(arrow.start === "DAddr256Row" && arrow.end === "indBlock2Addr1"));
       } else {
-        indirectArrows = [{ start: "DAddr256Row", end: "indBlock2Addr1", offsetStartX: 0, offsetStartY: 0, offsetEndX: -150, offsetEndY: 0 }];
-        indirectArrowsVisible = true;
+        // First remove any arrows from other DAddr rows to indBlock2Addr1
+        indirectArrows = indirectArrows.filter(arrow => 
+          !(arrow.end === "indBlock2Addr1" && 
+            (arrow.start === "DAddr1Row" || arrow.start === "DAddr2Row")));
+        
+        // Add this arrow
+        indirectArrows.push({ 
+          start: "DAddr256Row", 
+          end: "indBlock2Addr1", 
+          offsetStartX: 0, 
+          offsetStartY: 0, 
+          offsetEndX: -150, 
+          offsetEndY: 0 
+        });
+  
+        document.getElementById("indBlock2Addr1").children[0].innerText = "65547";
+        document.getElementById("indBlock2Addr2").children[0].innerText = "65548";
+        document.getElementById("indBlock2Addr256").children[0].innerText = "65803";
       }
-
-      document.getElementById("indBlock2Addr1").children[0].innerText = "65547";
-      document.getElementById("indBlock2Addr2").children[0].innerText = "65548";
-      document.getElementById("indBlock2Addr256").children[0].innerText = "65803";
+      
+      indirectArrowsVisible = indirectArrows.length > 0;
+      updateRowHighlights();
     });
   }
+
 
   if (indBlock2Addr1) {
     console.log("indBlock2Addr1 element found");
@@ -204,6 +353,7 @@ function setup() {
       // showDataBlock = true; // Show the data block
       // activeArrows = [{ start: "indBlock2Addr1", end: "dataBlock2" }]; // Draw arrow
       startDataMove("indBlock2Addr1", "dataBlock1");
+      updateRowHighlights();
     });
   }
 
@@ -214,6 +364,7 @@ function setup() {
       // showDataBlock = true; // Show the data block
       // activeArrows = [{ start: "indBlock2Addr2", end: "dataBlock2" }]; // Draw arrow
       startDataMove("indBlock2Addr2", "dataBlock1");
+      updateRowHighlights();
     });
   }
 
@@ -224,6 +375,7 @@ function setup() {
       // showDataBlock = true; // Show the data block
       // activeArrows = [{ start: "indBlock2Addr256", end: "dataBlock2" }]; // Draw arrow
       startDataMove("indBlock2Addr256", "dataBlock1");
+      updateRowHighlights();
     });
   }
 }
@@ -258,7 +410,7 @@ function draw() {
   }
 
   // Draw the file image as the data source
-  image(fileImg, 1325, 600, 160, 160);
+  image(fileImg, 1310, 560, 180, 160);
 }
 
 // Draw the data block rectangle with text
@@ -286,6 +438,8 @@ function startDataMove(startElemId, targetBlockId) {
       phase: "backToFile", // First phase: moving back to the file
       source: startElemId
   };
+
+  updateRowHighlights();
 }
 
 // Move data smoothly toward target
@@ -297,6 +451,21 @@ function moveData() {
 
   if (abs(movingData.x - movingData.targetX) < 1 && abs(movingData.y - movingData.targetY) < 1) {
       if (movingData.phase === "backToFile") {
+          // Save which rows have indirect arrows before animation continues
+          let indirectHighlightedRows = [];
+          indirectArrows.forEach(arrow => {
+              indirectHighlightedRows.push(arrow.start);
+              indirectHighlightedRows.push(arrow.end);
+          });
+          
+          // Clear all highlights
+          clearAllHighlights();
+          
+          // Restore indirect arrow highlights
+          indirectHighlightedRows.forEach(rowId => {
+              highlightRow(rowId, true);
+          });
+          
           // Pause briefly before the next phase
           setTimeout(() => {
               movingData = {
@@ -315,6 +484,9 @@ function moveData() {
           activeArrows.push({ start: movingData.source, end: "dataBlock1" });
           movingData = null;
           animationInProgress = false;
+          
+          // Update row highlights based on new activeArrows and existing indirectArrows
+          updateRowHighlights();
       }
   }
 }

@@ -26,16 +26,20 @@ let ArrowsPositions = {
   pageDirectory1L0: { y: 360 },
   pageDirectory1L0Index: { y: 400 },
 };
+let canvas;
 
 //First inicialization of canvas and elements
 function setup() {
-  createCanvas(windowWidth * 0.975, windowHeight * 0.96);
+  canvas = createCanvas(windowWidth, document.body.scrollHeight);
+  canvas.id("Canvas");
+  canvas.style("z-index", "-1");
+  canvas.position(0, 50);
   background(255);
   textSize(14);
 
   // Button to toggle arrows
   let toggleArrowsButton = createButton('Arrows');
-  toggleArrowsButton.position(width - 120, 20);
+  toggleArrowsButton.position(width - 120, 70);
   toggleArrowsButton.mousePressed(() => {
     showArrows = !showArrows;                                   // Toggle arrows
     redraw();                                                   // Refresh canvas
@@ -43,32 +47,32 @@ function setup() {
 
   // Button to toggle all modals
   let toggleButton = createButton('Help');
-  toggleButton.position(width - 60, 20);
+  toggleButton.position(width - 60, 70);
   toggleButton.mousePressed(() => toggleAllModals());
 
-  modals.modal1 = createModal(
-    260,
-    15,
-    'Velkost',
-    300,
-    15,
-  );
+  // modals.modal1 = createModal(
+  //   260,
+  //   15,
+  //   'Velkost',
+  //   300,
+  //   15,
+  // );
 
-  modals.modal2 = createModal(
-    50,
-    125,
-    'Informacie o indexoch L2, L1, L0., ako funguju atd.',
-    300,
-    40
-  );
+  // modals.modal2 = createModal(
+  //   50,
+  //   125,
+  //   'Informacie o indexoch L2, L1, L0., ako funguju atd.',
+  //   300,
+  //   40
+  // );
 
-  modals.modal3 = createModal(
-    200,
-    600,
-    'SATP zachovava adresu prvej tabulky page directory',
-    200,
-    50
-  );
+  // modals.modal3 = createModal(
+  //   200,
+  //   600,
+  //   'SATP zachovava adresu prvej tabulky page directory',
+  //   200,
+  //   50
+  // );
 
   // Drawing of Virtual Address
   //hoverElements.push({ label: 'L2', x: width * 0.065, y: height, w: width * 0.04, h: height * 0.05, highlight: [1, 2, 3], key: 'L2' });
@@ -668,7 +672,7 @@ function mousePressed() {
 
       // Create an input box at the clicked position
       let inputBox = createInput(currentValue);
-      inputBox.position(element.x + width * 0.011, element.y + height * 0.018);
+      inputBox.position(element.x + width * 0.001, element.y + height * 0.057);
       inputBox.size(element.w - 5, element.h - 5);                  // Set the size to match the clicked element
       //inputBox.elt.focus();
       //inputBox.elt.select();                                        // Automatically select the content
@@ -733,9 +737,9 @@ function mousePressed() {
   }
 }
 
-function windowResized() {
-  resizeCanvas(windowWidth * 0.975, windowHeight * 0.96);
-}
+// function windowResized() {
+//   resizeCanvas(windowWidth * 0.975, windowHeight * 0.96);
+// }
 
 function mouseMoved() {
   redraw();
