@@ -172,7 +172,7 @@ function draw() {
   // Draw the file image as the data source
   let imgX = min(width - 220, 1310);
   let imgY = 525;
-  image(fileImg, imgX, imgY, 180, 160);
+  image(fileImg, imgX, imgY, 180, 190);
 }
 
 // Draw the data block rectangle with text
@@ -292,6 +292,61 @@ function lineWithArrowhead(x1, y1, x2, y2) {
   line(0, 0, -arrowSize, arrowSize / 2);
   pop();
 }
+
+document.addEventListener('DOMContentLoaded', function() {
+  // Initialize tooltips with HTML support and custom options
+  var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+  var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+    return new bootstrap.Tooltip(tooltipTriggerEl, {
+      html: true,
+      trigger: 'manual', // Use manual trigger instead of hover
+      template: '<div class="tooltip" role="tooltip"><div class="tooltip-arrow"></div><div class="tooltip-inner" style="max-width: 300px;"></div></div>'
+    });
+  });
+  
+  // Show tooltip on mouseenter
+  tooltipTriggerList.forEach(el => {
+    el.addEventListener('mouseenter', function() {
+      const tooltip = bootstrap.Tooltip.getInstance(el);
+      tooltip.show();
+      
+      // Add event listeners to the tooltip
+      setTimeout(() => {
+        const tooltipElement = document.querySelector('.tooltip');
+        if (tooltipElement) {
+          // Keep tooltip open when mouse is over the tooltip
+          tooltipElement.addEventListener('mouseenter', function() {
+            // Do nothing, just capture the event to keep tooltip open
+          });
+          
+          // Hide tooltip when mouse leaves the tooltip
+          tooltipElement.addEventListener('mouseleave', function() {
+            tooltip.hide();
+          });
+        }
+      }, 100);
+    });
+    
+    // Hide tooltip when mouse leaves trigger element
+    // unless mouse is over the tooltip itself
+    el.addEventListener('mouseleave', function() {
+      setTimeout(() => {
+        const tooltipElement = document.querySelector('.tooltip');
+        if (tooltipElement) {
+          // Check if mouse is over tooltip
+          const tooltipRect = tooltipElement.getBoundingClientRect();
+          if (!(event.clientX >= tooltipRect.left && 
+                event.clientX <= tooltipRect.right && 
+                event.clientY >= tooltipRect.top && 
+                event.clientY <= tooltipRect.bottom)) {
+            const tooltip = bootstrap.Tooltip.getInstance(el);
+            tooltip.hide();
+          }
+        }
+      }, 100);
+    });
+  });
+});
 
 // Keep canvas size in sync with window size
 function windowResized() {

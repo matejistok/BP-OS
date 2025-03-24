@@ -1,6 +1,7 @@
 .diagram-section {
     position: relative;
     margin-top: 40px;
+    padding: 2rem 0;
   }
   /* Example “block” styling */
   .data-block {
@@ -30,10 +31,58 @@
   #indBlockAddr1:hover,
   #indBlockAddr2:hover,
   #indBlockAddr256:hover {
-    background-color: rgb(255, 248, 152); /* Change background color on hover */
+    background-color: rgba(13, 110, 253, 0.15) !important; /* Slightly darker blue on hover */
     cursor: pointer; /* Change cursor to pointer on hover */
   }
 
   td {
     background-color: transparent !important;
+  }
+
+  /* Table styling enhancements */
+  .table-responsive {
+    overflow-x: auto;
+    border-radius: 0; /* Removed border radius */
+    box-shadow: none; /* Removed shadow completely */
+  }
+
+  .table {
+    margin-bottom: 0;
+  }
+
+  .table th, .table td {
+    vertical-align: middle;
+  }
+
+  .table thead th {
+    border-bottom: 2px solid #dee2e6;
+    font-weight: 600;
+  }
+
+  /* Highlight effect for rows */
+  .highlight-row td {
+    background-color: rgba(13, 110, 253, 0.1) !important;
+  }
+
+  /* Remove background-light from cells to ensure consistent styling */
+  .fw-medium.bg-light {
+    background-color: transparent !important;
+  }
+
+  /* Better spacing and alignment */
+  h5 {
+    margin-bottom: 1rem;
+    position: relative;
+  }
+
+  /* Remove the decorative underline that appears as an outline */
+  h5::after {
+    content: none; /* This removes the line completely */
+  }
+
+  /* Responsive adjustments */
+  @media (max-width: 768px) {
+    .col-md-4 {
+      margin-bottom: 2rem;
+    }
   }

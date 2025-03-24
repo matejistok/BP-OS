@@ -260,6 +260,9 @@ function setup() {
         document.getElementById("indBlock2Addr1").children[0].innerText = "267";
         document.getElementById("indBlock2Addr2").children[0].innerText = "268";
         document.getElementById("indBlock2Addr256").children[0].innerText = "522";
+        document.getElementById("indBlock2Addr1").children[1].innerText = "0";
+        document.getElementById("indBlock2Addr2").children[1].innerText = "1";
+        document.getElementById("indBlock2Addr256").children[1].innerText = "255";
       }
       
       indirectArrowsVisible = indirectArrows.length > 0;
@@ -299,6 +302,9 @@ function setup() {
         document.getElementById("indBlock2Addr1").children[0].innerText = "523";
         document.getElementById("indBlock2Addr2").children[0].innerText = "524";
         document.getElementById("indBlock2Addr256").children[0].innerText = "779";
+        document.getElementById("indBlock2Addr1").children[1].innerText = "256";
+        document.getElementById("indBlock2Addr2").children[1].innerText = "257";
+        document.getElementById("indBlock2Addr256").children[1].innerText = "258";
       }
       
       indirectArrowsVisible = indirectArrows.length > 0;
@@ -338,6 +344,9 @@ function setup() {
         document.getElementById("indBlock2Addr1").children[0].innerText = "65547";
         document.getElementById("indBlock2Addr2").children[0].innerText = "65548";
         document.getElementById("indBlock2Addr256").children[0].innerText = "65803";
+        document.getElementById("indBlock2Addr1").children[1].innerText = "65280";
+        document.getElementById("indBlock2Addr2").children[1].innerText = "65281";
+        document.getElementById("indBlock2Addr256").children[1].innerText = "65535";
       }
       
       indirectArrowsVisible = indirectArrows.length > 0;
