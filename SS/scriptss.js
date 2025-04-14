@@ -7,8 +7,10 @@ let canvas;
 
 // This array will hold the "active" arrows we want to draw.
 let activeArrows = [];
-let indirectArrowVisible = false;
-let indirectArrow = [];
+
+// Show indirect arrow by default
+let indirectArrowVisible = true;
+let indirectArrow = [{ start: "indirectRow", end: "indBlockAddr1" }];
 
 // Initially, the data block is hidden
 let showDataBlock = false; 
@@ -104,14 +106,8 @@ function setup() {
     console.log("indirectRow element found");
     indirectRow.addEventListener("click", () => {
       console.log("indirectRow clicked");
-      if (indirectArrowVisible) {
-        indirectArrow = [];
-        indirectArrowVisible = false;
-      } else {
-        indirectArrow = [{ start: "indirectRow", end: "indBlockAddr1" }];
-        indirectArrowVisible = true;
-      }
-      updateRowHighlights(); // Update highlights after changing indirectArrow
+      // The arrow is always visible and clicking does nothing
+      // No action needed when clicked
     });
   }
 
@@ -156,7 +152,7 @@ function draw() {
     }
   }
 
-  // Draw indirect arrows
+  // Always draw indirect arrows, regardless of showDataBlock state
   for (let arrow of indirectArrow) {
     drawArrowFromRowToBlock(arrow.start, arrow.end, 0, 150);
   }
@@ -264,6 +260,10 @@ function drawDataBlock(block) {
 // Start animation of moving data
 function startDataMove(startElemId, targetBlockId) {
   if (animationInProgress) return;
+  
+  // Don't react to clicks on indirectRow
+  if (startElemId === "indirectRow") return;
+  
   animationInProgress = true;
 
   // Add visual feedback that the row was clicked
