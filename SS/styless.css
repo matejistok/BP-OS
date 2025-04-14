@@ -24,6 +24,18 @@
     background-color: yellow; /* Change this to your desired highlight color */
   }
   
+  /* Enhanced hover effect with transition */
+  #addr1Row,
+  #addr2Row,
+  #addr12Row,
+  #indirectRow,
+  #indBlockAddr1,
+  #indBlockAddr2,
+  #indBlockAddr256 {
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    position: relative;
+  }
+  
   #addr1Row:hover,
   #addr2Row:hover,
   #addr12Row:hover,
@@ -33,6 +45,46 @@
   #indBlockAddr256:hover {
     background-color: rgba(13, 110, 253, 0.15) !important; /* Slightly darker blue on hover */
     cursor: pointer; /* Change cursor to pointer on hover */
+    transform: translateX(3px); /* Subtle shift on hover */
+  }
+  
+  /* Add a visual indicator for clickable rows */
+  #addr1Row td:last-child,
+  #addr2Row td:last-child,
+  #addr12Row td:last-child,
+  #indirectRow td:last-child,
+  #indBlockAddr1 td:last-child,
+  #indBlockAddr2 td:last-child,
+  #indBlockAddr256 td:last-child {
+    position: relative;
+  }
+  
+  #addr1Row td:last-child::after,
+  #addr2Row td:last-child::after,
+  #addr12Row td:last-child::after,
+  #indirectRow td:last-child::after,
+  #indBlockAddr1 td:last-child::after,
+  #indBlockAddr2 td:last-child::after,
+  #indBlockAddr256 td:last-child::after {
+    content: "↗";
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    color: #0d6efd;
+    font-size: 0.9rem;
+  }
+  
+  #addr1Row:hover td:last-child::after,
+  #addr2Row:hover td:last-child::after,
+  #addr12Row:hover td:last-child::after,
+  #indirectRow:hover td:last-child::after,
+  #indBlockAddr1:hover td:last-child::after,
+  #indBlockAddr2:hover td:last-child::after,
+  #indBlockAddr256:hover td:last-child::after {
+    opacity: 1;
   }
 
   td {
@@ -48,20 +100,62 @@
 
   .table {
     margin-bottom: 0;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Add subtle shadow to the table */
+    border-collapse: separate;
+    border-spacing: 0;
   }
 
   .table th, .table td {
     vertical-align: middle;
+    transition: all 0.2s ease;
   }
-
-  .table thead th {
-    border-bottom: 2px solid #dee2e6;
-    font-weight: 600;
-  }
-
+  
   /* Highlight effect for rows */
   .highlight-row td {
     background-color: rgba(13, 110, 253, 0.1) !important;
+    transition: background-color 0.3s ease;
+  }
+
+  /* Improve table header appearance */
+  .table thead th {
+    border-bottom: 2px solid #dee2e6;
+    font-weight: 600;
+    position: relative;
+    cursor: pointer;
+    background: linear-gradient(to bottom, #0d6efd, #0a58ca);
+    color: white;
+    text-shadow: 0px 1px 1px rgba(0,0,0,0.2);
+  }
+
+  /* Tooltip trigger area */
+  .table thead th[data-bs-toggle="tooltip"] {
+    cursor: help;
+  }
+
+  /* Remove underline from header text */
+  .table thead th span.text-decoration-underline {
+    text-decoration: none !important;
+  }
+
+  /* Better tooltip styling */
+  .tooltip-inner {
+    max-width: 300px;
+    padding: 8px 12px;
+    text-align: left;
+    background-color: rgba(0, 0, 0, 0.8);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+  }
+
+  /* Tooltip icon styling */
+  .bi-info-circle-fill {
+    font-size: 0.85rem;
+    vertical-align: middle;
+    opacity: 0.8;
+    transition: opacity 0.2s;
+  }
+
+  .table thead th:hover .bi-info-circle-fill {
+    opacity: 1;
   }
 
   /* Remove background-light from cells to ensure consistent styling */
@@ -73,6 +167,10 @@
   h5 {
     margin-bottom: 1rem;
     position: relative;
+    font-weight: 600;
+    color: #0d6efd;
+    border-left: 4px solid #0d6efd;
+    padding-left: 12px;
   }
 
   /* Remove the decorative underline that appears as an outline */
@@ -84,5 +182,53 @@
   @media (max-width: 768px) {
     .col-md-4 {
       margin-bottom: 2rem;
+    }
+  }
+
+  /* Legend styling */
+  .legend-container {
+    position: fixed;
+    top: 70px;
+    right: 20px;
+    z-index: 1000;
+  }
+
+  .legend-toggle {
+    border-radius: 4px;
+    margin-bottom: 5px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  }
+
+  .legend-content {
+    max-width: 300px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  }
+
+  .legend-content .card {
+    border: none;
+  }
+
+  .legend-content .card-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #0d6efd;
+    margin-bottom: 0.5rem;
+  }
+
+  .legend-content ul li {
+    margin-bottom: 0.25rem;
+    font-size: 0.9rem;
+  }
+
+  /* Make sure the legend is responsive */
+  @media (max-width: 576px) {
+    .legend-container {
+      top: auto;
+      bottom: 20px;
+      right: 20px;
+    }
+    
+    .legend-content {
+      max-width: 250px;
     }
   }

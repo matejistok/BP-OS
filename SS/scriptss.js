@@ -143,9 +143,7 @@ function setup() {
 function draw() {
   // Clear background each frame
   clear();
-  stroke(0);
-  strokeWeight(2);
-
+  
   // Draw the data block only if it is visible
   if (showDataBlock) {
     for (let block of dataBlocks) {
@@ -165,7 +163,51 @@ function draw() {
 
   // Draw moving data if animation is in progress
   if (movingData) {
-    drawDataBlock({ x: movingData.x - 50, y: movingData.y - 50, w: 100, h: 100, label: "data" });
+    push();
+    translate(movingData.x, movingData.y);
+    rotate(radians(movingData.rotation));
+    
+    // Draw animated data block
+    drawingContext.shadowOffsetX = 3;
+    drawingContext.shadowOffsetY = 3;
+    drawingContext.shadowBlur = 8;
+    drawingContext.shadowColor = 'rgba(0, 0, 0, 0.2)';
+    
+    // Create gradient for the moving block
+    let gradient = drawingContext.createRadialGradient(0, 0, 0, 0, 0, movingData.size/1.5);
+    gradient.addColorStop(0, '#e6f2ff');
+    gradient.addColorStop(1, '#b8daff');
+    
+    drawingContext.fillStyle = gradient;
+    
+    // Draw rounded rectangle
+    drawingContext.beginPath();
+    drawingContext.roundRect(-movingData.size/2, -movingData.size/2, movingData.size, movingData.size, 15);
+    drawingContext.fill();
+    
+    // Add border
+    drawingContext.strokeStyle = '#0d6efd';
+    drawingContext.lineWidth = 2;
+    drawingContext.stroke();
+    
+    // Add text
+    drawingContext.shadowOffsetX = 0;
+    drawingContext.shadowOffsetY = 0;
+    drawingContext.shadowBlur = 0;
+    fill(40, 40, 40);
+    textAlign(CENTER, CENTER);
+    textSize(movingData.size/5);
+    textStyle(BOLD);
+    text("data", 0, 0);
+    
+    // Add binary data visual
+    textSize(movingData.size/10);
+    textStyle(NORMAL);
+    text("0101", 0, -15);
+    text("1010", 0, 15);
+    
+    pop();
+    
     moveData();
   }
 
@@ -177,18 +219,62 @@ function draw() {
 
 // Draw the data block rectangle with text
 function drawDataBlock(block) {
-  fill(230);
-  rect(block.x, block.y, block.w, block.h, 5);
-  fill(0);
-  textSize(30);
+  // Add shadow effect
+  drawingContext.shadowOffsetX = 5;
+  drawingContext.shadowOffsetY = 5;
+  drawingContext.shadowBlur = 10;
+  drawingContext.shadowColor = 'rgba(0, 0, 0, 0.3)';
+  
+  // Gradient background for the block
+  let gradient = drawingContext.createLinearGradient(block.x, block.y, block.x, block.y + block.h);
+  gradient.addColorStop(0, '#f8f9fa');
+  gradient.addColorStop(1, '#e9ecef');
+  
+  drawingContext.fillStyle = gradient;
+  
+  // Draw rounded rectangle with border
+  drawingContext.beginPath();
+  drawingContext.roundRect(block.x, block.y, block.w, block.h, 15);
+  drawingContext.fill();
+  
+  // Add border
+  drawingContext.strokeStyle = '#0d6efd';
+  drawingContext.lineWidth = 2;
+  drawingContext.stroke();
+  
+  // Reset shadow for text
+  drawingContext.shadowOffsetX = 0;
+  drawingContext.shadowOffsetY = 0;
+  drawingContext.shadowBlur = 0;
+  
+  // Add text with better styling
+  fill(40, 40, 40);
+  textSize(32);
   textAlign(CENTER, CENTER);
+  textStyle(BOLD);
   text(block.label, block.x + block.w / 2, block.y + block.h / 2);
+  
+  // Add a small icon/visual to make it look like a data block
+  textSize(16);
+  textStyle(NORMAL);
+  text("0101010110101", block.x + block.w / 2, block.y + block.h / 2 - 30);
+  text("1010101001010", block.x + block.w / 2, block.y + block.h / 2 + 30);
 }
 
 // Start animation of moving data
 function startDataMove(startElemId, targetBlockId) {
   if (animationInProgress) return;
   animationInProgress = true;
+
+  // Add visual feedback that the row was clicked
+  const startElem = document.getElementById(startElemId);
+  if (startElem) {
+    startElem.style.transition = 'background-color 0.3s';
+    startElem.style.backgroundColor = '#cfe2ff'; // Light blue background
+    setTimeout(() => {
+      startElem.style.backgroundColor = '';
+    }, 300);
+  }
 
   // Hide the data block first
   showDataBlock = false;
@@ -198,7 +284,10 @@ function startDataMove(startElemId, targetBlockId) {
       targetX: 1400,
       targetY: 670,
       phase: "backToFile", // First phase: moving back to the file
-      source: startElemId
+      source: startElemId,
+      size: 100, // Starting size
+      targetSize: 80, // Target size for animation
+      rotation: 0 // Add rotation for more dynamic animation
   };
 }
 
@@ -208,6 +297,12 @@ function moveData() {
 
   movingData.x += (movingData.targetX - movingData.x) * 0.1;
   movingData.y += (movingData.targetY - movingData.y) * 0.1;
+  
+  // Animate size
+  movingData.size += (movingData.targetSize - movingData.size) * 0.1;
+  
+  // Add slight rotation for more dynamic movement
+  movingData.rotation = sin(frameCount * 0.05) * 5;
 
   if (abs(movingData.x - movingData.targetX) < 1 && abs(movingData.y - movingData.targetY) < 1) {
       if (movingData.phase === "backToFile") {
@@ -236,7 +331,10 @@ function moveData() {
                   targetX: dataBlocks[0].x + dataBlocks[0].w / 2,
                   targetY: dataBlocks[0].y + dataBlocks[0].h / 2,
                   phase: "toDataBlock",
-                  source: movingData.source
+                  source: movingData.source,
+                  size: 80,
+                  targetSize: 100,
+                  rotation: 0
               };
           }, 100);
       } else if (movingData.phase === "toDataBlock") {
@@ -253,6 +351,7 @@ function moveData() {
   }
 }
 
+// Draw arrow from row to block
 function drawArrowFromRowToBlock(startElemId, endElemId, offsetStart, offsetEnd) {
   const startElem = document.getElementById(startElemId);
   if (!startElem) return;
@@ -278,18 +377,41 @@ function drawArrowFromRowToBlock(startElemId, endElemId, offsetStart, offsetEnd)
     let blockCenterY = block.y + block.h / 2;
     lineWithArrowhead(startX, startY, blockCenterX - 50, blockCenterY);
   }
+
+  // Enhanced arrow styling
+  if (startElemId === "indirectRow" || endElemId === "indBlockAddr1") {
+    // Make indirect arrows visually distinct
+    stroke(70, 130, 180); // Steel blue color
+    strokeWeight(2.5);
+  } else {
+    // Regular arrows
+    stroke(0, 0, 0);
+    strokeWeight(2);
+  }
 }
 
 // Draw line + arrowhead from (x1,y1) to (x2,y2)
 function lineWithArrowhead(x1, y1, x2, y2) {
-  line(x1, y1, x2, y2);
+  // Draw a bezier curve instead of straight line for more organic look
+  noFill();
+  let midX = (x1 + x2) / 2;
+  let midY = (y1 + y2) / 2;
+  let controlY = midY - 20; // Curve control point
+  
+  beginShape();
+  vertex(x1, y1);
+  quadraticVertex(midX, controlY, x2, y2);
+  endShape();
+
+  // Draw arrowhead
   push();
   translate(x2, y2);
-  let angle = atan2(y2 - y1, x2 - x1);
+  let angle = atan2(y2 - controlY, x2 - midX);
   rotate(angle);
-  let arrowSize = 8;
-  line(0, 0, -arrowSize, -arrowSize / 2);
-  line(0, 0, -arrowSize, arrowSize / 2);
+  let arrowSize = 10;
+  fill(0);
+  noStroke();
+  triangle(0, 0, -arrowSize, -arrowSize / 2, -arrowSize, arrowSize / 2);
   pop();
 }
 
@@ -299,53 +421,79 @@ document.addEventListener('DOMContentLoaded', function() {
   var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
     return new bootstrap.Tooltip(tooltipTriggerEl, {
       html: true,
-      trigger: 'manual', // Use manual trigger instead of hover
       template: '<div class="tooltip" role="tooltip"><div class="tooltip-arrow"></div><div class="tooltip-inner" style="max-width: 300px;"></div></div>'
     });
   });
   
-  // Show tooltip on mouseenter
-  tooltipTriggerList.forEach(el => {
-    el.addEventListener('mouseenter', function() {
-      const tooltip = bootstrap.Tooltip.getInstance(el);
-      tooltip.show();
-      
-      // Add event listeners to the tooltip
-      setTimeout(() => {
-        const tooltipElement = document.querySelector('.tooltip');
-        if (tooltipElement) {
-          // Keep tooltip open when mouse is over the tooltip
-          tooltipElement.addEventListener('mouseenter', function() {
-            // Do nothing, just capture the event to keep tooltip open
-          });
-          
-          // Hide tooltip when mouse leaves the tooltip
-          tooltipElement.addEventListener('mouseleave', function() {
-            tooltip.hide();
-          });
+  // Make sure Bootstrap Icons are loaded
+  const linkElement = document.createElement('link');
+  linkElement.rel = 'stylesheet';
+  linkElement.href = 'https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css';
+  document.head.appendChild(linkElement);
+  
+  // Replace jQuery-style selector with proper querySelector
+  const gcbHeader = document.querySelector('th:nth-child(1)');
+  const lcbHeader = document.querySelector('th:nth-child(2)');
+  
+  if (gcbHeader) {
+    gcbHeader.style.cursor = 'pointer';
+    gcbHeader.addEventListener('mouseenter', function() {
+      const tooltipIcon = this.querySelector('[data-bs-toggle="tooltip"]');
+      if (tooltipIcon) {
+        const tooltip = bootstrap.Tooltip.getInstance(tooltipIcon);
+        if (tooltip) {
+          tooltip.show();
         }
-      }, 100);
+      }
     });
     
-    // Hide tooltip when mouse leaves trigger element
-    // unless mouse is over the tooltip itself
-    el.addEventListener('mouseleave', function() {
-      setTimeout(() => {
-        const tooltipElement = document.querySelector('.tooltip');
-        if (tooltipElement) {
-          // Check if mouse is over tooltip
-          const tooltipRect = tooltipElement.getBoundingClientRect();
-          if (!(event.clientX >= tooltipRect.left && 
-                event.clientX <= tooltipRect.right && 
-                event.clientY >= tooltipRect.top && 
-                event.clientY <= tooltipRect.bottom)) {
-            const tooltip = bootstrap.Tooltip.getInstance(el);
-            tooltip.hide();
-          }
+    gcbHeader.addEventListener('mouseleave', function() {
+      const tooltipIcon = this.querySelector('[data-bs-toggle="tooltip"]');
+      if (tooltipIcon) {
+        const tooltip = bootstrap.Tooltip.getInstance(tooltipIcon);
+        if (tooltip) {
+          tooltip.hide();
         }
-      }, 100);
+      }
     });
-  });
+  }
+  
+  if (lcbHeader) {
+    lcbHeader.style.cursor = 'pointer';
+    lcbHeader.addEventListener('mouseenter', function() {
+      const tooltipIcon = this.querySelector('[data-bs-toggle="tooltip"]');
+      if (tooltipIcon) {
+        const tooltip = bootstrap.Tooltip.getInstance(tooltipIcon);
+        if (tooltip) {
+          tooltip.show();
+        }
+      }
+    });
+    
+    lcbHeader.addEventListener('mouseleave', function() {
+      const tooltipIcon = this.querySelector('[data-bs-toggle="tooltip"]');
+      if (tooltipIcon) {
+        const tooltip = bootstrap.Tooltip.getInstance(tooltipIcon);
+        if (tooltip) {
+          tooltip.hide();
+        }
+      }
+    });
+  }
+  
+  // Initialize the legend collapse functionality
+  const legendToggle = document.querySelector('.legend-toggle');
+  const legendContent = document.getElementById('legendContent');
+  
+  if (legendToggle && legendContent) {
+    // Close the legend when clicking outside of it
+    document.addEventListener('click', function(event) {
+      if (!legendToggle.contains(event.target) && !legendContent.contains(event.target) && legendContent.classList.contains('show')) {
+        const bsCollapse = new bootstrap.Collapse(legendContent);
+        bsCollapse.hide();
+      }
+    });
+  }
 });
 
 // Keep canvas size in sync with window size
