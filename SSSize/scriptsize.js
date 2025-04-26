@@ -39,7 +39,7 @@ $(document).ready(function () {
         }
     });
 
-    // Add new box
+    // Add new box - updated for better UI
     $("#add-box").on("click", function () {
         // Check if all existing boxes have a selected type
         let allSelected = true;
@@ -53,14 +53,18 @@ $(document).ready(function () {
         if (allSelected) {
             let boxId = $(".file-box").length + 1;
             $("#box-container").append(`
-                <div class="file-box btn btn-light d-flex justify-content-between align-items-center mt-2" data-id="${boxId}">
-                    <span>Select type</span>
-                    <button class="btn btn-danger btn-sm remove-box">X</button>
+                <div class="file-box d-flex justify-content-between align-items-center" data-id="${boxId}">
+                    <span class="fw-bold">Select type</span>
+                    <button class="btn btn-outline-danger btn-sm remove-box">
+                        <i class="bi bi-trash"></i> Remove
+                    </button>
                 </div>
             `);
             $("#error-msg2").hide(); // Hide error message
         } else {
             $("#error-msg2").show(); // Show error message
+            // Add animation to make error more noticeable
+            $("#error-msg2").fadeIn(100).fadeOut(100).fadeIn(100);
         }
     });
 
@@ -71,10 +75,11 @@ $(document).ready(function () {
         calculateMaxFileSize();
     });
 
-    // Show dropdown on box click
+    // Show dropdown on box click - updated with better styling
     $(document).on("click", ".file-box", function () {
         let dropdown = $(`
-            <div class="dropdown-menu show file-box-dropdown">
+            <div class="dropdown-menu show file-box-dropdown p-2">
+                <h6 class="dropdown-header">Select Block Type</h6>
                 <button class="dropdown-item select-option" data-value="Priamy">Priamy</button>
                 <button class="dropdown-item select-option" data-value="Nepriamy">Nepriamy</button>
                 <button class="dropdown-item select-option" data-value="2x nepriamy">2x Nepriamy</button>
@@ -83,11 +88,25 @@ $(document).ready(function () {
         $(this).append(dropdown);
     });
 
-    // Select an option
+    // Select an option - updated to show visual feedback
     $(document).on("click", ".select-option", function (e) {
         e.stopPropagation();
         let selectedValue = $(this).data("value");
-        $(this).closest(".file-box").find("span").text(selectedValue);
+        let box = $(this).closest(".file-box");
+        
+        box.find("span").text(selectedValue);
+        
+        // Visual feedback based on selection
+        box.removeClass("bg-light bg-info bg-warning");
+        
+        if (selectedValue === "Priamy") {
+            box.addClass("bg-light");
+        } else if (selectedValue === "Nepriamy") {
+            box.addClass("bg-info bg-opacity-25");
+        } else if (selectedValue === "2x nepriamy") {
+            box.addClass("bg-warning bg-opacity-25");
+        }
+        
         $(".file-box-dropdown").remove();
         calculateMaxFileSize();
     });
@@ -121,25 +140,83 @@ $(document).ready(function () {
         }
 
         let maxSize = 0;
-        let formula = "";
+        let formulaParts = [];
+        
         $(".file-box span").each(function () {
             let type = $(this).text();
             if (type === "Priamy") {
                 maxSize += blockSize;
-                formula += ` + ${blockSize}`;
+                formulaParts.push(`\\left(${blockSize}\\right)_{\\text{Priamy}}`);
             } else if (type === "Nepriamy") {
                 let size = (blockSize / pointerSize) * blockSize;
                 maxSize += size;
-                formula += ` + (${blockSize} / ${pointerSize}) * ${blockSize}`;
+                formulaParts.push(`\\left(\\frac{${blockSize}}{${pointerSize}} \\times ${blockSize}\\right)_{\\text{Nepriamy}}`);
             } else if (type === "2x nepriamy") {
                 let size = (blockSize / pointerSize) * (blockSize / pointerSize) * blockSize;
                 maxSize += size;
-                formula += ` + (${blockSize} / ${pointerSize}) * (${blockSize} / ${pointerSize}) * ${blockSize}`;
+                formulaParts.push(`\\left(\\frac{${blockSize}}{${pointerSize}} \\times \\frac{${blockSize}}{${pointerSize}} \\times ${blockSize}\\right)_{\\text{2x Nepriamy}}`);
             }
         });
 
-        formula = formula.replace(" + ", ""); // Remove the leading " + "
-        $("#formula").text(`Formula: ${formula}`);
-        $("#maxFileSize").text(`Max File System Size: ${maxSize} Bytes`);
+        let formulaText = formulaParts.join(" + ");
+        if (formulaText === "") {
+            formulaText = "0";
+        }
+        
+        // Update with more readable format
+        if (maxSize > 0) {
+            // Format the size in KB, MB if appropriate
+            let formattedSize = maxSize;
+            let unit = "Bytes";
+            
+            if (maxSize >= 1024 * 1024) {
+                formattedSize = (maxSize / (1024 * 1024)).toFixed(2);
+                unit = "MB";
+            } else if (maxSize >= 1024) {
+                formattedSize = (maxSize / 1024).toFixed(2);
+                unit = "KB";
+            }
+            
+            $("#maxFileSize").html(`
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">Max File System Size</h5>
+                </div>
+                <div class="card-body">
+                    <p class="mb-0">${formattedSize} ${unit}</p>
+                </div>
+            `);
+            
+            $("#formula").html(`
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">Formula</h5>
+                </div>
+                <div class="card-body">
+                    <p class="mb-0">\\(${formulaText}\\) = ${maxSize} Bytes</p>
+                </div>
+            `);
+        } else {
+            $("#formula").html(`
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">Formula</h5>
+                </div>
+                <div class="card-body">
+                    <p class="mb-0">Add blocks to see formula</p>
+                </div>
+            `);
+            
+            $("#maxFileSize").html(`
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">Max File System Size</h5>
+                </div>
+                <div class="card-body">
+                    // <p class="mb-0">0 Bytes</p>
+                </div>
+            `);
+        }
+        
+        // Trigger MathJax to process the new formula
+        if (window.MathJax) {
+            MathJax.typeset();
+        }
     }
 });

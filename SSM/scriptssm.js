@@ -78,7 +78,7 @@ function updateRowHighlights() {
 }
 
 function preload() {
-  fileImg = loadImage("hdd.png"); // Ensure you have a file image named 'file.png'
+  fileImg = loadImage("hdd.png"); // Ensure you have a file image named 'hdd.png'
 }
 
 function setup() {
@@ -105,6 +105,33 @@ function setup() {
   const indBlock2Addr2 = document.getElementById("indBlock2Addr2");
   const indBlock2Addr256 = document.getElementById("indBlock2Addr256");
 
+  // Initialize permanent indirect arrows that will always be displayed
+  indirectArrows.push({ 
+    start: "indirectRow", 
+    end: "indBlockAddr1", 
+    offsetStartX: 0, 
+    offsetStartY: 0, 
+    offsetEndX: -150, 
+    offsetEndY: 0 
+  });
+  
+  indirectArrows.push({ 
+    start: "dIndirectRow", 
+    end: "DAddr1Row", 
+    offsetStartX: -50, 
+    offsetStartY: 15, 
+    offsetEndX: 100, 
+    offsetEndY: -20 
+  });
+  
+  indirectArrowsVisible = true;
+  
+  // Set initial row highlights for the permanent arrows
+  highlightRow("indirectRow", true);
+  highlightRow("indBlockAddr1", true);
+  highlightRow("dIndirectRow", true);
+  highlightRow("DAddr1Row", true);
+
   if (row1) {
     console.log("addr1Row element found");
     row1.addEventListener("click", () => {
@@ -122,8 +149,6 @@ function setup() {
     console.log("addr2Row element found");
     row2.addEventListener("click", () => {
       console.log("addr2Row clicked");
-      // showDataBlock = true; // Show the data block
-      // activeArrows = [{ start: "addr2Row", end: "dataBlock1" }]; // Draw arrow
       const arrowExists = activeArrows.some(arrow => arrow.start === "addr2Row" && arrow.end === "dataBlock1");
       if (!arrowExists) {
         startDataMove("addr2Row", "dataBlock1");
@@ -132,42 +157,16 @@ function setup() {
     });
   }
 
+  // Remove click event for indirectRow since we want it to always show the arrow
   if (indirectRow) {
     console.log("indirectRow element found");
-    indirectRow.addEventListener("click", () => {
-      console.log("indirectRow clicked");
-      
-      // Check if this arrow already exists
-      const arrowExists = indirectArrows.some(arrow => 
-        arrow.start === "indirectRow" && arrow.end === "indBlockAddr1");
-      
-      if (arrowExists) {
-        // Remove only this arrow
-        indirectArrows = indirectArrows.filter(arrow => 
-          !(arrow.start === "indirectRow" && arrow.end === "indBlockAddr1"));
-      } else {
-        // Add this arrow without removing others
-        indirectArrows.push({ 
-          start: "indirectRow", 
-          end: "indBlockAddr1", 
-          offsetStartX: 0, 
-          offsetStartY: 0, 
-          offsetEndX: -150, 
-          offsetEndY: 0 
-        });
-      }
-      
-      indirectArrowsVisible = indirectArrows.length > 0;
-      updateRowHighlights();
-    });
+    // No click event listener - the arrow is permanent
   }
 
   if (indBlockAddr1) {
     console.log("indBlockAddr1 element found");
     indBlockAddr1.addEventListener("click", () => {
       console.log("indBlockAddr1 clicked");
-      // showDataBlock = true; // Show the data block
-      // activeArrows = [{ start: "indBlockAddr1", end: "dataBlock2" }]; // Draw arrow
       const arrowExists = activeArrows.some(arrow => arrow.start === "indBlockAddr1" && arrow.end === "dataBlock1");
       if (!arrowExists) {
         startDataMove("indBlockAddr1", "dataBlock1");
@@ -180,8 +179,6 @@ function setup() {
     console.log("indBlockAddr2 element found");
     indBlockAddr2.addEventListener("click", () => {
       console.log("indBlockAddr2 clicked");
-      // showDataBlock = true; // Show the data block
-      // activeArrows = [{ start: "indBlockAddr2", end: "dataBlock2" }]; // Draw arrow
       startDataMove("indBlockAddr2", "dataBlock1");
       updateRowHighlights();
     });
@@ -191,41 +188,15 @@ function setup() {
     console.log("indBlockAddr256 element found");
     indBlockAddr256.addEventListener("click", () => {
       console.log("indBlockAddr256 clicked");
-      // showDataBlock = true; // Show the data block
-      // activeArrows = [{ start: "indBlockAddr256", end: "dataBlock2" }]; // Draw arrow
       startDataMove("indBlockAddr256", "dataBlock1");
       updateRowHighlights();
     });
   }
 
+  // Remove click event for dIndirectRow since we want it to always show the arrow
   if (dIndirectRow) {
     console.log("dIndirectRow element found");
-    dIndirectRow.addEventListener("click", () => {
-      console.log("dIndirectRow clicked");
-      
-      // Check if this arrow already exists
-      const arrowExists = indirectArrows.some(arrow => 
-        arrow.start === "dIndirectRow" && arrow.end === "DAddr1Row");
-      
-      if (arrowExists) {
-        // Remove only this arrow
-        indirectArrows = indirectArrows.filter(arrow => 
-          !(arrow.start === "dIndirectRow" && arrow.end === "DAddr1Row"));
-      } else {
-        // Add this arrow without removing others
-        indirectArrows.push({ 
-          start: "dIndirectRow", 
-          end: "DAddr1Row", 
-          offsetStartX: -50, 
-          offsetStartY: 15, 
-          offsetEndX: 100, 
-          offsetEndY: -20 
-        });
-      }
-      
-      indirectArrowsVisible = indirectArrows.length > 0;
-      updateRowHighlights();
-    });
+    // No click event listener - the arrow is permanent
   }
 
   if (DAddr1Row) {
@@ -247,8 +218,14 @@ function setup() {
           !(arrow.end === "indBlock2Addr1" && 
             (arrow.start === "DAddr2Row" || arrow.start === "DAddr256Row")));
         
+        // Preserve the permanent arrows when filtering
+        const permanentArrows = indirectArrows.filter(arrow => 
+          (arrow.start === "indirectRow" && arrow.end === "indBlockAddr1") ||
+          (arrow.start === "dIndirectRow" && arrow.end === "DAddr1Row")
+        );
+        
         // Add this arrow
-        indirectArrows.push({ 
+        permanentArrows.push({ 
           start: "DAddr1Row", 
           end: "indBlock2Addr1", 
           offsetStartX: 0, 
@@ -256,6 +233,8 @@ function setup() {
           offsetEndX: -150, 
           offsetEndY: 0 
         });
+        
+        indirectArrows = permanentArrows;
   
         document.getElementById("indBlock2Addr1").children[0].innerText = "267";
         document.getElementById("indBlock2Addr2").children[0].innerText = "268";
@@ -289,8 +268,14 @@ function setup() {
           !(arrow.end === "indBlock2Addr1" && 
             (arrow.start === "DAddr1Row" || arrow.start === "DAddr256Row")));
         
+        // Preserve the permanent arrows when filtering
+        const permanentArrows = indirectArrows.filter(arrow => 
+          (arrow.start === "indirectRow" && arrow.end === "indBlockAddr1") ||
+          (arrow.start === "dIndirectRow" && arrow.end === "DAddr1Row")
+        );
+        
         // Add this arrow
-        indirectArrows.push({ 
+        permanentArrows.push({ 
           start: "DAddr2Row", 
           end: "indBlock2Addr1", 
           offsetStartX: 0, 
@@ -298,6 +283,8 @@ function setup() {
           offsetEndX: -150, 
           offsetEndY: 0 
         });
+        
+        indirectArrows = permanentArrows;
   
         document.getElementById("indBlock2Addr1").children[0].innerText = "523";
         document.getElementById("indBlock2Addr2").children[0].innerText = "524";
@@ -331,8 +318,14 @@ function setup() {
           !(arrow.end === "indBlock2Addr1" && 
             (arrow.start === "DAddr1Row" || arrow.start === "DAddr2Row")));
         
+        // Preserve the permanent arrows when filtering
+        const permanentArrows = indirectArrows.filter(arrow => 
+          (arrow.start === "indirectRow" && arrow.end === "indBlockAddr1") ||
+          (arrow.start === "dIndirectRow" && arrow.end === "DAddr1Row")
+        );
+        
         // Add this arrow
-        indirectArrows.push({ 
+        permanentArrows.push({ 
           start: "DAddr256Row", 
           end: "indBlock2Addr1", 
           offsetStartX: 0, 
@@ -340,6 +333,8 @@ function setup() {
           offsetEndX: -150, 
           offsetEndY: 0 
         });
+        
+        indirectArrows = permanentArrows;
   
         document.getElementById("indBlock2Addr1").children[0].innerText = "65547";
         document.getElementById("indBlock2Addr2").children[0].innerText = "65548";
@@ -354,13 +349,10 @@ function setup() {
     });
   }
 
-
   if (indBlock2Addr1) {
     console.log("indBlock2Addr1 element found");
     indBlock2Addr1.addEventListener("click", () => {
       console.log("indBlock2Addr1 clicked");
-      // showDataBlock = true; // Show the data block
-      // activeArrows = [{ start: "indBlock2Addr1", end: "dataBlock2" }]; // Draw arrow
       startDataMove("indBlock2Addr1", "dataBlock1");
       updateRowHighlights();
     });
@@ -370,8 +362,6 @@ function setup() {
     console.log("indBlock2Addr2 element found");
     indBlock2Addr2.addEventListener("click", () => {
       console.log("indBlock2Addr2 clicked");
-      // showDataBlock = true; // Show the data block
-      // activeArrows = [{ start: "indBlock2Addr2", end: "dataBlock2" }]; // Draw arrow
       startDataMove("indBlock2Addr2", "dataBlock1");
       updateRowHighlights();
     });
@@ -381,20 +371,42 @@ function setup() {
     console.log("indBlock2Addr256 element found");
     indBlock2Addr256.addEventListener("click", () => {
       console.log("indBlock2Addr256 clicked");
-      // showDataBlock = true; // Show the data block
-      // activeArrows = [{ start: "indBlock2Addr256", end: "dataBlock2" }]; // Draw arrow
       startDataMove("indBlock2Addr256", "dataBlock1");
       updateRowHighlights();
     });
   }
+
+  // Initialize tooltips
+  document.addEventListener('DOMContentLoaded', function() {
+    // Initialize tooltips with HTML support and custom options
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+      return new bootstrap.Tooltip(tooltipTriggerEl, {
+        html: true,
+        template: '<div class="tooltip" role="tooltip"><div class="tooltip-arrow"></div><div class="tooltip-inner" style="max-width: 300px;"></div></div>'
+      });
+    });
+    
+    // Initialize the legend collapse functionality
+    const legendToggle = document.querySelector('.legend-toggle');
+    const legendContent = document.getElementById('legendContent');
+    
+    if (legendToggle && legendContent) {
+      // Close the legend when clicking outside of it
+      document.addEventListener('click', function(event) {
+        if (!legendToggle.contains(event.target) && !legendContent.contains(event.target) && legendContent.classList.contains('show')) {
+          const bsCollapse = new bootstrap.Collapse(legendContent);
+          bsCollapse.hide();
+        }
+      });
+    }
+  });
 }
 
 function draw() {
   // Clear background each frame
   clear();
-  stroke(0);
-  strokeWeight(2);
-
+  
   // Draw the data block only if it is visible
   if (showDataBlock) {
     for (let block of dataBlocks) {
@@ -414,28 +426,118 @@ function draw() {
 
   // Draw moving data if animation is in progress
   if (movingData) {
-    drawDataBlock({ x: movingData.x - 50, y: movingData.y - 50, w: 100, h: 100, label: "data" });
+    push();
+    translate(movingData.x, movingData.y);
+    rotate(radians(movingData.rotation || 0));
+    
+    // Draw animated data block
+    drawingContext.shadowOffsetX = 3;
+    drawingContext.shadowOffsetY = 3;
+    drawingContext.shadowBlur = 8;
+    drawingContext.shadowColor = 'rgba(0, 0, 0, 0.2)';
+    
+    // Create gradient for the moving block
+    let gradient = drawingContext.createRadialGradient(0, 0, 0, 0, 0, 50);
+    gradient.addColorStop(0, '#e6f2ff');
+    gradient.addColorStop(1, '#b8daff');
+    
+    drawingContext.fillStyle = gradient;
+    
+    // Draw rounded rectangle
+    drawingContext.beginPath();
+    drawingContext.roundRect(-50, -50, 100, 100, 15);
+    drawingContext.fill();
+    
+    // Add border
+    drawingContext.strokeStyle = '#0d6efd';
+    drawingContext.lineWidth = 2;
+    drawingContext.stroke();
+    
+    // Add text
+    drawingContext.shadowOffsetX = 0;
+    drawingContext.shadowOffsetY = 0;
+    drawingContext.shadowBlur = 0;
+    fill(40, 40, 40);
+    textAlign(CENTER, CENTER);
+    textSize(20);
+    textStyle(BOLD);
+    text("data", 0, 0);
+    
+    // Add binary data visual
+    textSize(10);
+    textStyle(NORMAL);
+    text("0101", 0, -15);
+    text("1010", 0, 15);
+    
+    pop();
+    
     moveData();
   }
 
   // Draw the file image as the data source
-  image(fileImg, 1310, 560, 180, 160);
+  let imgX = min(width - 220, 1310);
+  let imgY = 525;
+  image(fileImg, imgX, imgY, 180, 190);
 }
 
 // Draw the data block rectangle with text
 function drawDataBlock(block) {
-  fill(230);
-  rect(block.x, block.y, block.w, block.h, 5);
-  fill(0);
-  textSize(30);
+  // Add shadow effect
+  drawingContext.shadowOffsetX = 5;
+  drawingContext.shadowOffsetY = 5;
+  drawingContext.shadowBlur = 10;
+  drawingContext.shadowColor = 'rgba(0, 0, 0, 0.3)';
+  
+  // Gradient background for the block
+  let gradient = drawingContext.createLinearGradient(block.x, block.y, block.x, block.y + block.h);
+  gradient.addColorStop(0, '#f8f9fa');
+  gradient.addColorStop(1, '#e9ecef');
+  
+  drawingContext.fillStyle = gradient;
+  
+  // Draw rounded rectangle with border
+  drawingContext.beginPath();
+  drawingContext.roundRect(block.x, block.y, block.w, block.h, 15);
+  drawingContext.fill();
+  
+  // Add border
+  drawingContext.strokeStyle = '#0d6efd';
+  drawingContext.lineWidth = 2;
+  drawingContext.stroke();
+  
+  // Reset shadow for text
+  drawingContext.shadowOffsetX = 0;
+  drawingContext.shadowOffsetY = 0;
+  drawingContext.shadowBlur = 0;
+  
+  // Add text with better styling
+  fill(40, 40, 40);
+  textSize(32);
   textAlign(CENTER, CENTER);
+  textStyle(BOLD);
   text(block.label, block.x + block.w / 2, block.y + block.h / 2);
+  
+  // Add a small icon/visual to make it look like a data block
+  textSize(16);
+  textStyle(NORMAL);
+  text("0101010110101", block.x + block.w / 2, block.y + block.h / 2 - 30);
+  text("1010101001010", block.x + block.w / 2, block.y + block.h / 2 + 30);
 }
 
 // Start animation of moving data
 function startDataMove(startElemId, targetBlockId) {
   if (animationInProgress) return;
   animationInProgress = true;
+
+  // Add visual feedback that the row was clicked
+  const startElem = document.getElementById(startElemId);
+  if (startElem) {
+    startElem.style.transition = 'background-color 0.3s';
+    startElem.style.backgroundColor = '#cfe2ff'; // Light blue background
+    setTimeout(() => {
+      startElem.style.backgroundColor = '';
+    }, 300);
+  }
 
   // Hide the data block first
   showDataBlock = false;
@@ -445,7 +547,10 @@ function startDataMove(startElemId, targetBlockId) {
       targetX: 1400,
       targetY: 670,
       phase: "backToFile", // First phase: moving back to the file
-      source: startElemId
+      source: startElemId,
+      size: 100, // Starting size
+      targetSize: 80, // Target size for animation
+      rotation: 0 // Add rotation for more dynamic animation
   };
 
   updateRowHighlights();
@@ -457,6 +562,14 @@ function moveData() {
 
   movingData.x += (movingData.targetX - movingData.x) * 0.1;
   movingData.y += (movingData.targetY - movingData.y) * 0.1;
+  
+  // Animate size if using that property
+  if (movingData.size) {
+    movingData.size += (movingData.targetSize - movingData.size) * 0.1;
+  }
+  
+  // Add slight rotation for more dynamic movement
+  movingData.rotation = sin(frameCount * 0.05) * 5;
 
   if (abs(movingData.x - movingData.targetX) < 1 && abs(movingData.y - movingData.targetY) < 1) {
       if (movingData.phase === "backToFile") {
@@ -483,7 +596,10 @@ function moveData() {
                   targetX: dataBlocks[0].x + dataBlocks[0].w / 2,
                   targetY: dataBlocks[0].y + dataBlocks[0].h / 2,
                   phase: "toDataBlock",
-                  source: movingData.source
+                  source: movingData.source,
+                  size: 80,
+                  targetSize: 100,
+                  rotation: 0
               };
           }, 100);
       } else if (movingData.phase === "toDataBlock") {
@@ -500,10 +616,7 @@ function moveData() {
   }
 }
 
-/**
- * Connect a table row (startElemId) to either another table row
- * or one of our data block rectangles (endElemId).
- */
+// Draw arrow from row to block with enhanced styling
 function drawArrowFromRowToBlock(startElemId, endElemId, offsetStartX, offsetStartY, offsetEndX, offsetEndY) {
   const startElem = document.getElementById(startElemId);
   if (!startElem) return;
@@ -512,6 +625,18 @@ function drawArrowFromRowToBlock(startElemId, endElemId, offsetStartX, offsetSta
   let startRect = startElem.getBoundingClientRect();
   let startX = startRect.left + startRect.width / 2 + 150 + offsetStartX;
   let startY = startRect.top + startRect.height / 2 + window.scrollY + offsetStartY;
+
+  // Set arrow style based on type
+  if (startElemId.includes("indirect") || startElemId.includes("dIndirect") || 
+      endElemId.includes("indBlock") || endElemId.includes("DAddr")) {
+    // Make indirect arrows visually distinct
+    stroke(70, 130, 180); // Steel blue color
+    strokeWeight(2.5);
+  } else {
+    // Regular arrows
+    stroke(0, 0, 0);
+    strokeWeight(2);
+  }
 
   // For the "end," we see if it's an element in the DOM
   const endElem = document.getElementById(endElemId);
@@ -531,24 +656,30 @@ function drawArrowFromRowToBlock(startElemId, endElemId, offsetStartX, offsetSta
   }
 }
 
-// Draw line + arrowhead from (x1,y1) to (x2,y2)
+// Draw line + arrowhead from (x1,y1) to (x2,y2) with enhanced styling
 function lineWithArrowhead(x1, y1, x2, y2) {
-  line(x1, y1, x2, y2);
+  // Draw a bezier curve instead of straight line for more organic look
+  noFill();
+  let midX = (x1 + x2) / 2;
+  let midY = (y1 + y2) / 2;
+  let controlY = midY - 20; // Curve control point
+  
+  beginShape();
+  vertex(x1, y1);
+  quadraticVertex(midX, controlY, x2, y2);
+  endShape();
+
+  // Draw arrowhead
   push();
   translate(x2, y2);
-  let angle = atan2(y2 - y1, x2 - x1);
+  let angle = atan2(y2 - controlY, x2 - midX);
   rotate(angle);
-  let arrowSize = 8;
-  line(0, 0, -arrowSize, -arrowSize / 2);
-  line(0, 0, -arrowSize, arrowSize / 2);
+  let arrowSize = 10;
+  fill(0);
+  noStroke();
+  triangle(0, 0, -arrowSize, -arrowSize / 2, -arrowSize, arrowSize / 2);
   pop();
 }
-
-document.querySelectorAll("tr").forEach(row => {
-  row.addEventListener("mouseover", () => {
-      console.log("Mouse is over:", row.id);
-  });
-});
 
 // Keep canvas size in sync with window size
 function windowResized() {

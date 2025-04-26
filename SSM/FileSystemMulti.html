@@ -8,6 +8,9 @@
   <!-- Bootstrap CSS -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 
+  <!-- Bootstrap Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+
   <!-- Custom CSS -->
   <link rel="stylesheet" href="stylessm.css">
 
@@ -41,11 +44,31 @@
                 <li class="nav-item">
                     <a class="nav-link" href="../VM/index.html">Virtual Memory</a>
                 </li>
+                <li class="nav-item">
+                  <a class="nav-link active" href="../MMAP/Mmap.html">MMAP</a>
+                </li>
             </ul>
         </div>
     </div>
   </nav>
 
+  <!-- Legend/Glossary dropdown in top right corner -->
+  <div class="legend-container">
+    <button class="btn btn-sm btn-outline-primary legend-toggle" type="button" data-bs-toggle="collapse" data-bs-target="#legendContent" aria-expanded="false" aria-controls="legendContent">
+      <i class="bi bi-info-circle"></i> Legenda
+    </button>
+    <div class="collapse legend-content" id="legendContent">
+      <div class="card card-body">
+        <h6 class="card-title">Legenda</h6>
+        <ul class="list-unstyled mb-0">
+          <li><strong>GČB</strong> - Globálne Číslo Bloku (Global Block Number)</li>
+          <li><strong>LČB</strong> - Lokálne Číslo Bloku (Local Block Number)</li>
+          <li><strong>DNI</strong> - Double Nepriamy Index (Double Indirect Index)</li>
+          <li><strong>NI</strong> - Nepriamy Index (Indirect Index)</li>
+        </ul>
+      </div>
+    </div>
+  </div>
 
    <!-- Main container for the diagram -->
    <div class="container diagram-section">
@@ -58,12 +81,12 @@
         <h5 class="mb-3 text-primary fw-bold">Dinode</h5>
         <div class="table-responsive">
           <table class="table table-hover table-bordered table-striped" style="max-width: 300px">
-            <thead>
+            <!-- <thead>
               <tr class="text-center bg-primary text-white">
                 <th>Field</th>
                 <th>Value</th>
               </tr>
-            </thead>
+            </thead> -->
             <tbody>
               <tr id="typeRow" class="text-center"><td class="fw-medium">type</td><td></td></tr>
               <tr id="majorRow" class="text-center"><td class="fw-medium">major</td><td></td></tr>
@@ -96,9 +119,15 @@
           <table class="table table-hover table-bordered table-striped" style="max-width: 300px">
             <thead>
               <tr class="text-center bg-primary text-white">
-                <th class="col-1">GČB</th>
-                <th class="col-2">DNI</th>
-                <th class="col-3">NI</th>
+                <th class="col-1" data-bs-toggle="tooltip" data-bs-placement="top" title="Globálne Číslo Bloku - Číslo bloku na disku">
+                  GČB <i class="bi bi-info-circle-fill text-white-50 ms-1"></i>
+                </th>
+                <th class="col-2" data-bs-toggle="tooltip" data-bs-placement="top" title="Double Nepriamy Index - Index v tabuľke nepriamych blokov">
+                  DNI <i class="bi bi-info-circle-fill text-white-50 ms-1"></i>
+                </th>
+                <th class="col-3" data-bs-toggle="tooltip" data-bs-placement="top" title="Nepriamy Index - Celkový index v reťazení blokov">
+                  NI <i class="bi bi-info-circle-fill text-white-50 ms-1"></i>
+                </th>
                 <th class="col-4"></th>
               </tr>
             </thead>
@@ -134,8 +163,12 @@
           <table class="table table-hover table-bordered table-striped" style="max-width: 300px">
             <thead>
               <tr class="text-center bg-primary text-white">
-                <th class="col-1">GČB</th>
-                <th class="col-2">LČB</th>
+                <th class="col-1" data-bs-toggle="tooltip" data-bs-placement="top" title="Globálne Číslo Bloku - Číslo bloku na disku">
+                  GČB <i class="bi bi-info-circle-fill text-white-50 ms-1"></i>
+                </th>
+                <th class="col-2" data-bs-toggle="tooltip" data-bs-placement="top" title="Lokálne Číslo Bloku - Prečítajte si viac o lokálnych číslach blokov v našej dokumentácii">
+                  LČB <i class="bi bi-info-circle-fill text-white-50 ms-1"></i>
+                </th>
                 <th></th>
               </tr>
             </thead>
@@ -165,9 +198,15 @@
           <table class="table table-hover table-bordered table-striped" style="max-width: 300px">
             <thead>
               <tr class="text-center bg-primary text-white">
-                <th class="col-1">GČB</th>
-                <th class="col-2">LČB</th>
-                <th class="col-3">NI</th>
+                <th class="col-1" data-bs-toggle="tooltip" data-bs-placement="top" title="Globálne Číslo Bloku - Číslo bloku na disku">
+                  GČB <i class="bi bi-info-circle-fill text-white-50 ms-1"></i>
+                </th>
+                <th class="col-2" data-bs-toggle="tooltip" data-bs-placement="top" title="Lokálne Číslo Bloku - Index v rámci nepriameho bloku">
+                  LČB <i class="bi bi-info-circle-fill text-white-50 ms-1"></i>
+                </th>
+                <th class="col-3" data-bs-toggle="tooltip" data-bs-placement="top" title="Nepriamy Index - Celkový index v reťazení blokov">
+                  NI <i class="bi bi-info-circle-fill text-white-50 ms-1"></i>
+                </th>
                 <th></th>
               </tr>
             </thead>

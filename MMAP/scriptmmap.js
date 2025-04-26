@@ -4,55 +4,108 @@ const ADDR_ALIGN = 1000; // Address alignment for better readability
 
 // Global variables
 let fdTable = [
-    { mode: 'r', fd: 3, size: 4*PGSIZE, mapped: false },
-    { mode: 'rw', fd: 4, size: 2*PGSIZE, mapped: false },
-    { mode: 'r', fd: 5, size: 8*PGSIZE, mapped: false },
-    { mode: 'rw', fd: 6, size: 10*PGSIZE, mapped: false }
+    { mode: 'O_RDONLY', fd: 3, size: 4*PGSIZE, mapped: false },
+    { mode: 'O_RDWR', fd: 4, size: 2*PGSIZE, mapped: false },
+    { mode: 'O_RDONLY', fd: 5, size: 8*PGSIZE, mapped: false },
+    { mode: 'O_RDWR', fd: 6, size: 10*PGSIZE, mapped: false }
 ];
 
 let selectedFd = null;
-let mmapResult = null;
 let p5Canvas;
-let currentMapping = null; // Only store one mapping
+let vmaMappings = []; // Store multiple mappings
+// Define a set of colors for different VMAs
+const vmaColors = [
+    "hsla(200, 70%, 60%, 0.7)",
+    "hsla(140, 70%, 60%, 0.7)",
+    "hsla(350, 70%, 60%, 0.7)",
+    "hsla(50, 70%, 60%, 0.7)",
+    "hsla(280, 70%, 60%, 0.7)"
+];
+
+// Cache DOM elements that won't change
+const DOM = {
+    fdTableBody: null,
+    fdInput: null,
+    lengthInputField: null,
+    protectionOptions: null,
+    flagsOptions: null,
+    offsetInput: null,
+    unmapAddrInput: null,
+    unmapLengthInput: null,
+    vmaInfo: null,
+    canvasContainer: null
+};
 
 // Functions to toggle dropdown menus
 function toggleProtectionDropdown() {
     document.getElementById("protDropdown").classList.toggle("show");
+    setTimeout(setupTooltips, 100);
 }
 
 function toggleFlagsDropdown() {
     document.getElementById("flagsDropdown").classList.toggle("show");
+    setTimeout(setupTooltips, 100);
 }
 
-// Close dropdowns when clicking outside
+// Close dropdowns when clicking outside - optimized with event delegation
 window.onclick = function(event) {
     if (!event.target.matches('#protectionOptions') && !event.target.matches('#flagsOptions')) {
         const dropdowns = document.getElementsByClassName("dropdown-content");
-        for (let i = 0; i < dropdowns.length; i++) {
-            const openDropdown = dropdowns[i];
-            if (openDropdown.classList.contains('show')) {
-                openDropdown.classList.remove('show');
+        for (let dropdown of dropdowns) {
+            if (dropdown.classList.contains('show')) {
+                dropdown.classList.remove('show');
             }
         }
     }
 }
 
+// New function to show styled error messages
+function showError(message) {
+    // Create error notification element
+    const errorNotification = document.createElement('div');
+    errorNotification.className = 'error-notification';
+    errorNotification.innerHTML = `
+        <div class="error-icon">⚠️</div>
+        <div class="error-message">${message}</div>
+        <div class="error-close" onclick="this.parentElement.remove()">×</div>
+    `;
+    
+    // Add to body
+    document.body.appendChild(errorNotification);
+    
+    // Fade in
+    setTimeout(() => {
+        errorNotification.style.opacity = '1';
+        errorNotification.style.transform = 'translateY(0)';
+    }, 10);
+    
+    // Auto remove after 5 seconds
+    setTimeout(() => {
+        errorNotification.style.opacity = '0';
+        errorNotification.style.transform = 'translateY(20px)';
+        setTimeout(() => {
+            if (errorNotification.parentElement) {
+                errorNotification.remove();
+            }
+        }, 500);
+    }, 5000);
+}
+
 // Select protection option
 function selectProtection(prot) {
-    document.getElementById("protectionOptions").textContent = prot;
+    DOM.protectionOptions.textContent = prot;
     document.getElementById("protDropdown").classList.remove("show");
 }
 
 // Select flags option
 function selectFlags(flag) {
-    document.getElementById("flagsOptions").textContent = flag;
+    DOM.flagsOptions.textContent = flag;
     document.getElementById("flagsDropdown").classList.remove("show");
 }
 
-// Function to render the FD table
+// Updated function to render the FD table - disable mapped fds
 function renderFdTable() {
-    const tableBody = document.getElementById('fdTableBody');
-    tableBody.innerHTML = '';
+    const fragment = document.createDocumentFragment(); // Use document fragment for better performance
     
     fdTable.forEach(entry => {
         const row = document.createElement('tr');
@@ -60,17 +113,14 @@ function renderFdTable() {
         // Mode column
         const modeCell = document.createElement('td');
         modeCell.textContent = entry.mode;
-        row.appendChild(modeCell);
         
         // FD column
         const fdCell = document.createElement('td');
         fdCell.textContent = entry.fd;
-        row.appendChild(fdCell);
         
         // Size column
         const sizeCell = document.createElement('td');
         sizeCell.textContent = `${entry.size/PGSIZE}*PGSIZE`;
-        row.appendChild(sizeCell);
         
         // Mapped column
         const mappedCell = document.createElement('td');
@@ -80,176 +130,474 @@ function renderFdTable() {
         checkbox.type = 'checkbox';
         checkbox.className = 'form-check-input';
         checkbox.checked = entry.mapped;
+        
+        // If already mapped by another mapping, disable the checkbox
+        const isAlreadyMapped = vmaMappings.some(mapping => mapping.fd === entry.fd);
+        if (isAlreadyMapped && !entry.mapped) {
+            checkbox.disabled = true;
+            checkbox.title = "This file descriptor is already mapped";
+        }
+        
         checkbox.addEventListener('change', function() {
-            // Unselect all other checkboxes
-            fdTable.forEach(e => e.mapped = false);
-            entry.mapped = checkbox.checked;
-            selectedFd = entry.mapped ? entry.fd : null;
+            if (this.checked) {
+                // When selecting a new fd, unselect any previously selected fd
+                // that isn't actually mapped yet
+                fdTable.forEach(e => {
+                    if (e.fd !== entry.fd && e.mapped && !vmaMappings.some(m => m.fd === e.fd)) {
+                        e.mapped = false;
+                    }
+                });
+                
+                // Mark this fd as selected
+                entry.mapped = true;
+                selectedFd = entry.fd;
+            } else {
+                // Unselecting is only allowed if not actually mapped
+                if (!vmaMappings.some(mapping => mapping.fd === entry.fd)) {
+                    entry.mapped = false;
+                    selectedFd = null;
+                } else {
+                    // Don't allow unchecking a mapped fd
+                    checkbox.checked = true;
+                    return;
+                }
+            }
             
             // Update fd input in mmap function
-            document.getElementById('fdInput').textContent = selectedFd !== null ? selectedFd : '';
+            DOM.fdInput.textContent = selectedFd !== null ? selectedFd : '';
             
             // Update length input based on selected fd
-            if (selectedFd !== null) {
+            if (DOM.lengthInputField && selectedFd !== null) {
                 const selectedEntry = fdTable.find(e => e.fd === selectedFd);
-                document.getElementById('lengthInput').textContent = `${selectedEntry.size/PGSIZE}*PGSIZE`;
-            } else {
-                document.getElementById('lengthInput').textContent = '';
+                DOM.lengthInputField.value = selectedEntry.size;
+            } else if (DOM.lengthInputField) {
+                DOM.lengthInputField.value = '';
             }
             
             renderFdTable();
         });
         
         mappedCell.appendChild(checkbox);
+        
+        // Append all cells to the row
+        row.appendChild(modeCell);
+        row.appendChild(fdCell);
+        row.appendChild(sizeCell);
         row.appendChild(mappedCell);
         
-        tableBody.appendChild(row);
+        // Highlight rows that are actually mapped
+        if (vmaMappings.some(mapping => mapping.fd === entry.fd)) {
+            row.style.backgroundColor = "#f0f8ff"; // Light blue background
+        }
+        
+        fragment.appendChild(row);
     });
+    
+    // Clear table and add all rows at once
+    DOM.fdTableBody.innerHTML = '';
+    DOM.fdTableBody.appendChild(fragment);
 }
 
 // Function to generate a random address with clean decimal representation
 function generateRandomAddress() {
     // Using multiples of PGSIZE (1000)
     const possibleAddresses = [1000, 2000, 3000, 4000, 5000, 6000, 7000, 8000, 9000, 10000];
-    const randomIndex = Math.floor(Math.random() * possibleAddresses.length);
-    return possibleAddresses[randomIndex];
+    return possibleAddresses[Math.floor(Math.random() * possibleAddresses.length)];
 }
 
-// Execute mmap function
+// Optimized tooltip handling
+const tooltipManager = {
+    tooltips: new Map(), // Store tooltips by element ID or unique identifier
+    
+    // Create or update a tooltip
+    createTooltip(element, tooltipText) {
+        const container = element.closest('.tooltip-container') || element.parentNode;
+        
+        // Find any existing tooltip text element and remove it
+        const existingTooltip = container.querySelector('.tooltip-text');
+        if (existingTooltip) {
+            container.removeChild(existingTooltip);
+        }
+        
+        // Create tooltip text element
+        const tooltipTextElement = document.createElement('span');
+        tooltipTextElement.className = 'tooltip-text';
+        
+        // Handle multi-line tooltips - convert \n to proper line breaks
+        tooltipTextElement.textContent = tooltipText;
+        
+        // Apply custom styles from data attributes
+        const width = element.getAttribute('data-tooltip-width');
+        const height = element.getAttribute('data-tooltip-height');
+        const maxWidth = element.getAttribute('data-tooltip-max-width');
+        const position = element.getAttribute('data-tooltip-position') || 'bottom';
+        const align = element.getAttribute('data-tooltip-align') || 'center';
+        
+        if (width) tooltipTextElement.style.width = width;
+        if (height) tooltipTextElement.style.height = height;
+        if (maxWidth) tooltipTextElement.style.maxWidth = maxWidth;
+        
+        // Apply position class
+        tooltipTextElement.classList.add(`tooltip-${position}`);
+        tooltipTextElement.classList.add(`tooltip-align-${align}`);
+        
+        // Add it after the icon
+        container.appendChild(tooltipTextElement);
+    },
+    
+    // Setup tooltips with improved efficiency
+    setupTooltips() {
+        document.querySelectorAll('.tooltip-icon').forEach(icon => {
+            // Check for tooltip text from data attribute
+            const tooltipText = icon.getAttribute('data-tooltip') || icon.getAttribute('title');
+            
+            if (tooltipText) {
+                // Remove the title attribute to prevent default browser tooltip
+                icon.removeAttribute('title');
+                
+                // Make sure the icon is in a tooltip container
+                let container = icon.closest('.tooltip-container');
+                if (!container) {
+                    container = document.createElement('div');
+                    container.className = 'tooltip-container';
+                    icon.parentNode.insertBefore(container, icon);
+                    container.appendChild(icon);
+                }
+                
+                // Store the tooltip text in data-tooltip attribute
+                icon.setAttribute('data-tooltip', tooltipText);
+                
+                // Create our custom tooltip
+                this.createTooltip(icon, tooltipText);
+            }
+        });
+    }
+};
+
+// Use the optimized tooltip setup function
+function setupTooltips() {
+    tooltipManager.setupTooltips();
+}
+
+// Function to update the addrInput div to contain an input field
+function updateAddressInputField() {
+    const addrInputElement = document.getElementById('addrInput');
+    
+    // Replace the div content with an input element with fixed width and tooltip
+    addrInputElement.innerHTML = `
+        <div class="tooltip-container" style="position: relative;">
+            <div style="position: absolute; top: -30px; width: 100%; text-align: center;">
+                <span class="tooltip-icon" data-tooltip="uint64 addr; // adresa, na ktorej začína mapovaná oblasť\n(0 pre automatickú voľbu)\n\nKeď je 0, systém automaticky vyberie adresu." 
+                      data-tooltip-width="250px" data-tooltip-max-width="300px" data-tooltip-position="bottom">addr ⓘ</span>
+            </div>
+            <input type="number" id="addrInputField" value="0" style="width: 80px; border: none; text-align: center;" readonly>
+        </div>`;
+}
+
+// Function to update the lengthInput div to contain an input field
+function updateLengthInputField() {
+    const lengthInputElement = document.getElementById('lengthInput');
+    
+    // Replace the div content with an input element with fixed width and tooltip
+    lengthInputElement.innerHTML = `
+        <div class="tooltip-container" style="position: relative;">
+            <div style="position: absolute; top: -30px; width: 100%; text-align: center;">
+                <span class="tooltip-icon" data-tooltip="int len; // dĺžka mapovanej oblasti\n\nVeľkosť oblasti, ktorá má byť mapovaná v bajtoch." 
+                      data-tooltip-width="180px" data-tooltip-position="bottom">len ⓘ</span>
+            </div>
+            <input type="number" id="lengthInputField" style="width: 80px; border: none; text-align: center;" placeholder="Length">
+        </div>`;
+    
+    // Cache the DOM reference
+    DOM.lengthInputField = document.getElementById('lengthInputField');
+    
+    // Add event listener for validating the length
+    DOM.lengthInputField.addEventListener('change', validateLength);
+    
+    // Initialize with a default value if we have a selected fd
+    if (selectedFd !== null) {
+        const selectedEntry = fdTable.find(e => e.fd === selectedFd);
+        DOM.lengthInputField.value = selectedEntry.size;
+    }
+}
+
+// Function to validate that the entered length is within the file size
+function validateLength() {
+    if (selectedFd === null) return;
+    
+    const value = parseInt(DOM.lengthInputField.value, 10);
+    const selectedEntry = fdTable.find(e => e.fd === selectedFd);
+    
+    // Make sure length is positive and not larger than file size
+    if (isNaN(value) || value <= 0) {
+        showError('Length must be a positive number.');
+        DOM.lengthInputField.value = selectedEntry.size;
+        return false;
+    }
+    
+    if (value > selectedEntry.size) {
+        showError(`Length cannot exceed file size (${selectedEntry.size})`);
+        DOM.lengthInputField.value = selectedEntry.size;
+        return false;
+    }
+    
+    // Round up to nearest page size
+    const roundedValue = Math.ceil(value / PGSIZE) * PGSIZE;
+    if (roundedValue !== value) {
+        DOM.lengthInputField.value = roundedValue;
+    }
+    
+    return true;
+}
+
+// Updated executeMmap function to store file size information
 function executeMmap() {
     if (selectedFd === null) {
-        alert('Please select a file descriptor from the FD table.');
+        showError('Please select a file descriptor from the FD table.');
         return;
     }
     
-    // Check if there's already a mapping
-    if (currentMapping !== null) {
-        alert('There is already an active mapping. Please unmap first before creating a new mapping.');
+    // Validate length input
+    if (!validateLength()) {
         return;
     }
     
-    const addr = parseInt(document.getElementById('addrInput').textContent || 0, 10);
-    const protection = document.getElementById('protectionOptions').textContent;
-    const flags = document.getElementById('flagsOptions').textContent;
+    // Get the fd entry for the selected fd
+    const fdEntry = fdTable.find(entry => entry.fd === selectedFd);
+    
+    // Check for invalid combination: O_RDONLY + MAP_SHARED + PROT_READ|PROT_WRITE
+    const protection = DOM.protectionOptions.textContent;
+    const flags = DOM.flagsOptions.textContent;
+    
+    if (fdEntry.mode === 'O_RDONLY' && 
+        flags === 'MAP_SHARED' && 
+        protection === 'PROT_READ|PROT_WRITE') {
+        showError('Invalid combination: Cannot map a read-only file with MAP_SHARED and PROT_READ|PROT_WRITE permissions.\nChanges would be written back to a read-only file.');
+        return;
+    }
+    
+    // Get address from input field (always 0 now)
+    const addrInputField = document.getElementById('addrInputField');
+    let addr = parseInt(addrInputField.value || 0, 10);
+    
+    // Address is 0, which means we need to determine the appropriate address
+    if (addr === 0) {
+        if (vmaMappings.length === 0) {
+            // First mapping - generate a random address
+            addr = generateRandomAddress();
+        } else {
+            // Find the highest ending address of all existing mappings
+            let highestAddr = 0;
+            vmaMappings.forEach(mapping => {
+                const endAddr = mapping.address + mapping.length;
+                highestAddr = Math.max(highestAddr, endAddr);
+            });
+            
+            // Set the new mapping to start at the next page boundary after the highest address
+            addr = highestAddr;
+        }
+    }
+    
     const fd = selectedFd;
-    const offsetText = document.getElementById('offsetInput').value || "2";
-    const offsetMultiplier = offsetText ? parseInt(offsetText) : 2;
+    const offsetText = DOM.offsetInput.value || "0";
+    const offsetMultiplier = parseInt(offsetText) || 0;
     
-    // Validate offset - can't be higher than addr/1000
-    const maxOffset = Math.floor(addr / 1000);
-    if (offsetMultiplier > maxOffset) {
-        alert(`Offset cannot be higher than ${maxOffset} for address ${addr}.`);
+    // Get length from input field
+    const len = parseInt(DOM.lengthInputField.value, 10);
+    
+    // Calculate offset in bytes
+    const offsetBytes = offsetMultiplier * PGSIZE;
+    
+    // Validate that offset isn't negative
+    if (offsetMultiplier < 0) {
+        showError('Offset cannot be negative.');
+        return;
+    }
+
+    if(offsetMultiplier > len/1000) {
+        showError(`Offset cannot exceed file size (${len/1000})`);
         return;
     }
     
-    const offset = offsetMultiplier * PGSIZE;
+    // Ensure that addr - offset is not negative
+    if (addr - offsetBytes < 0) {
+        showError('Effective address (addr - offset) cannot be negative. Please use a smaller offset or a larger address.');
+        return;
+    }
     
-    const fdEntry = fdTable.find(entry => entry.fd === fd);
-    const len = fdEntry.size;
+    // Check if the fd is already mapped
+    const fdAlreadyMapped = vmaMappings.some(mapping => mapping.fd === fd);
+    if (fdAlreadyMapped) {
+        showError(`File descriptor ${fd} is already mapped. Please use a different file descriptor.`);
+        return;
+    }
+    
+    // Check for address overlap with existing mappings in virtual memory
+    let needNewAddress = false;
+    for (const mapping of vmaMappings) {
+        const mappingStart = mapping.address;
+        const mappingEnd = mapping.address + mapping.length;
+        
+        if ((addr >= mappingStart && addr < mappingEnd) || 
+            (addr + len > mappingStart && addr + len <= mappingEnd) ||
+            (addr <= mappingStart && addr + len >= mappingEnd)) {
+            needNewAddress = true;
+            break;
+        }
+    }
+    
+    if (needNewAddress) {
+        showError('New mapping overlaps with an existing mapping in virtual memory. Auto-generating a new address...');
+        
+        // Find the highest ending address
+        let highestAddr = 0;
+        vmaMappings.forEach(m => {
+            const endAddr = m.address + m.length;
+            highestAddr = Math.max(highestAddr, endAddr);
+        });
+        
+        // Set a new address after the highest ending address
+        addr = highestAddr;
+    }
     
     // Create a new mapping
-    currentMapping = {
+    const newMapping = {
         address: addr,
         length: len,
         protection: protection,
         flags: flags,
         fd: fd,
-        offset: offset,
+        offset: offsetBytes,
         offsetMultiplier: offsetMultiplier,
-        color: "hsla(200, 70%, 60%, 0.7)" // Fixed color for simplicity
+        color: vmaColors[vmaMappings.length % vmaColors.length], // Cycle through available colors
+        fileSize: fdTable.find(entry => entry.fd === fd).size // Store the complete file size
     };
+    
+    // Add the new mapping to the array
+    vmaMappings.push(newMapping);
+    
+    // Mark the file descriptor as mapped in the fd table
+    const fdEntryToUpdate = fdTable.find(entry => entry.fd === fd);
+    if (fdEntryToUpdate) {
+        fdEntryToUpdate.mapped = true;
+    }
     
     // Update VMA info
     updateVmaInfo();
     
-    // Update the munmap UI fields with default values
-    if (document.getElementById('unmapAddrInput')) {
-        document.getElementById('unmapAddrInput').value = addr;
-        document.getElementById('unmapLengthInput').value = len;
+    // Update the munmap UI fields with default values from the latest mapping
+    if (DOM.unmapAddrInput) {
+        DOM.unmapAddrInput.value = addr;
+        DOM.unmapLengthInput.value = len;
     }
     
-    // Generate a new random address for next mapping
-    document.getElementById('addrInput').textContent = generateRandomAddress();
+    // Select the next available fd for convenience
+    selectNextAvailableFd();
+    
+    // Re-render the fd table to reflect changes
+    renderFdTable();
+    
+    // Resize the canvas to accommodate new mapping
+    resizeCanvas();
 }
 
-// Update VMA info display
-function updateVmaInfo() {
-    const vmaInfo = document.getElementById('vmaInfo');
+// Helper function to select the next available file descriptor
+function selectNextAvailableFd() {
+    // Find the first fd that isn't mapped yet
+    const nextFdEntry = fdTable.find(entry => !entry.mapped);
     
-    if (!currentMapping) {
-        vmaInfo.innerHTML = '<div class="vma-title">VMAs</div><div>No active mappings</div>';
-        return;
+    if (nextFdEntry) {
+        selectedFd = nextFdEntry.fd;
+        DOM.fdInput.textContent = selectedFd;
+        
+        // Update length input based on selected fd
+        if (DOM.lengthInputField) {
+            DOM.lengthInputField.value = nextFdEntry.size;
+        }
+    } else {
+        // No more available fds
+        selectedFd = null;
+        DOM.fdInput.textContent = '';
+        
+        if (DOM.lengthInputField) {
+            DOM.lengthInputField.value = '';
+        }
     }
-    
-    let html = '<div class="vma-title">VMAs</div>';
-    
-    // Format protection string (R/W/X)
-    const protStr = `${currentMapping.protection.includes('READ') ? 'R' : '-'}${currentMapping.protection.includes('WRITE') ? 'W' : '-'}${currentMapping.protection.includes('EXEC') ? 'X' : '-'}`;
-    
-    // Add VMA box similar to the picture 
-    html += `
-        <div style="border-left: 4px solid ${currentMapping.color}; padding-left: 8px; margin-bottom: 8px;">
-            <div>addr: ${currentMapping.address}</div>
-            <div>length: ${currentMapping.length/PGSIZE}*PGSIZE</div>
-            <div>prot: ${protStr}</div>
-            <div>flag: ${currentMapping.flags}</div>
-            <div>fd: ${currentMapping.fd}</div>
-            <div>offset: ${currentMapping.offsetMultiplier}*PGSIZE</div>
-        </div>
-    `;
-    
-    vmaInfo.innerHTML = html;
 }
 
-// Update the munmap function UI
-function updateMunmapUI() {
-    const unmapSection = document.querySelector('.unmap-section');
-    unmapSection.innerHTML = `
-        <div>munmap(
-            <div class="param-box">
-                <input type="number" id="unmapAddrInput" style="width: 100%; border: none;" placeholder="addr">
-            </div>,
-            <div class="param-box">
-                <input type="number" id="unmapLengthInput" style="width: 100%; border: none;" placeholder="length">
-            </div>
-        );
-        <div class="map-button" onclick="executeUnmap()">UNMAP</div>
-        </div>
-    `;
+// Resize canvas helper function
+function resizeCanvas() {
+    const sketch = p5.instance;
+    if (sketch) {
+        const containerWidth = DOM.canvasContainer.offsetWidth - 20;
+        const canvasHeight = vmaMappings.length > 0 ? 300 + (vmaMappings.length * 75) : 400;
+        sketch.resizeCanvas(containerWidth, canvasHeight);
+    }
 }
 
-// Enhanced executeUnmap function
+// Updated executeUnmap function to update fd table
 function executeUnmap() {
-    if (!currentMapping) {
-        alert('No mapping to unmap.');
+    if (vmaMappings.length === 0) {
+        showError('No mappings to unmap.');
         return;
     }
     
     // Get munmap parameters
-    const unmapAddr = parseInt(document.getElementById('unmapAddrInput').value || 0, 10);
-    const unmapLength = parseInt(document.getElementById('unmapLengthInput').value || 0, 10);
+    const unmapAddr = parseInt(DOM.unmapAddrInput.value || 0, 10);
+    let unmapLength = parseInt(DOM.unmapLengthInput.value || 0, 10);
+    
+    // Round up length to nearest PGSIZE
+    unmapLength = roundToPageSize(unmapLength);
+    
+    // Update UI to show rounded value
+    DOM.unmapLengthInput.value = unmapLength;
     
     // Validate parameters
     if (unmapAddr <= 0 || unmapLength <= 0) {
-        alert('Please enter valid address and length values.');
+        showError('Please enter valid address and length values.');
         return;
     }
     
-    const mappingStart = currentMapping.address;
-    const mappingEnd = currentMapping.address + currentMapping.length;
+    // Find the mapping that contains the specified address
+    let mappingIndex = -1;
+    for (let i = 0; i < vmaMappings.length; i++) {
+        const mapping = vmaMappings[i];
+        const mappingStart = mapping.address;
+        const mappingEnd = mapping.address + mapping.length;
+        
+        if (unmapAddr >= mappingStart && unmapAddr < mappingEnd) {
+            mappingIndex = i;
+            break;
+        }
+    }
+    
+    if (mappingIndex === -1) {
+        showError('No mapping found at the specified address.');
+        return;
+    }
+    
+    const mapping = vmaMappings[mappingIndex];
+    const mappingStart = mapping.address;
+    const mappingEnd = mapping.address + mapping.length;
     const unmapEnd = unmapAddr + unmapLength;
+    
+    // Store the fd before potentially removing the mapping
+    const fdToUpdate = mapping.fd;
     
     // Case 1: Complete unmap
     if (unmapAddr <= mappingStart && unmapEnd >= mappingEnd) {
-        // Complete unmap
-        currentMapping = null;
+        // Remove the mapping
+        vmaMappings.splice(mappingIndex, 1);
+        
+        // Mark the file descriptor as unmapped in fdTable
+        const fdEntry = fdTable.find(entry => entry.fd === fdToUpdate);
+        if (fdEntry) {
+            fdEntry.mapped = false;
+        }
+        
         updateVmaInfo();
-        return;
-    }
-    
-    // Validate address is within mapping or at start
-    if (unmapAddr < mappingStart || unmapAddr >= mappingEnd) {
-        alert('Address must be within the current mapping range.');
+        renderFdTable();
+        resizeCanvas();
         return;
     }
     
@@ -257,15 +605,15 @@ function executeUnmap() {
     if (unmapAddr === mappingStart && unmapEnd < mappingEnd) {
         // Calculate new parameters
         const newAddr = unmapAddr + unmapLength;
-        const newLen = currentMapping.length - unmapLength;
-        const newOffset = currentMapping.offset + unmapLength;
+        const newLen = mapping.length - unmapLength;
+        const newOffset = mapping.offset + unmapLength;
         const newOffsetMultiplier = Math.round(newOffset / PGSIZE);
         
-        // Update the current mapping
-        currentMapping.address = newAddr;
-        currentMapping.length = newLen;
-        currentMapping.offset = newOffset;
-        currentMapping.offsetMultiplier = newOffsetMultiplier;
+        // Update the mapping
+        mapping.address = newAddr;
+        mapping.length = newLen;
+        mapping.offset = newOffset;
+        mapping.offsetMultiplier = newOffsetMultiplier;
         
         updateVmaInfo();
         return;
@@ -276,207 +624,327 @@ function executeUnmap() {
         // Reduce the mapping length to end at unmapAddr
         const newLen = unmapAddr - mappingStart;
         
-        // Update the current mapping length
-        currentMapping.length = newLen;
+        // Update the mapping length
+        mapping.length = newLen;
         
         updateVmaInfo();
         return;
     }
     
     // Case 4: Unmap from middle
-    // This would create two separate mappings, which is not supported
-    alert('Only complete unmap, unmap from start, or unmap from end are supported.\n\nFor unmapping from the end, set the address within the mapping and make sure the length extends to or beyond the end of the mapping.');
+    showError('Only complete unmap, unmap from start, or unmap from end are supported.\n\nFor unmapping from the end, set the address within the mapping and make sure the length extends to or beyond the end of the mapping.');
 }
 
-// Setup p5.js canvas
+// Update VMA info display to show all mappings - optimized with DOM fragment
+function updateVmaInfo() {
+    if (vmaMappings.length === 0) {
+        DOM.vmaInfo.innerHTML = '<div class="vma-title">VMAs</div><div>No active mappings</div>';
+        return;
+    }
+    
+    const fragment = document.createDocumentFragment();
+    const titleDiv = document.createElement('div');
+    titleDiv.className = 'vma-title';
+    titleDiv.textContent = 'VMAs';
+    fragment.appendChild(titleDiv);
+    
+    // Display each mapping
+    vmaMappings.forEach((mapping) => {
+        // Format protection string (R/W/X)
+        const protStr = `${mapping.protection.includes('READ') ? 'R' : '-'}${mapping.protection.includes('WRITE') ? 'W' : '-'}${mapping.protection.includes('EXEC') ? 'X' : '-'}`;
+        
+        // Create VMA box
+        const vmaBox = document.createElement('div');
+        vmaBox.style.borderLeft = `4px solid ${mapping.color}`;
+        vmaBox.style.paddingLeft = '8px';
+        vmaBox.style.marginBottom = '12px';
+        
+        // Add VMA details
+        const details = [
+            `addr: ${mapping.address}`,
+            `length: ${mapping.length/PGSIZE}*PGSIZE`,
+            `prot: ${protStr}`,
+            `flag: ${mapping.flags}`,
+            `fd: ${mapping.fd}`,
+            `offset: ${mapping.offsetMultiplier}*PGSIZE`
+        ];
+        
+        details.forEach(detail => {
+            const detailDiv = document.createElement('div');
+            detailDiv.textContent = detail;
+            vmaBox.appendChild(detailDiv);
+        });
+        
+        fragment.appendChild(vmaBox);
+    });
+    
+    // Update DOM in one operation
+    DOM.vmaInfo.innerHTML = '';
+    DOM.vmaInfo.appendChild(fragment);
+}
+
+// Setup p5.js canvas - updated to render multiple mappings with optimized drawing
 function setupP5Canvas() {
     const sketch = function(p) {
-        p.setup = function() {
-            const canvas = p.createCanvas(800, 220);
-            canvas.parent('canvas-container');
-
-            const canvasElement = document.getElementById('canvas-container').querySelector('canvas');
-            canvasElement.style.marginLeft = '-20px';
+        // Cache for calculated values to avoid recalculating in every draw() call
+        let drawCache = {
+            visibleRange: 0,
+            roundedStartAddr: 0,
+            roundedEndAddr: 0,
+            pageWidth: 0,
+            leftMargin: 50,
+            rightMargin: 50
         };
         
+        p.setup = function() {
+            // Get container width for responsive canvas
+            const containerWidth = DOM.canvasContainer.offsetWidth - 20;
+            // Increase canvas height to accommodate stacked fd visualizations - more space now
+            const canvasHeight = vmaMappings.length > 0 ? 300 + (vmaMappings.length * 75) : 400;
+            const canvas = p.createCanvas(containerWidth, canvasHeight);
+            canvas.parent('canvas-container');
+        };
+        
+        p.windowResized = function() {
+            // Resize canvas when window size changes
+            const containerWidth = DOM.canvasContainer.offsetWidth - 20;
+            // Adjust height based on number of mappings
+            const canvasHeight = vmaMappings.length > 0 ? 300 + (vmaMappings.length * 75) : 400;
+            p.resizeCanvas(containerWidth, canvasHeight);
+            
+            // Reset cache on resize
+            drawCache = {
+                visibleRange: 0,
+                roundedStartAddr: 0,
+                roundedEndAddr: 0,
+                pageWidth: 0,
+                leftMargin: 50,
+                rightMargin: 50
+            };
+        };
+        
+        // Helper function to calculate memory range once per frame
+        function calculateMemoryRange() {
+            if (vmaMappings.length === 0) {
+                drawCache.roundedStartAddr = 0;
+                drawCache.roundedEndAddr = 10000;
+                drawCache.visibleRange = 10000;
+                return;
+            }
+            
+            // Calculate the visible memory range with clean decimal addresses
+            // Find the min and max addresses across all mappings
+            let minAddr = Number.MAX_SAFE_INTEGER;
+            let maxAddr = 0;
+            
+            // First determine the overall memory range needed
+            vmaMappings.forEach(mapping => {
+                const mappingStart = mapping.address;
+                const mappingEnd = mapping.address + mapping.length;
+                const fileStart = mappingStart - mapping.offset;
+                
+                // Consider the full file size for visualization
+                const fileStartWithOffset = fileStart - (mapping.offset > 0 ? PGSIZE : 0); // Show one page before if there's an offset
+                const fileEndWithRemainder = fileStart + mapping.fileSize;
+                
+                minAddr = Math.min(minAddr, fileStartWithOffset, mappingStart);
+                maxAddr = Math.max(maxAddr, mappingEnd, fileEndWithRemainder);
+            });
+            
+            // Add some padding
+            minAddr = Math.max(0, minAddr - PGSIZE);
+            maxAddr = maxAddr + PGSIZE;
+            
+            // Round to nice decimal values divisible by PGSIZE
+            drawCache.roundedStartAddr = Math.floor(minAddr / PGSIZE) * PGSIZE;
+            drawCache.roundedEndAddr = Math.ceil(maxAddr / PGSIZE) * PGSIZE;
+            drawCache.visibleRange = drawCache.roundedEndAddr - drawCache.roundedStartAddr;
+        }
+        
         p.draw = function() {
+            // Get current width for scaling calculations
+            const currentWidth = p.width;
+            const leftMargin = drawCache.leftMargin;
+            const rightMargin = drawCache.rightMargin;
+            const availableWidth = currentWidth - leftMargin - rightMargin;
+            
             p.background(255);
             
-            // Draw title
-            p.fill(0);
-            p.textSize(14);
-            p.textFont('Roboto');
-            p.textAlign(p.LEFT, p.CENTER);
-            p.text('', 50, 20);
-            
-            if (currentMapping) {
-                // Calculate the visible memory range with clean decimal addresses
-                // Make sure we can see the full offset distance
-                const offsetDistance = currentMapping.offset;
-                const startAddr = Math.max(0, currentMapping.address - offsetDistance - PGSIZE);
-                const endAddr = currentMapping.address + currentMapping.length + 2 * PGSIZE;
-                
-                // Round to nice decimal values divisible by PGSIZE
-                const roundedStartAddr = Math.floor(startAddr / PGSIZE) * PGSIZE;
-                const roundedEndAddr = Math.ceil(endAddr / PGSIZE) * PGSIZE;
-                const visibleRange = roundedEndAddr - roundedStartAddr;
+            if (vmaMappings.length > 0) {
+                // Calculate the memory range if needed
+                calculateMemoryRange();
                 
                 // Draw memory range 
                 p.stroke(80);
                 p.strokeWeight(2);
                 p.noFill();
-                p.rect(50, 50, 700, 25);
+                p.rect(leftMargin, 50, availableWidth, 25);
                 
                 // Draw address markers at start and end with clean decimal values
                 p.noStroke();
                 p.fill(0);
                 p.textSize(12);
                 p.textAlign(p.LEFT, p.CENTER);
-                p.text(roundedStartAddr, 50, 95); 
+                p.text(drawCache.roundedStartAddr, leftMargin, 95); 
                 
                 p.textAlign(p.RIGHT, p.CENTER);
-                p.text(roundedEndAddr, 750, 95); 
+                p.text(drawCache.roundedEndAddr, leftMargin + availableWidth, 95); 
                 
                 // Draw vertical lines
                 p.stroke(220);
-                p.line(50, 80, 50, 90); 
-                p.line(750, 80, 750, 90); 
+                p.line(leftMargin, 80, leftMargin, 90); 
+                p.line(leftMargin + availableWidth, 80, leftMargin + availableWidth, 90); 
                 
                 // Draw page boundaries (PGSIZE)
                 p.stroke(200);
                 p.strokeWeight(1);
-                const totalWidth = 700;
-                const numPages = visibleRange / PGSIZE;
-                const pageWidth = totalWidth / numPages;
+                const numPages = drawCache.visibleRange / PGSIZE;
+                const pageWidth = availableWidth / numPages;
+                drawCache.pageWidth = pageWidth;
                 
                 for (let i = 1; i <= numPages; i++) {
-                    const x = 50 + i * pageWidth;
+                    const x = leftMargin + i * pageWidth;
                     p.line(x, 50, x, 75);
                 }
                 
-                // Draw fd area title
-                p.textAlign(p.LEFT, p.CENTER);
-                p.noStroke();
-                p.text('', 50, 130); 
-                
-                // Draw the fd area representation 
-                p.stroke(80);
-                p.strokeWeight(2);
-                p.noFill();
-                p.rect(50, 140, 700, 15); 
-                
-                // Calculate position and width for the memory mapping
-                const startX = 50 + ((currentMapping.address - roundedStartAddr) / visibleRange) * 700;
-                const width = (currentMapping.length / visibleRange) * 700;
-                const endX = startX + width;
-                
-                // Ensure the offset area is visible by adjusting the starting point if needed
-                const offsetStartAddr = currentMapping.address - currentMapping.offset;
-                const offsetStartX = 50 + ((offsetStartAddr - roundedStartAddr) / visibleRange) * 700;
-                
-                // Draw the memory mapping 
-                p.fill(currentMapping.color);
-                p.stroke(0);
-                p.strokeWeight(1);
-                p.rect(startX, 50, width, 25); 
-                
-                // Draw page lines inside the mapping
-                p.stroke(100);
-                const pagesInMapping = currentMapping.length / PGSIZE;
-                const pageWidthInMapping = width / pagesInMapping;
-                
-                for (let i = 1; i < pagesInMapping; i++) {
-                    const x = startX + i * pageWidthInMapping;
-                    p.line(x, 50, x, 75); 
-                }
-                
-                // Draw file representation
-                // File starts at same X position as memory mapping
-                const fileStartX = startX;
-                
-                // Draw the fd section
-                p.fill(currentMapping.color);
-                p.rect(fileStartX, 140, width, 15);
-                
-                // Draw the offset area using the calculated offset starting point
-                p.fill(220); // Light gray
-                const offsetWidth = (currentMapping.offset / visibleRange) * 700;
-                p.rect(offsetStartX, 140, offsetWidth, 15); 
-                
-                // Draw page lines in file representation
-                for (let i = 1; i < pagesInMapping; i++) {
-                    const x = fileStartX + i * pageWidthInMapping;
-                    p.line(x, 140, x, 155); 
-                }
-                
-                // Draw offset page lines
-                const pagesInOffset = currentMapping.offsetMultiplier;
-                const offsetPageWidth = offsetWidth / pagesInOffset;
-                
-                for (let i = 1; i < pagesInOffset; i++) {
-                    const x = offsetStartX + i * offsetPageWidth;
-                    p.line(x, 140, x, 155);
-                }
-                
-                // Draw address labels
-                p.fill(0);
-                p.noStroke();
-                p.textSize(10);
-                p.textAlign(p.CENTER, p.TOP);
-                
-                // Draw addr and addr+length with decimal values 
-                p.text(currentMapping.address, startX, 80); 
-                p.text(currentMapping.address + currentMapping.length, endX, 80); 
-                
-                // Draw labels for file sections 
-                p.textAlign(p.LEFT, p.CENTER);
-                p.text(`fd: ${currentMapping.fd}`, offsetStartX + 5, 147);
-                
-                // Draw mmap area label
-                p.textAlign(p.CENTER, p.CENTER);
-                p.text("", fileStartX + width/2, 147);
-                
-                // Draw "offset area" label
-                p.text("offset", offsetStartX + offsetWidth/2, 147);
-                
-                // Draw connection lines
-                p.stroke(0, 0, 0, 100);
-                p.strokeWeight(1);
-                p.line(startX, 75, fileStartX, 140); 
-                p.line(endX, 75, fileStartX + width, 140);
-                
-                // Optional: Add label for offset starting address
-                p.noStroke();
-                p.textSize(10);
-                p.textAlign(p.CENTER, p.TOP);
-                p.text(offsetStartAddr, offsetStartX, 160);
+                // Draw each mapping
+                vmaMappings.forEach((mapping, index) => {
+                    // Calculate vertical position for each fd visualization
+                    const fdYPosition = 140 + (index * 75);
+                    const fdHeight = 20;
+                    
+                    // Calculate position and width for the memory mapping
+                    const startX = leftMargin + ((mapping.address - drawCache.roundedStartAddr) / drawCache.visibleRange) * availableWidth;
+                    const width = (mapping.length / drawCache.visibleRange) * availableWidth;
+                    const endX = startX + width;
+                    
+                    // Draw the memory mapping 
+                    p.fill(mapping.color);
+                    p.stroke(0);
+                    p.strokeWeight(1);
+                    p.rect(startX, 50, width, 25);
+                    
+                    // Draw page lines inside the mapping
+                    p.stroke(100);
+                    const pagesInMapping = mapping.length / PGSIZE;
+                    const pageWidthInMapping = width / pagesInMapping;
+                    
+                    for (let i = 1; i < pagesInMapping; i++) {
+                        const x = startX + i * pageWidthInMapping;
+                        p.line(x, 50, x, 75);
+                    }
+                    
+                    // Calculate file visualization parameters
+                    const totalFileSize = mapping.fileSize;
+                    const totalPagesInFile = totalFileSize / PGSIZE;
+                    const filePageWidth = (PGSIZE / drawCache.visibleRange) * availableWidth;
+                    
+                    // Calculate the base address of the file (addr - offset)
+                    const fileBaseAddr = mapping.address - mapping.offset;
+                    
+                    // Start position for the entire file visualization
+                    const fileVisStartX = leftMargin + ((fileBaseAddr - PGSIZE - drawCache.roundedStartAddr) / drawCache.visibleRange) * availableWidth;
+                    
+                    // Total width including the extra page before the file
+                    const expandedFileWidth = filePageWidth * (totalPagesInFile + 1);
+                    
+                    // Draw the full file area (outline)
+                    p.stroke(80);
+                    p.strokeWeight(2);
+                    p.noFill();
+                    p.rect(fileVisStartX, fdYPosition, expandedFileWidth, fdHeight);
+                    
+                    // Draw the memory address at original file start (fileBaseAddr)
+                    p.noStroke();
+                    p.textSize(10);
+                    p.textAlign(p.CENTER, p.TOP);
+                    p.text(fileBaseAddr - PGSIZE, fileVisStartX, fdYPosition + fdHeight + 5);
+                    p.text(fileBaseAddr + totalFileSize, fileVisStartX + expandedFileWidth, fdYPosition + fdHeight + 5);
+                    
+                    // Add file descriptor label
+                    p.fill(0);
+                    p.noStroke();
+                    p.textAlign(p.LEFT, p.CENTER);
+                    p.text(`fd: ${mapping.fd}`, fileVisStartX + 5, fdYPosition + fdHeight/2);
+                    
+                    // 2. Draw grey offset part of the file
+                    if (mapping.offsetMultiplier > 0) {
+                        // Position: Start from the actual file start position 
+                        const offsetStartX = fileVisStartX + filePageWidth; // Skip first "white" page
+                        
+                        p.fill(200, 200, 200, 180); // Light grey
+                        p.noStroke();
+                        p.rect(offsetStartX, fdYPosition, mapping.offsetMultiplier * filePageWidth, fdHeight);
+                    }
+                    
+                    // 3. Draw mapped part (colored) aligned with memory mapping
+                    // The mapped part should start at the same X position as the memory mapping
+                    p.fill(mapping.color);
+                    p.noStroke();
+                    p.rect(startX, fdYPosition, width, fdHeight);
+                    
+                    // 4. Draw grey unmapped remainder
+                    const remainingPagesAfter = totalPagesInFile - mapping.offsetMultiplier - pagesInMapping;
+                    if (remainingPagesAfter > 0) {
+                        const remainderStartX = startX + width;
+                        
+                        p.fill(200, 200, 200, 180); // Light grey
+                        p.noStroke();
+                        p.rect(remainderStartX, fdYPosition, remainingPagesAfter * filePageWidth, fdHeight);
+                    }
+                    
+                    // Draw all page boundary lines with consistent styling
+                    p.stroke(255); // White color for all page boundaries
+                    p.strokeWeight(2); // Consistent stroke weight
+                    
+                    // Draw vertical lines for all page boundaries in the file
+                    for (let i = 0; i <= totalPagesInFile + 1; i++) {
+                        const x = fileVisStartX + (i * filePageWidth);
+                        p.line(x, fdYPosition, x, fdYPosition + fdHeight);
+                    }
+                    
+                    // Draw straight vertical connection lines between memory mapping and file
+                    p.stroke(0, 0, 0, 100);
+                    p.strokeWeight(1);
+                    
+                    // Draw straight line from start of memory mapping to start of the colored area in file
+                    p.line(startX, 75, startX, fdYPosition);
+                    
+                    // Draw straight line from end of memory mapping to end of the colored area in file
+                    p.line(endX, 75, endX, fdYPosition);
+                    
+                    // Add address labels for memory mapping start and end
+                    p.noStroke();
+                    p.fill(0);
+                    p.textSize(10);
+                    p.textAlign(p.CENTER, p.TOP);
+                    // Show address at start of memory mapping 
+                    p.text(mapping.address, startX, 30);
+                    // Show address at end of memory mapping
+                    p.text(mapping.address + mapping.length, endX, 30);
+                });
             } else {
-                
+                // Display empty canvas - increased positioning for more space
                 p.stroke(80);
                 p.strokeWeight(2);
                 p.noFill();
-                p.rect(50, 50, 700, 25); 
-                p.rect(50, 140, 700, 15); 
+                p.rect(leftMargin, 50, availableWidth, 35); // Increased height 
+                p.rect(leftMargin, 160, availableWidth, 20); // Adjusted position and increased height
                 
                 // Draw address markers
                 p.noStroke();
                 p.fill(0);
                 p.textSize(12);
                 p.textAlign(p.LEFT, p.CENTER);
-                p.text("0", 50, 95); 
+                p.text("0", leftMargin, 105); 
                 
                 p.textAlign(p.RIGHT, p.CENTER);
-                p.text("10000", 750, 95);
+                p.text("10000", leftMargin + availableWidth, 105);
                 
                 // Draw vertical lines
                 p.stroke(220);
-                p.line(50, 80, 50, 90); 
-                p.line(750, 80, 750, 90); 
-                
-                // Draw file content label
-                p.textAlign(p.LEFT, p.CENTER);
-                p.noStroke();
-                p.text('', 50, 130); 
+                p.line(leftMargin, 90, leftMargin, 100); 
+                p.line(leftMargin + availableWidth, 90, leftMargin + availableWidth, 100); 
             }
         };
     };
@@ -484,13 +952,202 @@ function setupP5Canvas() {
     new p5(sketch);
 }
 
+// Helper function to round up to nearest PGSIZE
+function roundToPageSize(value) {
+    return Math.ceil(value / PGSIZE) * PGSIZE;
+}
+
+// Update the munmap function UI
+function updateMunmapUI() {
+    const unmapSection = document.querySelector('.unmap-section');
+    unmapSection.innerHTML = `
+        <div>munmap(
+            <div class="param-box">
+                <div class="tooltip-container" style="position: relative;">
+                    <div style="position: absolute; top: -30px; width: 100%; text-align: center;">
+                        <span class="tooltip-icon" 
+                              data-tooltip="uint64 addr; // adresa, na ktorej začína mapovaná oblasť\nMusí byť platnou adresou v rámci existujúceho mapovania." 
+                              data-tooltip-position="bottom"
+                              data-tooltip-width="400px" 
+                              data-tooltip-max-width="350px">addr ⓘ</span>
+                    </div>
+                    <input type="number" id="unmapAddrInput" style="width: 80px; border: none; text-align: center;" placeholder="addr">
+                </div>
+            </div>,
+            <div class="param-box">
+                <div class="tooltip-container" style="position: relative;">
+                    <div style="position: absolute; top: -30px; width: 100%; text-align: center;">
+                        <span class="tooltip-icon" 
+                              data-tooltip="int len; // dĺžka mapovanej oblasti\n\nDĺžka oblasti na zrušenie mapovania."
+                              data-tooltip-position="right"
+                              data-tooltip-width="180px">len ⓘ</span>
+                    </div>
+                    <input type="number" id="unmapLengthInput" style="width: 80px; border: none; text-align: center;" placeholder="length">
+                </div>
+            </div>
+        );
+        <div class="map-button" onclick="executeUnmap()">UNMAP</div>
+        </div>
+    `;
+    
+    // Cache DOM elements
+    DOM.unmapAddrInput = document.getElementById('unmapAddrInput');
+    DOM.unmapLengthInput = document.getElementById('unmapLengthInput');
+}
+
 // Initialize the page
 document.addEventListener('DOMContentLoaded', function() {
-    // Set initial random address (decimal instead of hex)
-    document.getElementById('addrInput').textContent = generateRandomAddress();
+    // Cache frequently accessed DOM elements
+    DOM.fdTableBody = document.getElementById('fdTableBody');
+    DOM.fdInput = document.getElementById('fdInput');
+    DOM.vmaInfo = document.getElementById('vmaInfo');
+    DOM.canvasContainer = document.getElementById('canvas-container');
     
-    // Set initial offset to 2
-    document.getElementById('offsetInput').value = "2";
+    // Add CSS for tooltips
+    const styleElement = document.createElement('style');
+    styleElement.textContent = `
+        .tooltip-icon {
+            cursor: help;
+            color: #0077cc;
+            font-size: 12px;
+        }
+        
+        /* Additional styling for the fd and protection elements */
+        #fdInput, #protectionOptions, #flagsOptions {
+            position: relative;
+            display: inline-block;
+        }
+        
+        .tooltip-container {
+            position: relative;
+            display: inline-block;
+        }
+    `;
+    document.head.appendChild(styleElement);
+
+    // Add CSS for error notifications
+    const errorStyleElement = document.createElement('style');
+    errorStyleElement.textContent = `
+        .error-notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(to right, #ff5f6d, #ffc371);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 5px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            min-width: 300px;
+            max-width: 450px;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+        
+        .error-icon {
+            font-size: 24px;
+            margin-right: 15px;
+        }
+        
+        .error-message {
+            flex-grow: 1;
+            font-size: 14px;
+            white-space: pre-line;
+        }
+        
+        .error-close {
+            font-size: 24px;
+            cursor: pointer;
+            margin-left: 15px;
+            opacity: 0.7;
+            transition: opacity 0.2s;
+        }
+        
+        .error-close:hover {
+            opacity: 1;
+        }
+    `;
+    document.head.appendChild(errorStyleElement);
+
+    // Convert addrInput to an input field
+    updateAddressInputField();
+    
+    // Convert lengthInput to an input field
+    updateLengthInputField();
+    
+    // Set initial offset to 0 and set fixed width
+    DOM.offsetInput = document.getElementById('offsetInput');
+    DOM.offsetInput.value = "0";
+    DOM.offsetInput.style.width = "80px";
+    DOM.offsetInput.style.textAlign = "center";
+    
+    // Add tooltip to the offset input - improved version with custom width
+    const offsetContainer = document.createElement('div');
+    offsetContainer.className = 'tooltip-container';
+    offsetContainer.style.position = 'relative';
+    DOM.offsetInput.parentNode.insertBefore(offsetContainer, DOM.offsetInput);
+    offsetContainer.appendChild(DOM.offsetInput);
+    
+    const offsetLabel = document.createElement('div');
+    offsetLabel.style.position = 'absolute';
+    offsetLabel.style.top = '-30px';
+    offsetLabel.style.width = '100%';
+    offsetLabel.style.textAlign = 'center';
+    offsetLabel.innerHTML = '<span class="tooltip-icon" data-tooltip="int offset; // posunutie mapovanej oblasti od začiatku súboru (B)\n\nOfset od začiatku súboru v jednotkách PGSIZE." data-tooltip-width="250px" data-tooltip-position="bottom" data-tooltip-align="center">offset ⓘ</span>';
+    offsetContainer.insertBefore(offsetLabel, DOM.offsetInput);
+    
+    const fdContainer = document.createElement('div');
+    fdContainer.className = 'tooltip-container';
+    fdContainer.style.position = 'relative';
+    DOM.fdInput.parentNode.insertBefore(fdContainer, DOM.fdInput);
+    fdContainer.appendChild(DOM.fdInput);
+    
+    const fdLabel = document.createElement('div');
+    fdLabel.style.position = 'absolute';
+    fdLabel.style.top = '-22px';
+    fdLabel.style.width = '100%';
+    fdLabel.style.textAlign = 'center';
+    fdLabel.innerHTML = '<span class="tooltip-icon" data-tooltip="struct file *file; // mapovaný súbor\n\nDeskriptor súboru, ktorý sa má mapovať." data-tooltip-width="200px" data-tooltip-position="bottom">fd ⓘ</span>';
+    fdContainer.insertBefore(fdLabel, DOM.fdInput);
+    
+    // Cache protection options
+    DOM.protectionOptions = document.getElementById('protectionOptions');
+    
+    // Add tooltip to the protection dropdown - improved version with custom width
+    const protContainer = document.createElement('div');
+    protContainer.className = 'tooltip-container';
+    protContainer.style.position = 'relative';
+    DOM.protectionOptions.parentNode.insertBefore(protContainer, DOM.protectionOptions);
+    protContainer.appendChild(DOM.protectionOptions);
+    
+    const protLabel = document.createElement('div');
+    protLabel.style.position = 'absolute';
+    protLabel.style.top = '-22px';
+    protLabel.style.width = '100%';
+    protLabel.style.textAlign = 'center';
+    protLabel.innerHTML = '<span class="tooltip-icon" data-tooltip="int prot; // ochranné príznaky pre mapovanie v pamäti\n\nOchrana pre mapovaný región:\nPROT_READ - čítanie\nPROT_WRITE - zápis\nPROT_EXEC - vykonávanie" data-tooltip-width="250px" data-tooltip-position="bottom">prot ⓘ</span>';
+    protContainer.insertBefore(protLabel, DOM.protectionOptions);
+    
+    // Cache flags options
+    DOM.flagsOptions = document.getElementById('flagsOptions');
+    
+    // Add tooltip to the flags dropdown with custom width
+    const flagsContainer = document.createElement('div');
+    flagsContainer.className = 'tooltip-container';
+    flagsContainer.style.position = 'relative';
+    DOM.flagsOptions.parentNode.insertBefore(flagsContainer, DOM.flagsOptions);
+    flagsContainer.appendChild(DOM.flagsOptions);
+    
+    const flagsLabel = document.createElement('div');
+    flagsLabel.style.position = 'absolute';
+    flagsLabel.style.top = '-22px';
+    flagsLabel.style.width = '100%';
+    flagsLabel.style.textAlign = 'center';
+    flagsLabel.innerHTML = '<span class="tooltip-icon" data-tooltip="int flags; // viditeľnosť úprav mapovanej oblasti\n\nMAP_SHARED - zmeny sú viditeľné pre ostatné procesy\nMAP_PRIVATE - zmeny sú privátne" data-tooltip-width="250px" data-tooltip-max-width="300px" data-tooltip-position="bottom">flags ⓘ</span>';
+    flagsContainer.insertBefore(flagsLabel, DOM.flagsOptions);
     
     // Update the munmap UI
     updateMunmapUI();
@@ -499,19 +1156,36 @@ document.addEventListener('DOMContentLoaded', function() {
     renderFdTable();
     
     // Set initial protection and flags to match picture
-    document.getElementById('protectionOptions').textContent = 'PROT_READ|PROT_WRITE';
-    document.getElementById('flagsOptions').textContent = 'MAP_SHARED';
+    DOM.protectionOptions.textContent = 'PROT_READ|PROT_WRITE';
+    DOM.flagsOptions.textContent = 'MAP_SHARED';
     
     // Auto-select fd 6 initially
     const fd6Entry = fdTable.find(entry => entry.fd === 6);
     if (fd6Entry) {
         fd6Entry.mapped = true;
         selectedFd = 6;
-        document.getElementById('fdInput').textContent = "6";
-        document.getElementById('lengthInput').textContent = `${fd6Entry.size/PGSIZE}*PGSIZE`;
+        DOM.fdInput.textContent = "6";
+        
+        // Set the length input field value
+        if (DOM.lengthInputField) {
+            DOM.lengthInputField.value = fd6Entry.size;
+        }
         renderFdTable();
     }
     
     // Setup p5.js canvas
     setupP5Canvas();
+    
+    // Apply tooltips after all HTML elements are created
+    setTimeout(setupTooltips, 100);
+    
+    // Use one event listener instead of many
+    window.addEventListener('click', function(event) {
+        // Use event delegation for tooltips
+        if (event.target.closest('.tooltip-icon') || 
+            event.target.classList.contains('tooltip-icon') || 
+            document.querySelector('.dropdown-content.show')) {
+            setTimeout(setupTooltips, 100);
+        }
+    });
 });

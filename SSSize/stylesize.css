@@ -1,9 +1,18 @@
 .file-box {
     padding: 10px;
-    width: 200px;
+    width: 100%;
     border: 1px solid #ccc;
+    border-radius: 8px;
     cursor: pointer;
     position: relative;
+    margin-bottom: 10px;
+    transition: all 0.2s ease;
+    background-color: #f8f9fa;
+}
+
+.file-box:hover {
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    background-color: #e9ecef;
 }
 
 .dropdown-menu {
@@ -11,11 +20,13 @@
     top: 100%;
     left: 0;
     z-index: 1000;
+    border-radius: 4px;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.2);
 }
 
 #formula, #maxFileSize {
-    font-size: 1.25rem; /* Increase font size */
-  }
+    font-size: 1.25rem;
+}
   
 #formula h5, #maxFileSize h5 {
     font-weight: bold;
@@ -24,4 +35,49 @@
 .pointer-size-btn.active {
     background-color: #0d6efd;
     color: white;
+}
+
+/* Add extra space for MathJax formulas */
+#formula p, #maxFileSize p {
+    padding: 0.5rem 0;
+    overflow-x: auto; /* For long formulas */
+}
+
+/* Thinner input field */
+.input-slim {
+    max-width: 300px;
+}
+
+/* Style for the remove button */
+.remove-box {
+    transition: all 0.2s ease;
+}
+
+.remove-box:hover {
+    background-color: #dc3545;
+    color: white;
+}
+
+.card {
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    transition: all 0.3s ease;
+}
+
+.card:hover {
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.card-header {
+    border-bottom: 1px solid rgba(0,0,0,0.125);
+}
+
+/* Improved button styles */
+#add-box {
+    border-radius: 4px;
+}
+
+/* Make dropdown items more interactive */
+.dropdown-item:hover {
+    background-color: #e9ecef;
 }

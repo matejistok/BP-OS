@@ -1,6 +1,7 @@
 .diagram-section {
     position: relative;
     margin-top: 40px;
+    padding: 2rem 0;
   }
   
   .data-block {
@@ -23,6 +24,25 @@
     background-color: yellow; /* Change this to your desired highlight color */
   }
 
+  /* Enhanced hover effect with transition */
+  #addr1Row,
+  #addr2Row,
+  #addr12Row,
+  #indirectRow,
+  #indBlockAddr1,
+  #indBlockAddr2,
+  #indBlockAddr256,
+  #dIndirectRow,
+  #DAddr1Row,
+  #DAddr2Row,
+  #DAddr256Row,
+  #indBlock2Addr1,
+  #indBlock2Addr2,
+  #indBlock2Addr256 {
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    position: relative;
+  }
+  
   #addr1Row:hover,
   #addr2Row:hover,
   #addr12Row:hover,
@@ -37,10 +57,135 @@
   #indBlock2Addr1:hover,
   #indBlock2Addr2:hover,
   #indBlock2Addr256:hover {
-    background-color: rgb(255, 248, 152); /* Change background color on hover */
+    background-color: rgba(13, 110, 253, 0.15) !important; /* Slightly darker blue on hover */
     cursor: pointer; /* Change cursor to pointer on hover */
+    transform: translateX(3px); /* Subtle shift on hover */
   }
 
   td {
     background-color: transparent !important;
+  }
+
+  /* Table styling enhancements */
+  .table-responsive {
+    overflow-x: auto;
+    border-radius: 0; /* Removed border radius */
+    box-shadow: none; /* Removed shadow completely */
+  }
+
+  .table {
+    margin-bottom: 0;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Add subtle shadow to the table */
+    border-collapse: separate;
+    border-spacing: 0;
+  }
+
+  .table th, .table td {
+    vertical-align: middle;
+    transition: all 0.2s ease;
+  }
+
+  /* Improve table header appearance */
+  .table thead th {
+    border-bottom: 2px solid #dee2e6;
+    font-weight: 600;
+    position: relative;
+    cursor: pointer;
+    background: linear-gradient(to bottom, #0d6efd, #0a58ca);
+    color: white;
+    text-shadow: 0px 1px 1px rgba(0,0,0,0.2);
+  }
+
+  /* Tooltip trigger area */
+  .table thead th[data-bs-toggle="tooltip"] {
+    cursor: help;
+  }
+
+  /* Better tooltip styling */
+  .tooltip-inner {
+    max-width: 300px;
+    padding: 8px 12px;
+    text-align: left;
+    background-color: rgba(0, 0, 0, 0.8);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+  }
+
+  /* Tooltip icon styling */
+  .bi-info-circle-fill {
+    font-size: 0.85rem;
+    vertical-align: middle;
+    opacity: 0.8;
+    transition: opacity 0.2s;
+  }
+
+  .table thead th:hover .bi-info-circle-fill {
+    opacity: 1;
+  }
+
+  /* Better spacing and alignment */
+  h5 {
+    margin-bottom: 1rem;
+    position: relative;
+    font-weight: 600;
+    color: #0d6efd;
+    border-left: 4px solid #0d6efd;
+    padding-left: 12px;
+  }
+
+  /* Remove the decorative underline that appears as an outline */
+  h5::after {
+    content: none; /* This removes the line completely */
+  }
+  
+  /* Legend styling */
+  .legend-container {
+    position: fixed;
+    top: 70px;
+    right: 20px;
+    z-index: 1000;
+  }
+
+  .legend-toggle {
+    border-radius: 4px;
+    margin-bottom: 5px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  }
+
+  .legend-content {
+    max-width: 300px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  }
+
+  .legend-content .card {
+    border: none;
+  }
+
+  .legend-content .card-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #0d6efd;
+    margin-bottom: 0.5rem;
+  }
+
+  .legend-content ul li {
+    margin-bottom: 0.25rem;
+    font-size: 0.9rem;
+  }
+
+  /* Make sure the legend is responsive */
+  @media (max-width: 576px) {
+    .legend-container {
+      top: auto;
+      bottom: 20px;
+      right: 20px;
+    }
+    
+    .legend-content {
+      max-width: 250px;
+    }
+  }
+
+  .navbar {
+    margin-bottom: 20px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
   }
