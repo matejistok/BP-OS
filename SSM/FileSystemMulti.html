@@ -42,7 +42,7 @@
                     </ul>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="../VM/index.html">Virtual Memory</a>
+                    <a class="nav-link" href="../VM/vm.html">Virtual Memory</a>
                 </li>
                 <li class="nav-item">
                   <a class="nav-link active" href="../MMAP/Mmap.html">MMAP</a>
@@ -119,13 +119,13 @@
           <table class="table table-hover table-bordered table-striped" style="max-width: 300px">
             <thead>
               <tr class="text-center bg-primary text-white">
-                <th class="col-1" data-bs-toggle="tooltip" data-bs-placement="top" title="Globálne Číslo Bloku - Číslo bloku na disku">
+                <th class="col-1" data-bs-toggle="tooltip" data-bs-placement="top" title="Globálne Číslo Bloku - Fyzické číslo bloku uložené na disku. Predstavuje skutočnú adresu bloku v diskovom priestore.">
                   GČB <i class="bi bi-info-circle-fill text-white-50 ms-1"></i>
                 </th>
-                <th class="col-2" data-bs-toggle="tooltip" data-bs-placement="top" title="Double Nepriamy Index - Index v tabuľke nepriamych blokov">
+                <th class="col-2" data-bs-toggle="tooltip" data-bs-placement="top" title="Double Nepriamy Index - Poradie položky v tabuľke dvojito nepriamych blokov. Určuje, ktorý blok nepriamych indexov sa má použiť.">
                   DNI <i class="bi bi-info-circle-fill text-white-50 ms-1"></i>
                 </th>
-                <th class="col-3" data-bs-toggle="tooltip" data-bs-placement="top" title="Nepriamy Index - Celkový index v reťazení blokov">
+                <th class="col-3" data-bs-toggle="tooltip" data-bs-placement="top" title="Nepriamy Index - Súhrnný index v rámci celej štruktúry súborového systému. Začína od nuly a čísluje všetky dátové bloky.">
                   NI <i class="bi bi-info-circle-fill text-white-50 ms-1"></i>
                 </th>
                 <th class="col-4"></th>
@@ -163,10 +163,10 @@
           <table class="table table-hover table-bordered table-striped" style="max-width: 300px">
             <thead>
               <tr class="text-center bg-primary text-white">
-                <th class="col-1" data-bs-toggle="tooltip" data-bs-placement="top" title="Globálne Číslo Bloku - Číslo bloku na disku">
+                <th class="col-1" data-bs-toggle="tooltip" data-bs-placement="top" title="Globálne Číslo Bloku - Fyzické číslo bloku na disku, ktoré jednoznačne identifikuje umiestnenie dát v diskovom priestore.">
                   GČB <i class="bi bi-info-circle-fill text-white-50 ms-1"></i>
                 </th>
-                <th class="col-2" data-bs-toggle="tooltip" data-bs-placement="top" title="Lokálne Číslo Bloku - Prečítajte si viac o lokálnych číslach blokov v našej dokumentácii">
+                <th class="col-2" data-bs-toggle="tooltip" data-bs-placement="top" title="Lokálne Číslo Bloku - Relatívna pozícia v rámci nepriameho bloku. Používa sa na rýchle indexovanie v rámci jedného nepriameho bloku.">
                   LČB <i class="bi bi-info-circle-fill text-white-50 ms-1"></i>
                 </th>
                 <th></th>
@@ -198,13 +198,13 @@
           <table class="table table-hover table-bordered table-striped" style="max-width: 300px">
             <thead>
               <tr class="text-center bg-primary text-white">
-                <th class="col-1" data-bs-toggle="tooltip" data-bs-placement="top" title="Globálne Číslo Bloku - Číslo bloku na disku">
+                <th class="col-1" data-bs-toggle="tooltip" data-bs-placement="top" title="Globálne Číslo Bloku - Absolútne číslo bloku v rámci celého diskového priestoru. Každý blok má jedinečné GČB.">
                   GČB <i class="bi bi-info-circle-fill text-white-50 ms-1"></i>
                 </th>
-                <th class="col-2" data-bs-toggle="tooltip" data-bs-placement="top" title="Lokálne Číslo Bloku - Index v rámci nepriameho bloku">
+                <th class="col-2" data-bs-toggle="tooltip" data-bs-placement="top" title="Lokálne Číslo Bloku - Pozícia v rámci aktuálneho nepriameho bloku (0-255). Používa sa na indexovanie v rámci bloku.">
                   LČB <i class="bi bi-info-circle-fill text-white-50 ms-1"></i>
                 </th>
-                <th class="col-3" data-bs-toggle="tooltip" data-bs-placement="top" title="Nepriamy Index - Celkový index v reťazení blokov">
+                <th class="col-3" data-bs-toggle="tooltip" data-bs-placement="top" title="Nepriamy Index - Celkový index bloku v rámci súboru. Vyjadruje logickú pozíciu dátového bloku v súbore.">
                   NI <i class="bi bi-info-circle-fill text-white-50 ms-1"></i>
                 </th>
                 <th></th>
@@ -238,5 +238,20 @@
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  
+  <!-- Additional script to ensure tooltips work -->
+  <script>
+    // Initialize tooltips when page loads
+    window.addEventListener('DOMContentLoaded', function() {
+      var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+      tooltipTriggerList.forEach(function(tooltipTriggerEl) {
+        new bootstrap.Tooltip(tooltipTriggerEl, {
+          html: true,
+          trigger: 'hover focus',
+          boundary: 'window'
+        });
+      });
+    });
+  </script>
 </body>
 </html>

@@ -286,7 +286,7 @@ function startDataMove(startElemId, targetBlockId) {
       phase: "backToFile", // First phase: moving back to the file
       source: startElemId,
       size: 100, // Starting size
-      targetSize: 80, // Target size for animation
+      targetSize: 50, // Make it smaller when moving to file
       rotation: 0 // Add rotation for more dynamic animation
   };
 }
@@ -332,8 +332,8 @@ function moveData() {
                   targetY: dataBlocks[0].y + dataBlocks[0].h / 2,
                   phase: "toDataBlock",
                   source: movingData.source,
-                  size: 80,
-                  targetSize: 100,
+                  size: 50, // Start with the small size
+                  targetSize: 100, // Grow to normal size when moving up
                   rotation: 0
               };
           }, 100);
@@ -484,16 +484,6 @@ document.addEventListener('DOMContentLoaded', function() {
   // Initialize the legend collapse functionality
   const legendToggle = document.querySelector('.legend-toggle');
   const legendContent = document.getElementById('legendContent');
-  
-  if (legendToggle && legendContent) {
-    // Close the legend when clicking outside of it
-    document.addEventListener('click', function(event) {
-      if (!legendToggle.contains(event.target) && !legendContent.contains(event.target) && legendContent.classList.contains('show')) {
-        const bsCollapse = new bootstrap.Collapse(legendContent);
-        bsCollapse.hide();
-      }
-    });
-  }
 });
 
 // Keep canvas size in sync with window size

@@ -375,32 +375,6 @@ function setup() {
       updateRowHighlights();
     });
   }
-
-  // Initialize tooltips
-  document.addEventListener('DOMContentLoaded', function() {
-    // Initialize tooltips with HTML support and custom options
-    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
-    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
-      return new bootstrap.Tooltip(tooltipTriggerEl, {
-        html: true,
-        template: '<div class="tooltip" role="tooltip"><div class="tooltip-arrow"></div><div class="tooltip-inner" style="max-width: 300px;"></div></div>'
-      });
-    });
-    
-    // Initialize the legend collapse functionality
-    const legendToggle = document.querySelector('.legend-toggle');
-    const legendContent = document.getElementById('legendContent');
-    
-    if (legendToggle && legendContent) {
-      // Close the legend when clicking outside of it
-      document.addEventListener('click', function(event) {
-        if (!legendToggle.contains(event.target) && !legendContent.contains(event.target) && legendContent.classList.contains('show')) {
-          const bsCollapse = new bootstrap.Collapse(legendContent);
-          bsCollapse.hide();
-        }
-      });
-    }
-  });
 }
 
 function draw() {
@@ -429,6 +403,9 @@ function draw() {
     push();
     translate(movingData.x, movingData.y);
     rotate(radians(movingData.rotation || 0));
+    
+    // Apply scale transformation
+    scale(movingData.scale);
     
     // Draw animated data block
     drawingContext.shadowOffsetX = 3;
@@ -548,8 +525,8 @@ function startDataMove(startElemId, targetBlockId) {
       targetY: 670,
       phase: "backToFile", // First phase: moving back to the file
       source: startElemId,
-      size: 100, // Starting size
-      targetSize: 80, // Target size for animation
+      scale: 1.0, // Starting scale
+      targetScale: 0.6, // Target scale when moving down to file (smaller)
       rotation: 0 // Add rotation for more dynamic animation
   };
 
@@ -563,10 +540,8 @@ function moveData() {
   movingData.x += (movingData.targetX - movingData.x) * 0.1;
   movingData.y += (movingData.targetY - movingData.y) * 0.1;
   
-  // Animate size if using that property
-  if (movingData.size) {
-    movingData.size += (movingData.targetSize - movingData.size) * 0.1;
-  }
+  // Animate scale based on vertical direction
+  movingData.scale += (movingData.targetScale - movingData.scale) * 0.1;
   
   // Add slight rotation for more dynamic movement
   movingData.rotation = sin(frameCount * 0.05) * 5;
@@ -597,8 +572,8 @@ function moveData() {
                   targetY: dataBlocks[0].y + dataBlocks[0].h / 2,
                   phase: "toDataBlock",
                   source: movingData.source,
-                  size: 80,
-                  targetSize: 100,
+                  scale: 0.6, // Starting scale (smaller)
+                  targetScale: 1.0, // Target scale when moving up to data block (larger)
                   rotation: 0
               };
           }, 100);
@@ -685,3 +660,47 @@ function lineWithArrowhead(x1, y1, x2, y2) {
 function windowResized() {
   resizeCanvas(windowWidth, document.body.scrollHeight);
 }
+
+// After all other code, at the end of the file
+// Add this separate DOM ready event listener to ensure tooltips work properly
+document.addEventListener('DOMContentLoaded', function() {
+  // Initialize Bootstrap tooltips explicitly
+  const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+  
+  // Use Array.from for better browser compatibility
+  Array.from(tooltipTriggerList).forEach(tooltipTriggerEl => {
+    new bootstrap.Tooltip(tooltipTriggerEl, {
+      html: true,
+      trigger: 'hover focus', // Make sure tooltips respond to hover
+      container: 'body',
+      boundary: 'window',
+      template: '<div class="tooltip" role="tooltip"><div class="tooltip-arrow"></div><div class="tooltip-inner" style="max-width: 300px;"></div></div>'
+    });
+  });
+  
+  // Initialize the legend collapse functionality
+  const legendToggle = document.querySelector('.legend-toggle');
+  const legendContent = document.getElementById('legendContent');
+  
+  if (legendToggle && legendContent) {
+    // Close the legend when clicking outside of it
+    document.addEventListener('click', function(event) {
+      if (!legendToggle.contains(event.target) && !legendContent.contains(event.target) && legendContent.classList.contains('show')) {
+        const bsCollapse = new bootstrap.Collapse(legendContent);
+        bsCollapse.hide();
+      }
+    });
+  }
+});
+
+// Also add a window load event listener as a backup
+window.addEventListener('load', function() {
+  // Re-initialize tooltips again after window load
+  // This ensures they work even if DOMContentLoaded didn't properly initialize them
+  setTimeout(() => {
+    const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+    Array.from(tooltipTriggerList).forEach(tooltipTriggerEl => {
+      new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+  }, 500); // Small delay to ensure everything is rendered
+});
