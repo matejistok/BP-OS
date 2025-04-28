@@ -146,15 +146,15 @@ $(document).ready(function () {
             let type = $(this).text();
             if (type === "Priamy") {
                 maxSize += blockSize;
-                formulaParts.push(`\\left(${blockSize}\\right)_{\\text{Priamy}}`);
+                formulaParts.push(`<span class="formula-part priamy-border">(${blockSize})</span>`);
             } else if (type === "Nepriamy") {
                 let size = (blockSize / pointerSize) * blockSize;
                 maxSize += size;
-                formulaParts.push(`\\left(\\frac{${blockSize}}{${pointerSize}} \\times ${blockSize}\\right)_{\\text{Nepriamy}}`);
+                formulaParts.push(`<span class="formula-part nepriamy-border">($\\frac{${blockSize}}{${pointerSize}} \\times ${blockSize}$)</span>`);
             } else if (type === "2x nepriamy") {
                 let size = (blockSize / pointerSize) * (blockSize / pointerSize) * blockSize;
                 maxSize += size;
-                formulaParts.push(`\\left(\\frac{${blockSize}}{${pointerSize}} \\times \\frac{${blockSize}}{${pointerSize}} \\times ${blockSize}\\right)_{\\text{2x Nepriamy}}`);
+                formulaParts.push(`<span class="formula-part dnepriamy-border">($\\frac{${blockSize}}{${pointerSize}} \\times \\frac{${blockSize}}{${pointerSize}} \\times ${blockSize}$)</span>`);
             }
         });
 
@@ -191,7 +191,14 @@ $(document).ready(function () {
                     <h5 class="mb-0">Formula</h5>
                 </div>
                 <div class="card-body">
-                    <p class="mb-0">\\(${formulaText}\\) = ${maxSize} Bytes</p>
+                    <div class="mb-3 small">
+                        <span class="color-box priamy-color"></span> Priamy
+                        <span class="color-box nepriamy-color ms-3"></span> Nepriamy
+                        <span class="color-box dnepriamy-color ms-3"></span> 2x Nepriamy
+                    </div>
+                    <div class="formula-container mb-0">
+                        ${formulaText} = ${maxSize} Bytes
+                    </div>
                 </div>
             `);
         } else {
@@ -209,7 +216,7 @@ $(document).ready(function () {
                     <h5 class="mb-0">Max File System Size</h5>
                 </div>
                 <div class="card-body">
-                    // <p class="mb-0">0 Bytes</p>
+                    <p class="mb-0">0 Bytes</p>
                 </div>
             `);
         }

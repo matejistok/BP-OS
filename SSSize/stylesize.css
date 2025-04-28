@@ -81,3 +81,65 @@
 .dropdown-item:hover {
     background-color: #e9ecef;
 }
+
+/* Color boxes for formula legend */
+.color-box {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border-radius: 3px;
+    vertical-align: middle;
+    margin-right: 5px;
+}
+
+.priamy-color {
+    background-color: #6c757d;
+    border: 1px solid #ddd;
+}
+
+.nepriamy-color {
+    background-color: #0dcaf0;
+}
+
+.dnepriamy-color {
+    background-color: #ffc107;
+}
+
+/* Define MathJax colors */
+:root {
+    --priamy-color: #6c757d;
+    --nepriamy-color: #0dcaf0;
+    --dnepriamy-color: #ffc107;
+}
+
+/* Styling for MathJax elements */
+mjx-container {
+    overflow-x: auto;
+    max-width: 100%;
+    display: inline !important;
+}
+
+/* Formula styling */
+.formula-container {
+    font-size: 1.1rem;
+    padding: 0.5rem 0;
+    overflow-x: auto;
+}
+
+.formula-part {
+    display: inline-block;
+    margin: 0 2px;
+    padding-bottom: 2px;
+}
+
+.priamy-border {
+    border-bottom: 2px solid #6c757d;
+}
+
+.nepriamy-border {
+    border-bottom: 2px solid #0dcaf0;
+}
+
+.dnepriamy-border {
+    border-bottom: 2px solid #ffc107;
+}
