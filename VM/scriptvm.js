@@ -1,23 +1,3 @@
-// Constants for colors and sizing
-const COLORS = {
-  virtualAddress: { fill: [173, 216, 230], stroke: [0, 0, 0] },
-  physicalAddress: { fill: [250, 128, 114], stroke: [0, 0, 0] },
-  pageDirectory: { fill: [240, 240, 240], stroke: [0, 0, 0] },
-  disabledDirectory: { fill: [245, 245, 245], stroke: [150, 150, 150] },
-  highlight: { fill: [255, 255, 0, 150], stroke: [0, 0, 0] },
-  arrows: {
-    blue: [0, 0, 255],
-    red: [255, 0, 0]
-  },
-  textColor: [0, 0, 0]
-};
-
-const SIZES = {
-  text: 14,
-  arrowhead: 8
-};
-
-// App state variables
 let hoverElements = [];
 let editableElements = {
   L2: '9',
@@ -39,7 +19,7 @@ let modals = {};
 let showAllModals = false;
 let highlightPage = false;
 let ArrowsPositions = {
-  pageDirectory1L2: { y: 360 },
+  pageDirectory1L2: {  y: 360 },
   pageDirectory1L2Index: { y: 400 },
   pageDirectory1L1: { y: 360 },
   pageDirectory1L1Index: { y: 400 },
@@ -48,94 +28,96 @@ let ArrowsPositions = {
 };
 let canvas;
 
-// Initialize canvas and UI elements
+//First inicialization of canvas and elements
 function setup() {
-  // Create canvas that fits the document
   canvas = createCanvas(windowWidth, document.body.scrollHeight);
   canvas.id("Canvas");
   canvas.style("z-index", "-1");
   canvas.position(0, 50);
   background(255);
-  textSize(SIZES.text);
+  textSize(14);
 
-  // Create UI buttons with consistent styling
-  createUIButtons();
-
-  // Initialize all visual components
-  drawVirtualAddress(width * 0.025, height * 0.008);
-  drawPageDirectory(width * 0.07, height * 0.285, parseInt(editableElements.L2), parseInt(editableElements.L2Index), editableElements.SATP, 220, 'PPN1', 'PD1');
-  drawPageDirectory(width * 0.27, height * 0.285, parseInt(editableElements.L1), parseInt(editableElements.L1Index), editableElements.PPN1, 220, 'PPN2', 'PD2');
-  drawPageDirectory(width * 0.47, height * 0.285, parseInt(editableElements.L0), parseInt(editableElements.L0Index), editableElements.PPN2, 220, 'PPN3', 'PD3');
-  drawPhysicalAddress(width * 0.635, height * 0.07);
-  drawVirtualMemorySpace(width * 0.8, height * 0.07); 
-  drawSATP(width * 0.033, height * 0.857);
-  
-  // Create help modals
-  createHelpModals();
-}
-
-function createUIButtons() {
-  // Button to toggle arrows with improved styling
-  let toggleArrowsButton = createButton('Šípky');
+  // Button to toggle arrows
+  let toggleArrowsButton = createButton('Arrows');
   toggleArrowsButton.position(width - 120, 70);
-  toggleArrowsButton.addClass('ui-button');
   toggleArrowsButton.mousePressed(() => {
-    showArrows = !showArrows;
-    redraw();
+    showArrows = !showArrows;                                   // Toggle arrows
+    redraw();                                                   // Refresh canvas
   });
 
-  // Button to toggle all modals with improved styling
-  let toggleButton = createButton('Pomoc');
+  // Button to toggle all modals
+  let toggleButton = createButton('Help');
   toggleButton.position(width - 60, 70);
-  toggleButton.addClass('ui-button');
   toggleButton.mousePressed(() => toggleAllModals());
+
+  // modals.modal1 = createModal(
+  //   260,
+  //   15,
+  //   'Velkost',
+  //   300,
+  //   15,
+  // );
+
+  // modals.modal2 = createModal(
+  //   50,
+  //   125,
+  //   'Informacie o indexoch L2, L1, L0., ako funguju atd.',
+  //   300,
+  //   40
+  // );
+
+  // modals.modal3 = createModal(
+  //   200,
+  //   600,
+  //   'SATP zachovava adresu prvej tabulky page directory',
+  //   200,
+  //   50
+  // );
+
+  // Drawing of Virtual Address
+  //hoverElements.push({ label: 'L2', x: width * 0.065, y: height, w: width * 0.04, h: height * 0.05, highlight: [1, 2, 3], key: 'L2' });
+  //hoverElements.push({ label: 'L1', x: width * 0.15, y: height * 0.03, w: width * 0.4, h: height * 0.05, highlight: [2, 3], key: 'L1' });
+  //hoverElements.push({ label: 'L0', x: width * 0.2, y: height * 0.03, w: width * 0.04, h: height * 0.05, highlight: [3], key: 'L0' });
+  //hoverElements.push({ label: 'L2Index', x: width * 0.065, y: height * 0.08, w: width * 0.04, h: height * 0.05, highlight: [1, 2, 3], key: 'L2Index' });
+  //hoverElements.push({ label: 'L1Index', x: width * 0.15, y: height * 0.26, w: width * 0.04, h: height * 0.05, highlight: [2, 3], key: 'L1Index' });
+  //hoverElements.push({ label: 'L0Index', x: width * 0.2, y: height * 0.26, w: width * 0.04, h: height * 0.05, highlight: [3], key: 'L0Index' });
+  drawVirtualAddress(width * 0.025, height * 0.008);
+
+  // Page Directory 1
+  drawPageDirectory(width * 0.07, height * 0.285, parseInt(editableElements.L2), parseInt(editableElements.L2Index), editableElements.SATP, 220, 'PPN1', 'PD1');
+
+  // Page Directory 2
+  drawPageDirectory(width * 0.27, height * 0.285, parseInt(editableElements.L1), parseInt(editableElements.L1Index), editableElements.PPN1, 220, 'PPN2', 'PD2');
+
+  // Page Directory 3
+  drawPageDirectory(width * 0.47, height * 0.285, parseInt(editableElements.L0), parseInt(editableElements.L0Index), editableElements.PPN2, 220, 'PPN3', 'PD3');
+
+  drawPhysicalAddress(width * 0.635, height * 0.07);
+
+  drawVirtualMemorySpace(width * 0.8, height * 0.07); 
+
+  //hoverElements.push({ label: 'SATP', x: 50, y: 600, w: 100, h: 40, key: 'SATP' });
+  drawSATP(width * 0.033, height * 0.857);
 }
 
 function draw() {
   clear();
   background(255);
-  
-  // Draw main elements
   drawVirtualAddress(width * 0.025, height * 0.08);
   drawSATP(width * 0.033, height * 0.857);
 
-  // Update state based on editable elements
-  updatePageDirectoryState();
-
-  // Draw page directories based on current state
-  drawPageDirectories();
-  
-  // Draw physical address and virtual memory space
-  drawPhysicalAddress(width * 0.635, height * 0.07);
-  drawVirtualMemorySpace(width * 0.8, height * 0.07);
-
-  // Handle hover highlights and interactions
-  handleHoverEffects();
-
-  // Draw arrows if enabled
-  if (showArrows) {
-    drawArrows();
-  }
-}
-
-function updatePageDirectoryState() {
-  // Update state for L2
   if (editableElements.L2 === '0') {
     editableElements.PPN1 = '';
     editableElements.L2Index = '';
   } else if (editableElements.L2 !== '0' && editableElements.L2Index === '') {
     editableElements.PPN1 = '1A2B';
   }
-  
-  // Update state for L1
   if (editableElements.L1 === '0') {
     editableElements.PPN2 = '';
     editableElements.L1Index = '';
   } else if (editableElements.L1 !== '0' && editableElements.L1Index === '') {
     editableElements.PPN2 = '3C4D';
   }
-  
-  // Update state for L0
   if (editableElements.L0 === '0') {
     editableElements.PPN3 = '';
     editableElements.L0Index = '';
@@ -144,10 +126,6 @@ function updatePageDirectoryState() {
   }
 
   // Update Memory value based on L2, L1, and L0
-  updateMemorySize();
-}
-
-function updateMemorySize() {
   if (editableElements.L2 === '0') {
     if (editableElements.L1 === '0') {
       editableElements.Memory = (Math.pow(2, parseInt(editableElements.L0)) * 0.000004).toFixed(6);
@@ -157,80 +135,73 @@ function updateMemorySize() {
   } else {
     editableElements.Memory = Math.pow(2, parseInt(editableElements.L2)).toString();
   }
-}
 
-function drawPageDirectories() {
-  // Draw Page Directory 1 (or disable it if L2 = 0)
+  // Disable Page Directory 1
   if (editableElements.L2 === '0') {
-    drawDisabledPageDirectory(width * 0.07, height * 0.285);
+    fill(245);                                              // Gray colour for Page Directory
+    stroke(150,150,150);
+    rect(100, 200, 150, 300);                              
+
+    let numEntries = 8;                                     // Rows in Page Directory
+    let entryHeight = 300 / numEntries;                     // Height of each entry
+    for (let i = 1; i < numEntries; i++) {
+      line(100, 200 + i * entryHeight, 100 + 150, 200 + i * entryHeight);
+    }
+
+    line(100 + 95, 200, 100 + 95, 200 + 300);
   } else {
     drawPageDirectory(width * 0.07, height * 0.285, parseInt(editableElements.L2), parseInt(editableElements.L2Index), editableElements.SATP, 220, 'PPN1', 'PD1');
   }
 
-  // Draw Page Directory 2 (or disable it if L1 = 0)
+  // Disable Page Directory 2  
   if (editableElements.L1 === '0') {
-    drawDisabledPageDirectory(width * 0.27, height * 0.285);
+    fill(245);            
+    stroke(150,150,150);
+    rect(400, 200, 150, 300);
+
+    let numEntries = 8; 
+    let entryHeight = 300 / numEntries;
+    for (let i = 1; i < numEntries; i++) {
+      line(400, 200 + i * entryHeight, 400 + 150, 200 + i * entryHeight);
+    }
+
+    line(400 + 95, 200, 400 + 95, 200 + 300);
   } else {
-    if (editableElements.L2 === '0') {
+    if (editableElements.L2 === '0'){
       drawPageDirectory(width * 0.27, height * 0.285, parseInt(editableElements.L1), parseInt(editableElements.L1Index), editableElements.SATP, 220, 'PPN2', 'PD2');
-    } else {
+    }
+    else {
       drawPageDirectory(width * 0.27, height * 0.285, parseInt(editableElements.L1), parseInt(editableElements.L1Index), editableElements.PPN1, 220, 'PPN2', 'PD2');
     }
   }
 
-  // Draw Page Directory 3 (or disable it if L0 = 0)
+  // Disable Page Directory 3
   if (editableElements.L0 === '0') {
-    drawDisabledPageDirectory(width * 0.47, height * 0.285);
+    fill(245);            
+    stroke(150,150,150);
+    rect(700, 200, 150, 300);
+
+    let numEntries = 8; 
+    let entryHeight = 300 / numEntries;
+    for (let i = 1; i < numEntries; i++) {
+      line(700, 200 + i * entryHeight, 700 + 150, 200 + i * entryHeight);
+    }
+
+    line(700 + 95, 200, 700 + 95, 200 + 300);
   } else {
-    if (editableElements.L1 === '0') {
+    if (editableElements.L1 === '0'){
       drawPageDirectory(width * 0.47, height * 0.285, parseInt(editableElements.L0), parseInt(editableElements.L0Index), editableElements.SATP, 220, 'PPN3', 'PD3');
-    } else {
+    }
+    else {
       drawPageDirectory(width * 0.47, height * 0.285, parseInt(editableElements.L0), parseInt(editableElements.L0Index), editableElements.PPN2, 220, 'PPN3', 'PD3');
     }
   }
-}
+  drawPhysicalAddress(width * 0.635, height * 0.07);
+  drawVirtualMemorySpace(width * 0.8, height * 0.07);
 
-function drawDisabledPageDirectory(x, y) {
-  fill(COLORS.disabledDirectory.fill);
-  stroke(COLORS.disabledDirectory.stroke);
-  rect(x, y, 150, 300);
+  // Adjustable height calculated by depending on the value of L2, L1, and L0
+  let highlightHeight;
 
-  let numEntries = 8;
-  let entryHeight = 300 / numEntries;
-  for (let i = 1; i < numEntries; i++) {
-    line(x, y + i * entryHeight, x + 150, y + i * entryHeight);
-  }
-
-  line(x + 95, y, x + 95, y + 300);
-}
-
-function handleHoverEffects() {
-  // Calculate highlight height for virtual memory space
-  let highlightHeight = calculateHighlightHeight();
-
-  for (let element of hoverElements) {
-    if (isMouseOverElement(element)) {
-      if (isElementDisabled(element)) {
-        continue;
-      }
-
-      // Apply appropriate highlight effect
-      applyHighlightEffect(element, highlightHeight);
-    }
-    
-    // Display element value only once, not on every frame
-    if (element.key && editableElements[element.key]) {
-      fill(COLORS.textColor);
-      textSize(SIZES.text);
-      noStroke(); // Add this to prevent stroke on text
-      text(editableElements[element.key], element.x + 10, (element.y + element.h / 2) + 5);
-    }
-  }
-}
-
-function calculateHighlightHeight() {
-  let highlightHeight = 600;
-  
   if (editableElements.L2 === '0') {
     if (editableElements.L1 === '0') {
       highlightHeight = highlightHeight/(2**Math.abs(parseInt(editableElements.L1 - 9)));
@@ -242,318 +213,192 @@ function calculateHighlightHeight() {
   }
 
   // highlightHeight does not exceed total height
-  return min(highlightHeight, 600);
-}
+  highlightHeight = min(highlightHeight, 600);
 
-function isMouseOverElement(element) {
-  return (
-    mouseX > element.x &&
-    mouseX < element.x + element.w &&
-    mouseY > element.y &&
-    mouseY < element.y + element.h
-  );
-}
+  for (let element of hoverElements) {
+    if (
+      mouseX > element.x &&
+      mouseX < element.x + element.w &&
+      mouseY > element.y &&
+      mouseY < element.y + element.h
+    ) {
+      if (editableElements.L2 === '0' && element.key === 'PPN1') {
+        continue;
+      }
+      // Highlight row labels of Page Directory
+      if (['L2', 'L1', 'L0'].includes(element.key)) {
+        fill(255, 255, 0, 150); // Highlight colour
+        noStroke();
+        rect(width * 0.8, height * 0.0715, 250, highlightHeight);
+        if(editableElements[element.key] === '0') {
+        } else {
+          highlightRowLabels(element.key);
+        }
+      } else {
+        fill(255, 255, 0, 150); // Highlight colour
+        noStroke();
+        rect(element.x, element.y, element.w, element.h);
+      }
 
-function isElementDisabled(element) {
-  return (
-    (editableElements.L2 === '0' && element.key === 'PPN1') ||
-    (editableElements.L1 === '0' && element.key === 'PPN2') ||
-    (editableElements.L0 === '0' && element.key === 'PPN3')
-  );
-}
+      if (['L2Index'].includes(element.key)){
+        if (editableElements.L2Index === ''){
+          
+        }else{
+          drawPageDirectory(width * 0.07, height * 0.285, parseInt(editableElements.L2), parseInt(editableElements.L2Index), editableElements.SATP, (255, 255, 0, 150), 'PPN1', 'PD1');
+        }
+      }
 
-function applyHighlightEffect(element, highlightHeight) {
-  // Highlight for virtual memory space
-  if (['L2', 'L1', 'L0'].includes(element.key)) {
-    fill(COLORS.highlight.fill);
-    noStroke();
-    rect(width * 0.8, height * 0.0715, 250, highlightHeight);
-    if(editableElements[element.key] !== '0') {
-      highlightRowLabels(element.key);
+      if (['L1Index'].includes(element.key)){
+        if (editableElements.L1Index === ''){
+         
+        }else{
+          drawPageDirectory(width * 0.27, height * 0.285, parseInt(editableElements.L1), parseInt(editableElements.L1Index), editableElements.PPN1, (255, 255, 0, 150), 'PPN2', 'PD2');
+        }
+      }
+
+      if (['L0Index'].includes(element.key)){
+        if (editableElements.L0Index === ''){
+         
+        }else{
+          drawPageDirectory(width * 0.47, height * 0.285, parseInt(editableElements.L0), parseInt(editableElements.L0Index), editableElements.PPN2, (255, 255, 0, 150), 'PPN3', 'PD3');
+        }
+      }
+
+      if (['SATP', 'PPN1', 'PPN2', 'PPN3'].includes(element.key)) {
+        highlightAddress(editableElements[element.key]);
+      }
     }
-  } 
-  // Highlight for index elements
-  else if (element.key.endsWith('Index')) {
-    fill(COLORS.highlight.fill);
-    noStroke();
-    rect(element.x, element.y, element.w, element.h);
-    
-    // Highlight corresponding page directory
-    if (element.key === 'L2Index' && editableElements.L2Index !== '') {
-      drawPageDirectory(width * 0.07, height * 0.285, parseInt(editableElements.L2), parseInt(editableElements.L2Index), editableElements.SATP, COLORS.highlight.fill, 'PPN1', 'PD1');
-    } else if (element.key === 'L1Index' && editableElements.L1Index !== '') {
-      drawPageDirectory(width * 0.27, height * 0.285, parseInt(editableElements.L1), parseInt(editableElements.L1Index), editableElements.PPN1, COLORS.highlight.fill, 'PPN2', 'PD2');
-    } else if (element.key === 'L0Index' && editableElements.L0Index !== '') {
-      drawPageDirectory(width * 0.47, height * 0.285, parseInt(editableElements.L0), parseInt(editableElements.L0Index), editableElements.PPN2, COLORS.highlight.fill, 'PPN3', 'PD3');
-    }
-  } 
-  // Highlight for PPN elements
-  else if (['SATP', 'PPN1', 'PPN2', 'PPN3'].includes(element.key)) {
-    fill(COLORS.highlight.fill);
-    noStroke();
-    rect(element.x, element.y, element.w, element.h);
-    highlightAddress(editableElements[element.key]);
+    // Display value
+    fill(0);
+    textSize(14);
+    text(editableElements[element.key], element.x + 10, (element.y + element.h / 2) + 5);
   }
-  // Default highlight
-  else {
-    fill(COLORS.highlight.fill);
-    noStroke();
-    rect(element.x, element.y, element.w, element.h);
+
+  // Draw arrows
+  if (showArrows) {
+    drawArrows();
   }
 }
 
 function drawArrows() {
-  // L2 page directory arrows
+
   if (editableElements.L2 !== '0') {
-    // Arrow from L2Index to PPN of Page Directory 1
-    drawMultiCornerArrow([[width * 0.085, height * 0.16], [width * 0.085, height * 0.175], [width * 0.035, height * 0.175], [width * 0.035, ArrowsPositions.pageDirectory1L2.y], [width * 0.05, ArrowsPositions.pageDirectory1L2.y]], COLORS.arrows.blue);
-    
+    // Arrow from L2Index to PPN od Page Directory 1
+    drawMultiCornerArrow([[width * 0.085, height * 0.16], [width * 0.085, height * 0.175], [width * 0.035, height * 0.175], [width * 0.035, ArrowsPositions.pageDirectory1L2.y], [width * 0.05, ArrowsPositions.pageDirectory1L2.y]], [0, 0, 255]);
     // Arrow from PD1 PPN to Page Directory 2 Address
-    drawMultiCornerArrow([[width * 0.1, ArrowsPositions.pageDirectory1L2Index.y - 12], [width * 0.1, ArrowsPositions.pageDirectory1L2Index.y], [width * 0.2, ArrowsPositions.pageDirectory1L2Index.y], [width * 0.2, height * 0.265], [width * 0.265, height * 0.265]], COLORS.arrows.red);
+    drawMultiCornerArrow([[width * 0.1, ArrowsPositions.pageDirectory1L2Index.y - 12], [width * 0.1, ArrowsPositions.pageDirectory1L2Index.y], [width * 0.2, ArrowsPositions.pageDirectory1L2Index.y], [width * 0.2, height * 0.265], [width * 0.265, height * 0.265]], [255, 0, 0]);
   } else {
     // Arrow from SATP to Page Directory 2
-    drawMultiCornerArrow([[width * 0.04, height * 0.855], [width * 0.04, height * 0.265], [width * 0.26, height * 0.265], [], [width * 0.26, height * 0.265]], COLORS.arrows.red);
+    drawMultiCornerArrow([[width * 0.04, height * 0.855], [width * 0.04, height * 0.265], [width * 0.26, height * 0.265], [], [width * 0.26, height * 0.265]], [255, 0, 0]);
   }
 
-  // L1 page directory arrows
   if (editableElements.L1 !== '0') {
-    // Arrow from L1Index to PPN of Page Directory 2
-    drawMultiCornerArrow([[width * 0.125, height * 0.16], [width * 0.125, height * 0.175], [width * 0.22, height * 0.175], [width * 0.22, ArrowsPositions.pageDirectory1L1.y], [width * 0.25, ArrowsPositions.pageDirectory1L1.y]], COLORS.arrows.blue);
-    
+    // Arrow from L1Index to PPN od Page Directory 2
+    drawMultiCornerArrow([[width * 0.125, height * 0.16], [width * 0.125, height * 0.175], [width * 0.22, height * 0.175], [width * 0.22, ArrowsPositions.pageDirectory1L1.y], [width * 0.25, ArrowsPositions.pageDirectory1L1.y]], [0, 0, 255]);
     // Arrow from PD2 PPN to Page Directory 3 Address
-    drawMultiCornerArrow([[width * 0.3, ArrowsPositions.pageDirectory1L1Index.y - 12], [width * 0.3, ArrowsPositions.pageDirectory1L1Index.y], [width * 0.4, ArrowsPositions.pageDirectory1L1Index.y], [width * 0.4, height * 0.265], [width * 0.46, height * 0.265]], COLORS.arrows.red);
+    drawMultiCornerArrow([[width * 0.3, ArrowsPositions.pageDirectory1L1Index.y - 12], [width * 0.3, ArrowsPositions.pageDirectory1L1Index.y], [width * 0.4, ArrowsPositions.pageDirectory1L1Index.y], [width * 0.4, height * 0.265], [width * 0.46, height * 0.265]], [255, 0, 0]);
   } else {
     // Arrow from SATP to Page Directory 3
-    drawMultiCornerArrow([[width * 0.04, height * 0.855], [width * 0.04, height * 0.265], [width * 0.46, height * 0.265], [], [width * 0.46, height * 0.265]], COLORS.arrows.red);
+    drawMultiCornerArrow([[width * 0.04, height * 0.855], [width * 0.04, height * 0.265], [width * 0.46, height * 0.265], [], [width * 0.46, height * 0.265]], [255, 0, 0]);
   }
 
-  // L0 page directory arrows
-  // Arrow from L0Index to PPN of Page Directory 3
-  drawMultiCornerArrow([[], [width * 0.175, height * 0.15], [width * 0.42, height * 0.15], [width * 0.42, ArrowsPositions.pageDirectory1L0.y], [width * 0.45, ArrowsPositions.pageDirectory1L0.y]], COLORS.arrows.blue);
+  // Arrow from L0Index to PPN od Page Directory 3
+  drawMultiCornerArrow([[], [width * 0.175, height * 0.15], [width * 0.42,  height * 0.15], [width * 0.42, ArrowsPositions.pageDirectory1L0.y], [width * 0.45, ArrowsPositions.pageDirectory1L0.y]], [0, 0, 255]);
 
   // Arrow from SATP to Page Directory 1
-  drawMultiCornerArrow([[width * 0.04, height * 0.855], [width * 0.04, height * 0.265], [width * 0.06, height * 0.265], [], [width * 0.06, height * 0.265]], COLORS.arrows.red);
+  drawMultiCornerArrow([[width * 0.04, height * 0.855], [width * 0.04, height * 0.265], [width * 0.06, height * 0.265], [], [width * 0.06, height * 0.265]], [255, 0, 0]);
 
   // Arrow from PD3 PPN to Physical Address
-  drawMultiCornerArrow([[width * 0.5, ArrowsPositions.pageDirectory1L0Index.y - 12], [width * 0.5, ArrowsPositions.pageDirectory1L0Index.y], [width * 0.67, ArrowsPositions.pageDirectory1L0Index.y], [width * 0.67, height * 0.135]], COLORS.arrows.red);
+  drawMultiCornerArrow([[width * 0.5, ArrowsPositions.pageDirectory1L0Index.y - 12], [width * 0.5, ArrowsPositions.pageDirectory1L0Index.y], [width * 0.67, ArrowsPositions.pageDirectory1L0Index.y], [width * 0.67, height * 0.135]], [255, 0, 0]);
 
   // Arrow for Offset in Physical Address
-  drawMultiCornerArrow([[width * 0.24, height * 0.1], [width * 0.6, height * 0.1], [width * 0.6, height * 0.175], [width * 0.72, height * 0.175], [width * 0.72, height * 0.135]], COLORS.arrows.red);
+  drawMultiCornerArrow([[width * 0.24, height * 0.1], [width * 0.6, height * 0.1],[width * 0.6, height * 0.175], [width * 0.72, height * 0.175], [width * 0.72, height * 0.135]], [255, 0, 0]);
 }
 
-// Function to draw multi-corner arrows with improved styling
+// Function to draw arrows with multiple corners
 function drawMultiCornerArrow(points, color) {
-  stroke(color);
-  strokeWeight(1.5); // Slightly thicker lines for better visibility
+  stroke(color[0], color[1], color[2]);
   noFill();
 
-  // Draw lines between points, skipping empty points
+  // Draw lines between the points
   for (let i = 0; i < points.length - 1; i++) {
-    if (points[i].length > 0 && points[i + 1].length > 0) {
-      line(points[i][0], points[i][1], points[i + 1][0], points[i + 1][1]);
-    }
+    line(points[i][0], points[i][1], points[i + 1][0], points[i + 1][1]);
   }
 
   // Draw arrowhead at the last segment
-  let lastValidPoints = getLastValidPoints(points);
-  if (lastValidPoints) {
-    drawArrowhead(lastValidPoints[0], lastValidPoints[1], lastValidPoints[2], lastValidPoints[3], color);
-  }
-  
-  strokeWeight(1); // Reset stroke weight
+  let x1 = points[points.length - 2][0];
+  let y1 = points[points.length - 2][1];
+  let x2 = points[points.length - 1][0];
+  let y2 = points[points.length - 1][1];
+  drawArrowhead(x1, y1, x2, y2, color);
 }
 
-function getLastValidPoints(points) {
-  for (let i = points.length - 2; i >= 0; i--) {
-    if (points[i].length > 0 && points[i + 1].length > 0) {
-      return [points[i][0], points[i][1], points[i + 1][0], points[i + 1][1]];
-    }
-  }
-  return null;
-}
-
-// Function to draw an arrowhead with improved styling
+// Function to draw an arrowhead
 function drawArrowhead(x1, y1, x2, y2, color) {
-  let arrowSize = SIZES.arrowhead;
+  let arrowSize = 8;
   let angle = atan2(y2 - y1, x2 - x1);
-  
   push();
   translate(x2, y2);
   rotate(angle);
-  fill(color);
+  fill(color[0], color[1], color[2]);
   noStroke();
   triangle(0, 0, -arrowSize, arrowSize / 2, -arrowSize, -arrowSize / 2);
   pop();
 }
 
 function toggleAllModals() {
-  showAllModals = !showAllModals;
-  
+  showAllModals = !showAllModals; // Toggle visibility state
   for (let modalKey in modals) {
     if (showAllModals) {
-      modals[modalKey].style('display', 'block');
-      // Short delay before setting opacity to make the transition work
-      setTimeout(() => {
-        modals[modalKey].style('opacity', '1');
-        modals[modalKey].style('transform', 'scale(1)');
-      }, 10);
+      modals[modalKey].style('display', 'block'); // Show modal
+      modals[modalKey].style('opacity', '1');
+      modals[modalKey].style('transform', 'scale(1)');
     } else {
       modals[modalKey].style('opacity', '0');
       modals[modalKey].style('transform', 'scale(0.9)');
-      // Wait for the transition to finish before hiding the modal
-      setTimeout(() => modals[modalKey].style('display', 'none'), 300);
+      setTimeout(() => modals[modalKey].style('display', 'none'), 300); // Hide after transition
     }
+    
   }
-}
-
-function createHelpModals() {
-  // Create a modal for virtual address explanation
-  modals.virtualAddress = createModal(
-    width * 0.025, 
-    height * 0.16, 
-    `<h4>Virtuálna adresa</h4>
-     <p>Virtuálne adresy sú preložené na fyzické adresy pomocou stránkovacích tabuliek.</p>
-     <p>Virtuálna adresa je rozdelená na:</p>
-     <ul>
-       <li><strong>L2, L1, L0</strong>: Indexy stránkovacej tabuľky (nastaviteľná dĺžka)</li>
-       <li><strong>Offset</strong>: Bajtový posun v rámci stránky</li>
-     </ul>
-     <p>Kliknutím na hodnoty L2, L1, L0 zmeníte veľkosť stránkovacej tabuľky.</p>`, 
-    300, 
-    200
-  );
-  
-  // Create a modal for Page Directory 1
-  modals.pageDirectory1 = createModal(
-    width * 0.07, 
-    height * 0.6, 
-    `<h4>Adresár stránok 1 (Úroveň 2)</h4>
-     <p>Toto je stránkovacia tabuľka prvej úrovne, ktorá prekladá časť L2 virtuálnej adresy.</p>
-     <p>Každý záznam obsahuje číslo fyzickej stránky (PPN) ukazujúce na stránkovaciu tabuľku úrovne 1.</p>
-     <p>Nastavením L2 na 0 túto úroveň vypnete.</p>`, 
-    250, 
-    180
-  );
-  
-  // Create a modal for Page Directory 2
-  modals.pageDirectory2 = createModal(
-    width * 0.27, 
-    height * 0.6, 
-    `<h4>Adresár stránok 2 (Úroveň 1)</h4>
-     <p>Toto je stránkovacia tabuľka druhej úrovne, ktorá prekladá časť L1 virtuálnej adresy.</p>
-     <p>Každý záznam obsahuje číslo fyzickej stránky (PPN) ukazujúce na stránkovaciu tabuľku úrovne 0.</p>
-     <p>Nastavením L1 na 0 túto úroveň vypnete.</p>`, 
-    250, 
-    180
-  );
-  
-  // Create a modal for Page Directory 3
-  modals.pageDirectory3 = createModal(
-    width * 0.47, 
-    height * 0.6, 
-    `<h4>Adresár stránok 3 (Úroveň 0)</h4>
-     <p>Toto je stránkovacia tabuľka poslednej úrovne, ktorá prekladá časť L0 virtuálnej adresy.</p>
-     <p>Každý záznam obsahuje číslo fyzickej stránky (PPN) ukazujúce na skutočnú fyzickú pamäťovú stránku.</p>
-     <p>Nastavením L0 na 0 použijete obrovské stránky (neodporúča sa).</p>`, 
-    250, 
-    180
-  );
-  
-  // Create a modal for Physical Address
-  modals.physicalAddress = createModal(
-    width * 0.635, 
-    height * 0.15, 
-    `<h4>Fyzická adresa</h4>
-     <p>Fyzická adresa je skutočné umiestnenie v hardvéri pamäte.</p>
-     <p>Skladá sa z:</p>
-     <ul>
-       <li><strong>PPN</strong>: Číslo fyzickej stránky zo stránkovacej tabuľky</li>
-       <li><strong>Offset</strong>: Priamo skopírovaný z virtuálnej adresy</li>
-     </ul>`, 
-    250, 
-    180
-  );
-  
-  // Create a modal for Virtual Memory Space
-  modals.virtualMemory = createModal(
-    width * 0.8, 
-    height * 0.67, 
-    `<h4>Priestor virtuálnej pamäti</h4>
-     <p>Predstavuje celkovú adresovateľnú pamäť dostupnú procesu.</p>
-     <p>Veľkosť sa mení podľa konfigurácie stránkovacej tabuľky:</p>
-     <ul>
-       <li>Viac bitov pre stránkovacie tabuľky = väčší adresný priestor</li>
-       <li>Typicky meraný v GB pre veľké priestory</li>
-     </ul>
-     <p>Pri umiestnení kurzora nad L2, L1 alebo L0 sa zvýrazní prístupná oblasť pamäti.</p>`, 
-    250, 
-    200
-  );
-  
-  // Create a modal for SATP Register
-  modals.satp = createModal(
-    width * 0.033, 
-    height * 0.78, 
-    `<h4>Register SATP</h4>
-     <p>Register preklad adries a ochrany supervízora</p>
-     <p>Obsahuje fyzickú adresu koreňovej stránkovacej tabuľky (PD1).</p>
-     <p>CPU používa tento register na začatie prechodu stránkovacej tabuľky pri preklade adries.</p>
-     <p>Kliknutím upravíte hexadecimálnu hodnotu.</p>`, 
-    250, 
-    170
-  );
-  
-  // Create a modal for Arrows explanation
-  modals.arrows = createModal(
-    width - 300, 
-    height * 0.18, 
-    `<h4>Prechod stránkovacími tabuľkami</h4>
-     <p>Aktivujte "Šípky" pre vizualizáciu procesu prechodu stránkovacími tabuľkami:</p>
-     <ul>
-       <li><strong>Modré šípky</strong>: Ukazujú, ako bity virtuálnej adresy vyberajú záznamy v stránkovacích tabuľkách</li>
-       <li><strong>Červené šípky</strong>: Ukazujú, ako každá stránkovacia tabuľka ukazuje na ďalšiu úroveň</li>
-     </ul>
-     <p>Prechod začína od SATP a pokračuje cez stránkovacie tabuľky až po dosiahnutie fyzickej adresy.</p>`, 
-    250, 
-    200
-  );
 }
 
 function createModal(x, y, content, width, height) {
   let modal = createDiv(`
-    <div class="modal-content">
-      ${content}
+    <div class="arrow-box" style="display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; height: 100%;">
+      <p>${content}</p>
     </div>
   `);
-  
-  modal.position(x, y);
-  modal.size(width, height);
-  modal.addClass('info-modal');
-  
-  // Initially hidden
-  modal.style('display', 'none');
-  modal.style('opacity', '0');
-  modal.style('transform', 'scale(0.9)');
-  modal.style('transition', 'opacity 0.3s ease, transform 0.3s ease');
-  
+  modal.position(x, y); // Position on the canvas
+  modal.size(width, height); // Width and height of the modal
+  modal.style('padding', '20px');
+  modal.style('border', '2px solid #333'); // Darker border for better contrast
+  modal.style('background-color', '#ffffff'); // White background for cleaner look
+  modal.style('border-radius', '12px'); // Slightly more rounded corners
+  modal.style('box-shadow', '0 4px 8px rgba(0, 0, 0, 0.2)'); // Add shadow for depth
+  modal.style('font-family', 'Arial, sans-serif'); // Cleaner font
+  modal.style('color', '#333'); // Dark text for readability
+  modal.style('line-height', '1.5'); // Improve text readability
+  modal.style('text-align', 'center'); // Center text
+  modal.style('transition', 'opacity 0.3s ease, transform 0.3s ease'); // Smooth transitions
+
   return modal;
 }
 
 function highlightLIndexRow(level, Lnum) {
-  let x = 100;
-  let y = 200;
+  let x = 100;                                            // x position of the first page directory
+  let y = 200;                                            // y position of the first page directory
   let numEntries = 8;
   let entryHeight = 300 / numEntries;
   let middleIndex = Math.floor(numEntries / 2);
 
   // Adjust x position based on the level
   if (level === 'L1Index') {
-    x += 300;
+    x += 300;                                             // Move to the second page directory
   } else if (level === 'L0Index') {
-    x += 600;
+    x += 600;                                             // Move to the third page directory
   }
 
-  fill(COLORS.highlight.fill);
+  fill(255, 255, 0, 150);                                 // Highlight colour
   noStroke();
   rect(x, y + middleIndex * entryHeight, 150, entryHeight);
   stroke(0);
@@ -561,7 +406,6 @@ function highlightLIndexRow(level, Lnum) {
 
 function highlightRowLabels(level) {
   let x, y, Lnum, num;
-  
   if (level === 'L2') {
     x = width * 0.07;
     y = height * 0.285;
@@ -579,10 +423,9 @@ function highlightRowLabels(level) {
     num = 1;
   }
 
-  fill(COLORS.highlight.fill);
+  fill(255, 255, 0, 150);                                   // Highlight colour for row labels
   noStroke();
-  textSize(SIZES.text);
-  
+  textSize(14);
   let numEntries = 8;
   let entryHeight = 300 / numEntries;
 
@@ -594,59 +437,55 @@ function highlightRowLabels(level) {
 }
 
 function highlightAddress(address) {
-  fill(COLORS.highlight.fill);
+  fill(255, 255, 0, 150);                   // Highlight colour
   noStroke();
-  textSize(SIZES.text);
+  textSize(14);
 
-  // Find the position of the address and highlight it
+  // Find the position of the address
+  let x, y;
   if (address === editableElements.SATP && editableElements.L2 !== '0') {
-    // Highlight SATP address in Page Directory 1
-    rect(width * 0.07, height * 0.285 - 25, 110, 20);
-  } else if ((address === editableElements.PPN1 || address === editableElements.SATP) && editableElements.L1 !== '0') {
-    // Highlight PPN1 or SATP address in Page Directory 2
-    rect(width * 0.27, height * 0.285 - 25, 110, 20);
+    x = width * 0.07;
+    y = height * 0.285;
+    rect(x, y - 25, 110, 20);
+  } else if ((address === editableElements.PPN1 || address === editableElements.SATP)  && editableElements.L1 !== '0') {
+    x = width * 0.27;
+    y = height * 0.285;
+    rect(x, y - 25, 110, 20);
   } else if ((address === editableElements.PPN2 || address === editableElements.SATP) && editableElements.L0 !== '0') {
-    // Highlight PPN2 or SATP address in Page Directory 3
-    rect(width * 0.47, height * 0.285 - 25, 110, 20);
+    x = width * 0.47;
+    y = height * 0.285;
+    rect(x, y - 25, 110, 20);
   } else if (address === editableElements.PPN3) {
-    // Highlight PPN3 in Physical Address
-    rect(width * 0.635, height * 0.1 - height * 0.029, 100, 39);
+    x = width * 0.635;
+    y = height * 0.1;
+    rect(x, y - height * 0.029, 100, 39);
   }
 
-  fill(COLORS.textColor);
+  // Highlight rectangle behind address
+  fill(0);
 }
 
 function drawVirtualAddress(x, y) {
   hoverElements.length = 0; // Clear hover elements
-  
-  // Draw the virtual address boxes with clean styling
-  fill(COLORS.virtualAddress.fill);
-  stroke(COLORS.virtualAddress.stroke);
-  
-  // Draw rectangles for each component
+  fill(173, 216, 230);      // Blue for virtual address
+  stroke(0);
   rect(x, y, width * 0.04, height * 0.05);       // EXT
   rect(x + width * 0.04, y, width * 0.04, height * 0.05);  // L2
   rect(x + width * 0.08, y, width * 0.04, height * 0.05); // L1
   rect(x + width * 0.12, y, width * 0.04, height * 0.05); // L0
   rect(x + width * 0.16, y, width * 0.07, height * 0.05); // Offset
 
-  // Add labels - use noStroke() to prevent thick text
-  fill(COLORS.textColor);
-  textSize(SIZES.text);
-  noStroke();
+  fill(0);
+  textSize(14);
   text('EXT', x + width * 0.01, y + height * 0.030);
   text('L2', x + width * 0.055, y + height * 0.075); 
   text('L1', x + width * 0.095, y + height * 0.075);  
   text('L0', x + width * 0.135, y + height * 0.075);  
   text('Offset', x + width * 0.18, y + height * 0.03);
 
-  // Title
-  textSize(SIZES.text);
-  textStyle(BOLD);
-  text('Virtuálna adresa', x + width * 0.07, y - height * 0.04);
-  textStyle(NORMAL);
+  textSize(14);
+  text('Virtual address', x + width * 0.07, y - height * 0.04);
 
-  // Add hover elements for interaction
   hoverElements.push({ label: 'L2', x: width * 0.075, y: height * 0.045, w: width * 0.02, h: height * 0.03, highlight: [1, 2, 3], key: 'L2' });
   hoverElements.push({ label: 'L1', x: width * 0.115, y: height * 0.045, w: width * 0.02, h: height * 0.03, highlight: [2, 3], key: 'L1' });
   hoverElements.push({ label: 'L0', x: width * 0.155, y: height * 0.045, w: width * 0.02, h: height * 0.03, highlight: [3], key: 'L0' });
@@ -656,301 +495,252 @@ function drawVirtualAddress(x, y) {
 }
 
 function drawPageDirectory(x, y, Lnum, Lindex, PPN, color, key, pdnumber) {
-  fill(COLORS.pageDirectory.fill);
-  stroke(COLORS.pageDirectory.stroke);
-  rect(x, y, 150, 300);
+
+  fill(240);                                        // Gray for Page Directory
+  stroke(0);
+  rect(x, y, 150, 300);                             // Directory with increased height
 
   // Horizontal Dividers
-  let numEntries = 8;
+  let numEntries = 8;                               // Total number of entries
   if (Lnum === 1) {
     numEntries = 2;
   }
   if (Lnum === 2) {
     numEntries = 4;
   }
-  
-  let entryHeight = 300 / numEntries;
+  let entryHeight = 300 / numEntries;               // Height of each entry
   for (let i = 1; i < numEntries; i++) {
     line(x, y + i * entryHeight, x + 150, y + i * entryHeight);
   }
-  
-  // Handle special index display text
+  // Check if the size of Virtual address is 1 or 2 to resize the Page Directory 
   let displayText = (Lindex === 2 ** Lnum + 1 - 2 ** Lnum || Lindex === 0 || Lindex === 2 ** Lnum - 1 || Lindex === 2 ** Lnum - 2 || Lindex === 2 ** Lnum - 3) ? "↑" : Lindex;
 
   // Find which index should be highlighted
-  let highlightIndex = calculateHighlightIndex(Lnum, Lindex, numEntries);
+  let highlightIndex = -1;
+  if (Lindex === (2 ** Lnum - 1)) {
+    highlightIndex = 0;
+  } else if (Lindex === (2 ** Lnum - 2)) {
+    highlightIndex = 1;
+  } else if (Lindex === (2 ** Lnum - 3)) {
+    highlightIndex = 2;
+  } else if (Lindex === (2 ** Lnum + 1 - 2 ** Lnum)) {
+    highlightIndex = numEntries - 2;
+  } else if (Lindex === 0) {
+    highlightIndex = numEntries - 1;
+  } else {
+    highlightIndex = Math.floor(numEntries / 2);
+  }
 
   // Divider PPN and Flags
   line(x + 100, y + highlightIndex * entryHeight, x + 100, y + (highlightIndex + 1) * entryHeight);
 
-  // Highlight row
+  // Gray row PPN and Flags
   fill(color);
   noStroke();
   rect(x, y + highlightIndex * entryHeight, 150, entryHeight);
-  
-  // Reset stroke after drawing highlight rectangle
-  stroke(COLORS.pageDirectory.stroke);
+  fill(255);
+  stroke(0);
 
   // Create or update the hover element
-  updateHoverElement(x, y, highlightIndex, entryHeight, key);
-
-  // Divider line
-  line(x + 95, y, x + 95, y + 300);
-
-  // Add Flags label
-  textSize(SIZES.text);
-  fill(0);
-  noStroke();
-  text("Flags", x + 110, y + highlightIndex * entryHeight + entryHeight / 2 + 5);
-
-  // Add index labels for Page Directory
-  drawPageDirectoryLabels(x, y, Lnum, numEntries, entryHeight);
-
-  // Update arrow positions
-  updateArrowPositions(pdnumber, y, highlightIndex, entryHeight);
-
-  // Add Page Directory label and address
-  textSize(SIZES.text);
-  textStyle(BOLD);
-  text("Adresár stránok", x + 25, y + 300 + 20);
-  text("Adresa: " + PPN, x, y - 10);
-  textStyle(NORMAL);
-}
-
-function calculateHighlightIndex(Lnum, Lindex, numEntries) {
-  if (Lindex === (2 ** Lnum - 1)) {
-    return 0;
-  } else if (Lindex === (2 ** Lnum - 2)) {
-    return 1;
-  } else if (Lindex === (2 ** Lnum - 3)) {
-    return 2;
-  } else if (Lindex === (2 ** Lnum + 1 - 2 ** Lnum)) {
-    return numEntries - 2;
-  } else if (Lindex === 0) {
-    return numEntries - 1;
-  } else {
-    return Math.floor(numEntries / 2);
-  }
-}
-
-function updateHoverElement(x, y, highlightIndex, entryHeight, key) {
   let hoverElement = hoverElements.find(el => el.key === key);
   if (!hoverElement) {
-    hoverElement = { 
-      label: 'PPN', 
-      x: x + 5, 
-      y: y + highlightIndex * entryHeight + entryHeight / 2 - 15, 
-      w: 85, 
-      h: 30, 
-      key: key 
-    };
+    hoverElement = { label: 'PPN', x: x + 5, y: y + highlightIndex * entryHeight + entryHeight / 2 - 15, w: 85, h: 30, key: key };
     hoverElements.push(hoverElement);
   } else {
     hoverElement.x = x + 5;
     hoverElement.y = y + highlightIndex * entryHeight + entryHeight / 2 - 15;
   }
-}
 
-function drawPageDirectoryLabels(x, y, Lnum, numEntries, entryHeight) {
+  line(x + 95, y, x + 95, y + 300);
+
+  // Flags
+  textSize(14);
   fill(0);
-  textSize(SIZES.text);
-  noStroke(); // Add this to prevent stroke on text
-  
-  if(Lnum === 1) {
+  text("Flags", x + 110, y + highlightIndex * entryHeight + entryHeight / 2 + 5);
+
+  // Labels for Page Directory (Index)
+  if(Lnum === 1){
     text("1", x - 25, y + (numEntries - 2) * entryHeight + entryHeight / 2 + 5);
     text("0", x - 25, y + (numEntries - 1) * entryHeight + entryHeight / 2 + 5);
-  } else if(Lnum === 2) {
+  } else if(Lnum === 2){
     text("3", x - 25, y + (numEntries - 4) * entryHeight + entryHeight / 2 + 5);
     text("2", x - 25, y + (numEntries - 3) * entryHeight + entryHeight / 2 + 5);
     text("1", x - 25, y + (numEntries - 2) * entryHeight + entryHeight / 2 + 5);
     text("0", x - 25, y + (numEntries - 1) * entryHeight + entryHeight / 2 + 5);
-  } else {
+  } else{
     text(2 ** Lnum - 1, x - 25, y + entryHeight / 2 + 5);
     text(2 ** Lnum - 2, x - 25, y + (numEntries - 7) * entryHeight + entryHeight / 2 + 5);
     text(2 ** Lnum - 3, x - 25, y + (numEntries - 6) * entryHeight + entryHeight / 2 + 5);
     text("↑", x - 25, y + (numEntries - 5) * entryHeight + entryHeight / 2 + 5);
-    text("↑", x - 25, y + (numEntries - 4) * entryHeight + entryHeight / 2 + 5);
+    text(displayText, x - 25, y + (numEntries - 4) * entryHeight + entryHeight / 2 + 5);
     text("↑", x - 25, y + (numEntries - 3) * entryHeight + entryHeight / 2 + 5);
-    text("1", x - 25, y + (numEntries - 2) * entryHeight + entryHeight / 2 + 5);
+    text(2 ** Lnum + 1 - 2 ** Lnum, x - 25, y + (numEntries - 2) * entryHeight + entryHeight / 2 + 5);
     text("0", x - 25, y + (numEntries - 1) * entryHeight + entryHeight / 2 + 5);
   }
-}
 
-function updateArrowPositions(pdnumber, y, highlightIndex, entryHeight) {
-  if(pdnumber === 'PD1') {
+  // Relocation of the Arrows
+  if(pdnumber === 'PD1'){
     ArrowsPositions.pageDirectory1L2.y = y + highlightIndex * entryHeight + entryHeight / 2;
     ArrowsPositions.pageDirectory1L2Index.y = y + highlightIndex * entryHeight + entryHeight / 2 + 25;
-  } else if(pdnumber === 'PD2') {
+  } else if(pdnumber === 'PD2'){
     ArrowsPositions.pageDirectory1L1.y = y + highlightIndex * entryHeight + entryHeight / 2;
     ArrowsPositions.pageDirectory1L1Index.y = y + highlightIndex * entryHeight + entryHeight / 2 + 25;
-  } else if(pdnumber === 'PD3') {
+  }else if(pdnumber === 'PD3'){
     ArrowsPositions.pageDirectory1L0.y = y + highlightIndex * entryHeight + entryHeight / 2;
     ArrowsPositions.pageDirectory1L0Index.y = y + highlightIndex * entryHeight + entryHeight / 2 + 25;
   }
+
+  textSize(14);
+  text("Page Directory", x + 25, y + 300 + 20);
+  text("Address: " + PPN, x, y - 10);
 }
 
-function drawPhysicalAddress(x, y) {
-  // Draw Physical Address boxes
-  fill(COLORS.physicalAddress.fill);
-  stroke(COLORS.physicalAddress.stroke);
-  rect(x, y, 100, 40);                         // PPN
-  rect(x + 100, y, 70, 40);                   // Offset
 
-  // Add labels
-  fill(COLORS.textColor);
-  textSize(SIZES.text);
-  noStroke(); // Add this to prevent stroke on text
+function drawPhysicalAddress(x, y) {
+  fill(250, 128, 114);                          // Red colour for Physical Address
+  stroke(0);
+  rect(x, y, 100, 40);                          // PPN
+  rect(x + 100, y, 70, 40);                     // Offset
+
+  fill(0);
+  textSize(14);
   text('Offset', x + 115, y + 25);
 
   // Display PPN3 value
+  textSize(14);
   text(`${editableElements.PPN3}`, x + 10, y + 25);
 
-  // Title
-  textSize(SIZES.text);
-  textStyle(BOLD);
-  text('Fyzická adresa', x + 20, y - 10);
-  textStyle(NORMAL);
+  textSize(14);
+  text('Physical Address', x + 20, y - 10);
 }
 
 function drawVirtualMemorySpace(x, y) {
-  // Draw Virtual Memory Space
-  fill(255);
+  fill(255, 255, 255);      
   stroke(0);
-  rect(x, y, 250, 600);
+  rect(x, y, 250, 600);    
 
-  // Add labels
-  fill(COLORS.textColor);
-  textSize(SIZES.text);
-  noStroke(); // Add this to prevent stroke on text
-  textStyle(BOLD);
-  text('Priestor virtuálnej pamäti', x + 45, y - 10);
-  textStyle(NORMAL);
-  
-  // Show memory size based on settings
+  fill(0);
+  textSize(14);
+  text('Virtual Memory Space', x + 45, y - 10);
   if (editableElements.L2 === '0') {
-    text('Použiteľné VA: ' + editableElements.Memory*1000 + ' MB', x + 50, y + 630);
+    text('Usable VA: ' + editableElements.Memory*1000 + ' MB', x + 50, y + 630);
   } else {
-    text('Použiteľné VA: ' + editableElements.Memory + ' GB', x + 50, y + 630);
+    text('Usable VA: ' + editableElements.Memory + ' GB', x + 50, y + 630);
   }
 }
 
 function drawSATP(x, y) {
-  // Draw SATP box
-  fill(COLORS.virtualAddress.fill);
-  stroke(COLORS.virtualAddress.stroke);
-  rect(x, y, 100, 40);
+  fill(173, 216, 230);                          // Light blue SATP
+  stroke(0);
+  rect(x, y, 100, 40);                          // SATP rectangle
 
-  // Add SATP hover element
-  hoverElements.push({ 
-    label: 'SATP', 
-    x: x, 
-    y: y, 
-    w: 100, 
-    h: 40, 
-    key: 'SATP' 
-  });
+  hoverElements.push({ label: 'SATP', x: x, y: y, w: 100, h: 40, key: 'SATP' });
 
-  // Add SATP label
-  fill(COLORS.textColor);
-  textSize(SIZES.text);
-  noStroke(); // Add this to prevent stroke on text
-  textStyle(BOLD);
-  text('SATP', x + 30, y - 10);
-  textStyle(NORMAL);
+  fill(0);
+  textSize(14);
+
+  // Display SATP value
+  // text(editableElements.SATP, x + 10, y + 25);
 }
 
 function mousePressed() {
   for (let element of hoverElements) {
-    if (isMouseOverElement(element)) {
-      // Skip interaction for disabled elements
-      if (isElementDisabled(element)) {
+    if (
+      mouseX > element.x &&
+      mouseX < element.x + element.w &&
+      mouseY > element.y &&
+      mouseY < element.y + element.h
+    ) {
+      // Skip interaction if L2 is 0 and the element is in Page Directory 1
+      if (editableElements.L2 === '0' && element.key === 'PPN1') {
+        continue;
+      }
+      if (editableElements.L1 === '0' && element.key === 'PPN2') {
+        continue;
+      }
+      if (editableElements.L0 === '0' && element.key === 'PPN3') {
         continue;
       }
 
       activeElement = element.key;
-      createInputForElement(element);
+      let currentValue = editableElements[element.key];
+
+      // Remove '0x' prefix for display in the input box
+      if (['PPN1', 'PPN2', 'PPN3', 'SATP'].includes(element.key) && currentValue.startsWith('0x')) {
+        currentValue = currentValue.slice(2);
+      }
+
+      // Create an input box at the clicked position
+      let inputBox = createInput(currentValue);
+      inputBox.position(element.x + width * 0.001, element.y + height * 0.057);
+      inputBox.size(element.w - 5, element.h - 5);                  // Set the size to match the clicked element
+      //inputBox.elt.focus();
+      //inputBox.elt.select();                                        // Automatically select the content
+
+      setTimeout(() => {
+        inputBox.elt.focus();
+        inputBox.elt.select(); // Automatically select the content
+      }, 10);
+
+      // An event listener to handle the Enter key press
+      inputBox.elt.addEventListener('keydown', (function(inputBox, element) {
+        return function(event) {
+          if (event.key === 'Enter') {
+            let newValue = inputBox.value();
+            if (['L0', 'L1', 'L2'].includes(element.key)) {
+              if (/^[0-9]$/.test(newValue)) {
+                editableElements[element.key] = newValue;
+                if (element.key === 'L1' && editableElements.L2 === '0' && newValue !== '9') {
+                  l1Changed = true;
+                }
+              } else {
+                alert("Hodnota musí byť číslo od 0 do 9.");
+              }
+            } else if (['L2Index', 'L1Index', 'L0Index'].includes(element.key)) {
+              const maxIndex = Math.pow(2, parseInt(editableElements[element.key.replace('Index', '')]));
+              if (/^[0-9]+$/.test(newValue) && parseInt(newValue) < maxIndex) {
+                editableElements[element.key] = newValue;
+              } else {
+                alert(`Hodnota musí byť číslo od 0 do ${maxIndex - 1}.`);
+              }
+            } else if (['PPN1', 'PPN2', 'PPN3'].includes(element.key)) {
+              if (/^[0-9a-fA-F]+$/.test(newValue)) {
+                editableElements[element.key] = '0x' + newValue.toUpperCase();
+              } else {
+                alert("Hodnota musí byť platné hexadecimálne číslo.");
+              }
+            } else if (element.key === 'SATP') {
+              if (/^[0-9a-fA-F]+$/.test(newValue)) {
+                editableElements[element.key] = '0x' + newValue.toUpperCase();
+              } else {
+                alert("Hodnota musí byť platné hexadecimálne číslo.");
+              }
+            }
+            inputBox.remove();
+            redraw();
+          }
+        };
+      })(inputBox, element));
+
+      // An event listener to handle clicks outside the input box
+      document.addEventListener('mousedown', function handleClickOutside(event) {
+        if (!inputBox.elt.contains(event.target)) {
+          inputBox.remove();
+          activeElement = null;
+          redraw();
+          document.removeEventListener('mousedown', handleClickOutside);
+        }
+      });
+
       break;
     }
   }
 }
 
-function createInputForElement(element) {
-  let currentValue = editableElements[element.key];
-
-  // Remove '0x' prefix for PPN and SATP values
-  if (['PPN1', 'PPN2', 'PPN3', 'SATP'].includes(element.key) && currentValue.startsWith('0x')) {
-    currentValue = currentValue.slice(2);
-  }
-
-  // Create an input box
-  let inputBox = createInput(currentValue);
-  inputBox.position(element.x + width * 0.001, element.y + height * 0.057);
-  inputBox.size(element.w - 5, element.h - 5);
-  inputBox.addClass('edit-input');
-
-  // Focus and select the input after a slight delay
-  setTimeout(() => {
-    inputBox.elt.focus();
-    inputBox.elt.select();
-  }, 10);
-
-  // Handle Enter key press
-  inputBox.elt.addEventListener('keydown', createKeydownHandler(inputBox, element));
-
-  // Handle clicks outside the input
-  document.addEventListener('mousedown', createOutsideClickHandler(inputBox));
-}
-
-function createKeydownHandler(inputBox, element) {
-  return function(event) {
-    if (event.key === 'Enter') {
-      updateElementValue(inputBox.value(), element);
-      inputBox.remove();
-      redraw();
-    }
-  };
-}
-
-function createOutsideClickHandler(inputBox) {
-  return function handleClickOutside(event) {
-    if (!inputBox.elt.contains(event.target)) {
-      inputBox.remove();
-      activeElement = null;
-      redraw();
-      document.removeEventListener('mousedown', handleClickOutside);
-    }
-  };
-}
-
-function updateElementValue(newValue, element) {
-  if (['L0', 'L1', 'L2'].includes(element.key)) {
-    if (/^[0-9]$/.test(newValue)) {
-      editableElements[element.key] = newValue;
-      if (element.key === 'L1' && editableElements.L2 === '0' && newValue !== '9') {
-        l1Changed = true;
-      }
-    } else {
-      alert("Hodnota musí byť číslo od 0 do 9.");
-    }
-  } else if (['L2Index', 'L1Index', 'L0Index'].includes(element.key)) {
-    const maxIndex = Math.pow(2, parseInt(editableElements[element.key.replace('Index', '')]));
-    if (/^[0-9]+$/.test(newValue) && parseInt(newValue) < maxIndex) {
-      editableElements[element.key] = newValue;
-    } else {
-      alert(`Hodnota musí byť číslo od 0 do ${maxIndex - 1}.`);
-    }
-  } else if (['PPN1', 'PPN2', 'PPN3', 'SATP'].includes(element.key)) {
-    if (/^[0-9a-fA-F]+$/.test(newValue)) {
-      editableElements[element.key] = '0x' + newValue.toUpperCase();
-    } else {
-      alert("Hodnota musí byť platné hexadecimálne číslo.");
-    }
-  }
-}
+// function windowResized() {
+//   resizeCanvas(windowWidth * 0.975, windowHeight * 0.96);
+// }
 
 function mouseMoved() {
-  // Only redraw if actually needed
-  if (hoverElements.some(el => isMouseOverElement(el))) {
-    redraw();
-  }
+  redraw();
 }
