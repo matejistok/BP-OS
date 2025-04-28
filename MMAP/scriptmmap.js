@@ -21,6 +21,8 @@ const vmaColors = [
     "hsla(50, 70%, 60%, 0.7)",
     "hsla(280, 70%, 60%, 0.7)"
 ];
+// Track used colors to allow reuse when mappings are unmapped
+let usedColorIndices = [];
 
 // Cache DOM elements that won't change
 const DOM = {
@@ -335,11 +337,11 @@ function validateLength() {
         return false;
     }
     
-    if (value > selectedEntry.size) {
-        showError(`Length cannot exceed file size (${selectedEntry.size})`);
-        DOM.lengthInputField.value = selectedEntry.size;
-        return false;
-    }
+    // if (value > selectedEntry.size) {
+    //     showError(`Length cannot exceed file size (${selectedEntry.size})`);
+    //     DOM.lengthInputField.value = selectedEntry.size;
+    //     return false;
+    // }
     
     // Round up to nearest page size
     const roundedValue = Math.ceil(value / PGSIZE) * PGSIZE;
@@ -350,7 +352,7 @@ function validateLength() {
     return true;
 }
 
-// Updated executeMmap function to store file size information
+// Updated executeMmap function to track color usage
 function executeMmap() {
     if (selectedFd === null) {
         showError('Please select a file descriptor from the FD table.');
@@ -459,6 +461,23 @@ function executeMmap() {
         // Set a new address after the highest ending address
         addr = highestAddr;
     }
+
+    // Select color for the new mapping
+    let colorIndex;
+    // Find the first unused color index
+    for (let i = 0; i < vmaColors.length; i++) {
+        if (!usedColorIndices.includes(i)) {
+            colorIndex = i;
+            usedColorIndices.push(i);
+            break;
+        }
+    }
+    
+    // If all colors are used, cycle through them
+    if (colorIndex === undefined) {
+        colorIndex = vmaMappings.length % vmaColors.length;
+        usedColorIndices.push(colorIndex);
+    }
     
     // Create a new mapping
     const newMapping = {
@@ -469,7 +488,8 @@ function executeMmap() {
         fd: fd,
         offset: offsetBytes,
         offsetMultiplier: offsetMultiplier,
-        color: vmaColors[vmaMappings.length % vmaColors.length], // Cycle through available colors
+        color: vmaColors[colorIndex],
+        colorIndex: colorIndex, // Store the color index for later reference
         fileSize: fdTable.find(entry => entry.fd === fd).size // Store the complete file size
     };
     
@@ -501,41 +521,7 @@ function executeMmap() {
     resizeCanvas();
 }
 
-// Helper function to select the next available file descriptor
-function selectNextAvailableFd() {
-    // Find the first fd that isn't mapped yet
-    const nextFdEntry = fdTable.find(entry => !entry.mapped);
-    
-    if (nextFdEntry) {
-        selectedFd = nextFdEntry.fd;
-        DOM.fdInput.textContent = selectedFd;
-        
-        // Update length input based on selected fd
-        if (DOM.lengthInputField) {
-            DOM.lengthInputField.value = nextFdEntry.size;
-        }
-    } else {
-        // No more available fds
-        selectedFd = null;
-        DOM.fdInput.textContent = '';
-        
-        if (DOM.lengthInputField) {
-            DOM.lengthInputField.value = '';
-        }
-    }
-}
-
-// Resize canvas helper function
-function resizeCanvas() {
-    const sketch = p5.instance;
-    if (sketch) {
-        const containerWidth = DOM.canvasContainer.offsetWidth - 20;
-        const canvasHeight = vmaMappings.length > 0 ? 300 + (vmaMappings.length * 75) : 400;
-        sketch.resizeCanvas(containerWidth, canvasHeight);
-    }
-}
-
-// Updated executeUnmap function to update fd table
+// Updated executeUnmap function to track released colors
 function executeUnmap() {
     if (vmaMappings.length === 0) {
         showError('No mappings to unmap.');
@@ -586,6 +572,14 @@ function executeUnmap() {
     
     // Case 1: Complete unmap
     if (unmapAddr <= mappingStart && unmapEnd >= mappingEnd) {
+        // Remove the color index from used colors
+        if (mapping.colorIndex !== undefined) {
+            const colorIndexPos = usedColorIndices.indexOf(mapping.colorIndex);
+            if (colorIndexPos !== -1) {
+                usedColorIndices.splice(colorIndexPos, 1);
+            }
+        }
+        
         // Remove the mapping
         vmaMappings.splice(mappingIndex, 1);
         
@@ -609,6 +603,9 @@ function executeUnmap() {
         const newOffset = mapping.offset + unmapLength;
         const newOffsetMultiplier = Math.round(newOffset / PGSIZE);
         
+        // Track unmapped length for visualization
+        mapping.unmappedStart = unmapLength;
+        
         // Update the mapping
         mapping.address = newAddr;
         mapping.length = newLen;
@@ -623,6 +620,9 @@ function executeUnmap() {
     if (unmapAddr > mappingStart && unmapEnd >= mappingEnd) {
         // Reduce the mapping length to end at unmapAddr
         const newLen = unmapAddr - mappingStart;
+        
+        // Track unmapped length for visualization
+        mapping.unmappedEnd = mapping.length - newLen;
         
         // Update the mapping length
         mapping.length = newLen;
@@ -775,7 +775,7 @@ function setupP5Canvas() {
                 calculateMemoryRange();
                 
                 // Draw memory range 
-                p.stroke(80);
+                p.stroke(150);
                 p.strokeWeight(2);
                 p.noFill();
                 p.rect(leftMargin, 50, availableWidth, 25);
@@ -820,7 +820,7 @@ function setupP5Canvas() {
                     
                     // Draw the memory mapping 
                     p.fill(mapping.color);
-                    p.stroke(0);
+                    p.stroke(150);
                     p.strokeWeight(1);
                     p.rect(startX, 50, width, 25);
                     
@@ -848,8 +848,8 @@ function setupP5Canvas() {
                     // Total width including the extra page before the file
                     const expandedFileWidth = filePageWidth * (totalPagesInFile + 1);
                     
-                    // Draw the full file area (outline)
-                    p.stroke(80);
+                    // Draw the full file area (outline) - CHANGED TO GREY COLOR
+                    p.stroke(150); // Changed from 80 to 150 (a medium grey)
                     p.strokeWeight(2);
                     p.noFill();
                     p.rect(fileVisStartX, fdYPosition, expandedFileWidth, fdHeight);
@@ -881,7 +881,14 @@ function setupP5Canvas() {
                     // The mapped part should start at the same X position as the memory mapping
                     p.fill(mapping.color);
                     p.noStroke();
-                    p.rect(startX, fdYPosition, width, fdHeight);
+                    // Calculate the adjusted width based on offset and any unmapped regions
+                    const unmappedStartLength = mapping.unmappedStart || 0;
+                    const unmappedEndLength = mapping.unmappedEnd || 0;
+                    const totalUnmappedLength = unmappedStartLength + unmappedEndLength;
+                    const offsetAdjustedWidth = width - (mapping.offsetMultiplier * filePageWidth) + (totalUnmappedLength / drawCache.visibleRange) * availableWidth;
+                    
+                    // Draw the rectangle with adjusted width to account for offset and unmapping
+                    p.rect(startX, fdYPosition, offsetAdjustedWidth, fdHeight);
                     
                     // 4. Draw grey unmapped remainder
                     const remainingPagesAfter = totalPagesInFile - mapping.offsetMultiplier - pagesInMapping;
@@ -907,11 +914,46 @@ function setupP5Canvas() {
                     p.stroke(0, 0, 0, 100);
                     p.strokeWeight(1);
                     
-                    // Draw straight line from start of memory mapping to start of the colored area in file
+                    // Draw vertical line from start of memory mapping to start of the colored area in file
                     p.line(startX, 75, startX, fdYPosition);
                     
-                    // Draw straight line from end of memory mapping to end of the colored area in file
-                    p.line(endX, 75, endX, fdYPosition);
+                    // Draw vertical line from end of memory mapping to file, 
+                    // with both points offset when there's an offset value and accounting for unmapped regions
+                    if (mapping.offsetMultiplier > 0) {
+                        // Calculate offset distance in pixels
+                        const offsetDistance = mapping.offsetMultiplier * filePageWidth;
+                        
+                        // Account for unmapped regions like we do for the rectangle width
+                        const unmappedStartLength = mapping.unmappedStart || 0;
+                        const unmappedEndLength = mapping.unmappedEnd || 0;
+                        const totalUnmappedLength = unmappedStartLength + unmappedEndLength;
+                        const unmappedPixels = (totalUnmappedLength / drawCache.visibleRange) * availableWidth;
+                        
+                        // Use an adjustable variable for the calculation
+                        let adjustedUnmappedPixels = unmappedPixels;
+                        if(adjustedUnmappedPixels > offsetDistance) {
+                            adjustedUnmappedPixels = offsetDistance;
+                        }
+                        console.log(unmappedPixels, offsetDistance);
+                        // Calculate endpoint positions that account for both offset and unmapped regions
+                        const upperPoint = endX - offsetDistance + adjustedUnmappedPixels;
+                        const lowerPoint = endX - offsetDistance + adjustedUnmappedPixels;
+
+                        // Draw vertical line with adjusted endpoints
+                        p.line(upperPoint, 75, lowerPoint, fdYPosition);
+                    } else {
+                        // If no offset, still account for unmapped regions
+                        const unmappedStartLength = mapping.unmappedStart || 0;
+                        const unmappedEndLength = mapping.unmappedEnd || 0;
+                        const totalUnmappedLength = unmappedStartLength + unmappedEndLength;
+                        const unmappedPixels = (totalUnmappedLength / drawCache.visibleRange) * availableWidth;
+                        
+                        // Adjust the endpoint to account for unmapped regions
+                        const lowerPoint = endX + unmappedPixels;
+                        
+                        // Draw vertical line with adjusted endpoint
+                        p.line(endX, 75, lowerPoint, fdYPosition);
+                    }
                     
                     // Add address labels for memory mapping start and end
                     p.noStroke();
@@ -925,10 +967,13 @@ function setupP5Canvas() {
                 });
             } else {
                 // Display empty canvas - increased positioning for more space
-                p.stroke(80);
+                p.stroke(150);
                 p.strokeWeight(2);
                 p.noFill();
                 p.rect(leftMargin, 50, availableWidth, 35); // Increased height 
+                
+                // Changed to grey color for file visualization
+                p.stroke(150); // Changed from 80 to 150 (a medium grey)
                 p.rect(leftMargin, 160, availableWidth, 20); // Adjusted position and increased height
                 
                 // Draw address markers
