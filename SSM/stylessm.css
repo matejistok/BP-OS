@@ -1,3 +1,9 @@
+body {
+    font-family: 'Roboto', 'Arial', sans-serif;
+    background-color: #f8f9fa; /* Bootstrap light background */
+    color: #212529; /* Bootstrap dark text color */
+}
+
 .diagram-section {
     position: relative;
     margin-top: 40px;

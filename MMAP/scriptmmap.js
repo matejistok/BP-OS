@@ -203,7 +203,7 @@ function renderFdTable() {
 // Function to generate a random address with clean decimal representation
 function generateRandomAddress() {
     // Using multiples of PGSIZE (1000)
-    const possibleAddresses = [1000, 2000, 3000, 4000, 5000, 6000, 7000, 8000, 9000, 10000];
+    const possibleAddresses = [3000, 4000, 5000, 6000, 7000, 8000, 9000, 10000, 11000, 12000];
     return possibleAddresses[Math.floor(Math.random() * possibleAddresses.length)];
 }
 
@@ -700,7 +700,7 @@ function setupP5Canvas() {
             // Get container width for responsive canvas
             const containerWidth = DOM.canvasContainer.offsetWidth - 20;
             // Increase canvas height to accommodate stacked fd visualizations - more space now
-            const canvasHeight = vmaMappings.length > 0 ? 300 + (vmaMappings.length * 75) : 400;
+            const canvasHeight = vmaMappings.length > 0 ? 300 + (vmaMappings.length * 75) : 450;
             const canvas = p.createCanvas(containerWidth, canvasHeight);
             canvas.parent('canvas-container');
         };
@@ -709,7 +709,7 @@ function setupP5Canvas() {
             // Resize canvas when window size changes
             const containerWidth = DOM.canvasContainer.offsetWidth - 20;
             // Adjust height based on number of mappings
-            const canvasHeight = vmaMappings.length > 0 ? 300 + (vmaMappings.length * 75) : 400;
+            const canvasHeight = vmaMappings.length > 0 ? 300 + (vmaMappings.length * 75) : 450;
             p.resizeCanvas(containerWidth, canvasHeight);
             
             // Reset cache on resize

@@ -590,6 +590,7 @@ function drawVirtualAddress(x, y) {
   text('L1', x + width * 0.095, y + height * 0.075);  
   text('L0', x + width * 0.135, y + height * 0.075);  
   text('Offset', x + width * 0.18, y + height * 0.075);
+  text('12', x + width * 0.19, y + height * -0.010);
 
   textSize(20);
   text('Virtual address', x + width * 0.07, y - height * 0.04);

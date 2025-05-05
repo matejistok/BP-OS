@@ -1,3 +1,9 @@
+body {
+    font-family: 'Roboto', 'Arial', sans-serif;
+    background-color: #f8f9fa; /* Bootstrap light background */
+    color: #212529; /* Bootstrap dark text color */
+}
+
 .file-box {
     padding: 10px;
     width: 100%;

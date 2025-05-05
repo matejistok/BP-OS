@@ -4,7 +4,7 @@ body {
     align-items: center;
     height: 100vh;
     margin: 0;
-    font-family: Arial, sans-serif;
+    font-family: 'Roboto', 'Arial', sans-serif;
   }
   
   /* canvas {
@@ -32,7 +32,10 @@ button:hover {
   left: 0;
   width: 100%;
   z-index: 1000; /* Ensures it stays on top */
+  margin-bottom: 20px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
+
 
 html, body {
   margin: 0;
