@@ -627,7 +627,7 @@ function drawArrowFromRowToBlock(startElemId, endElemId, offsetStartX, offsetSta
     if (!block) return;
     let blockCenterX = block.x + block.w / 2;
     let blockCenterY = block.y + block.h / 2;
-    lineWithArrowhead(startX, startY, blockCenterX - 150, blockCenterY);
+    lineWithArrowhead(startX, startY, blockCenterX - 50, blockCenterY);
   }
 }
 
