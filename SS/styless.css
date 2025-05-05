@@ -4,6 +4,29 @@ body {
   color: #212529; /* Bootstrap dark text color */
 }
 
+/* Interactive elements should show pointer cursor */
+a, button, select, input[type="checkbox"], input[type="radio"], 
+input[type="submit"], input[type="button"], 
+.table thead th, .nav-link, .dropdown-toggle, .btn, .page-link,
+.interactive, .clickable, [role="button"] {
+  cursor: pointer;
+}
+
+/* Ensure tooltip trigger elements show a help cursor */
+[data-bs-toggle="tooltip"], .bi-info-circle-fill, .tooltip-trigger {
+  cursor: help;
+}
+
+/* Legend toggle needs a pointer cursor */
+.legend-toggle {
+  cursor: pointer;
+}
+
+.navbar {
+  margin-bottom: 20px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
 .diagram-section {
     position: relative;
     margin-top: 40px;
@@ -203,6 +226,7 @@ body {
     border-radius: 4px;
     margin-bottom: 5px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    cursor: pointer;
   }
 
   .legend-content {

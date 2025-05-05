@@ -52,4 +52,12 @@ html, body {
 .arrow-box {
   overflow-y: auto;
   max-height: 100%;
+  cursor: pointer;
+}
+
+/* Any interactive element should have a pointer cursor */
+a, select, input[type="checkbox"], input[type="radio"], 
+input[type="submit"], input[type="button"], 
+.interactive, .clickable, [role="button"] {
+  cursor: pointer;
 }
