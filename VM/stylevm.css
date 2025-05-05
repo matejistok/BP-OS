@@ -39,3 +39,14 @@ html, body {
   padding: 0;
   overflow-x: hidden; /* Prevents horizontal scrolling */
 }
+
+/* Modal styles */
+.arrow-box p {
+  margin: 0;
+  font-size: 14px;
+}
+
+.arrow-box {
+  overflow-y: auto;
+  max-height: 100%;
+}

@@ -28,6 +28,19 @@ let ArrowsPositions = {
   pageDirectory1L0Index: { y: 400 },
 };
 let canvas;
+let interfaceButtons = []; // Add an array to keep track of buttons
+
+// Define modal content for each component
+const modalContent = {
+  virtualAddress: "Virtual Address: Shows the structure of a virtual address. Click on L2, L1, L0 to change page table levels, and on index fields to navigate through the page tables.",
+  pageDirectory1: "Level 2 Page Directory: The first level of page tables that maps virtual addresses to the next level. Click on PPN1 to change the physical address of the next level.",
+  pageDirectory2: "Level 1 Page Directory: The second level of page tables that further translates the virtual address. Click on PPN2 to change the physical address of the next level.",
+  pageDirectory3: "Level 0 Page Directory: The final level of page tables that maps to actual physical memory pages. Click on PPN3 to set the physical page number.",
+  physicalAddress: "Physical Address: The final translated memory address consisting of the page number (PPN3) and the offset within the page.",
+  virtualMemory: "Virtual Memory Space: Shows the total addressable memory space. The size changes based on the page table levels (L2, L1, L0) configured.",
+  satp: "SATP Register: Contains the physical address of the root page table (Level 2). It's the starting point for address translation.",
+  arrows: "Arrows: Toggle this to visualize how the address translation flows through the page tables."
+};
 
 //First inicialization of canvas and elements
 function setup() {
@@ -45,11 +58,28 @@ function setup() {
     showArrows = !showArrows;                                   // Toggle arrows
     redraw();                                                   // Refresh canvas
   });
+  interfaceButtons.push(toggleArrowsButton); // Add to tracked buttons
 
   // Button to toggle all modals
   let toggleButton = createButton('Help');
   toggleButton.position(width - 60, 70);
   toggleButton.mousePressed(() => toggleAllModals());
+  interfaceButtons.push(toggleButton); // Add to tracked buttons
+
+  // Initialize modals
+  modals.virtualAddress = createModal(width * 0.025, height * 0.13, modalContent.virtualAddress, 300, 100);
+  modals.pageDirectory1 = createModal(width * 0.07, height * 0.6, modalContent.pageDirectory1, 180, 120);
+  modals.pageDirectory2 = createModal(width * 0.27, height * 0.6, modalContent.pageDirectory2, 180, 120);
+  modals.pageDirectory3 = createModal(width * 0.47, height * 0.6, modalContent.pageDirectory3, 180, 120);
+  modals.physicalAddress = createModal(width * 0.635, height * 0.15, modalContent.physicalAddress, 200, 100);
+  modals.virtualMemory = createModal(width * 0.8, height * 0.66, modalContent.virtualMemory, 250, 120);
+  modals.satp = createModal(width * 0.033, height * 0.78, modalContent.satp, 200, 100);
+  modals.arrows = createModal(width - 300, 100, modalContent.arrows, 200, 80);
+  
+  // Hide all modals initially
+  for (let modalKey in modals) {
+    modals[modalKey].style('display', 'none');
+  }
 
   drawVirtualAddress(width * 0.025, height * 0.008);
 
@@ -250,39 +280,133 @@ function draw() {
   }
 }
 
+// Helper function to get element position by key
+function getElementPosition(key) {
+  const element = hoverElements.find(el => el.key === key);
+  if (element) {
+    return {
+      x: element.x + element.w/2, // Center of element
+      y: element.y + element.h/2,
+      left: element.x,
+      right: element.x + element.w,
+      top: element.y,
+      bottom: element.y + element.h
+    };
+  }
+  return null;
+}
+
 function drawArrows() {
+  // Get positions of all relevant elements for the arrows
+  const l2Pos = getElementPosition('L2');
+  const l1Pos = getElementPosition('L1');
+  const l0Pos = getElementPosition('L0');
+  const l2IndexPos = getElementPosition('L2Index');
+  const l1IndexPos = getElementPosition('L1Index');
+  const l0IndexPos = getElementPosition('L0Index');
+  const ppn1Pos = getElementPosition('PPN1');
+  const ppn2Pos = getElementPosition('PPN2');
+  const ppn3Pos = getElementPosition('PPN3');
+  const satpPos = getElementPosition('SATP');
+  const offsetPos = getElementPosition('Offset');
 
-  if (editableElements.L2 !== '0') {
-    // Arrow from L2Index to PPN od Page Directory 1
-    drawMultiCornerArrow([[width * 0.085, height * 0.16], [width * 0.085, height * 0.175], [width * 0.035, height * 0.175], [width * 0.035, ArrowsPositions.pageDirectory1L2.y], [width * 0.05, ArrowsPositions.pageDirectory1L2.y]], [0, 0, 255]);
+  if (editableElements.L2 !== '0' && l2Pos && l2IndexPos && ppn1Pos) {
+    // Arrow from L2Index to PPN of Page Directory 1
+    drawMultiCornerArrow([
+      [l2IndexPos.x - 30, l2IndexPos.bottom], 
+      [l2IndexPos.x - 30, l2IndexPos.bottom + 15], 
+      [width * 0.035, l2IndexPos.bottom + 15], 
+      [width * 0.035, ppn1Pos.y], 
+      [ppn1Pos.left - 40, ppn1Pos.y]
+    ], [0, 0, 255]);
+    
     // Arrow from PD1 PPN to Page Directory 2 Address
-    drawMultiCornerArrow([[width * 0.1, ArrowsPositions.pageDirectory1L2Index.y - 12], [width * 0.1, ArrowsPositions.pageDirectory1L2Index.y], [width * 0.2, ArrowsPositions.pageDirectory1L2Index.y], [width * 0.2, height * 0.265], [width * 0.265, height * 0.265]], [255, 0, 0]);
-  } else {
+    drawMultiCornerArrow([
+      [ppn1Pos.x, ppn1Pos.bottom],
+      [ppn1Pos.x, ppn1Pos.bottom + 15],
+      [ppn1Pos.right + 100, ppn1Pos.bottom + 15],
+      [ppn1Pos.right + 100, height * 0.265], 
+      [width * 0.265, height * 0.265]
+    ], [255, 0, 0]);
+  } else if (satpPos) {
     // Arrow from SATP to Page Directory 2
-    drawMultiCornerArrow([[width * 0.04, height * 0.855], [width * 0.04, height * 0.265], [width * 0.26, height * 0.265], [], [width * 0.26, height * 0.265]], [255, 0, 0]);
+    drawMultiCornerArrow([
+      [satpPos.x - 40, satpPos.top], 
+      [satpPos.x - 40, height * 0.265], 
+      [width * 0.26, height * 0.265]
+    ], [255, 0, 0]);
   }
 
-  if (editableElements.L1 !== '0') {
-    // Arrow from L1Index to PPN od Page Directory 2
-    drawMultiCornerArrow([[width * 0.125, height * 0.16], [width * 0.125, height * 0.175], [width * 0.22, height * 0.175], [width * 0.22, ArrowsPositions.pageDirectory1L1.y], [width * 0.25, ArrowsPositions.pageDirectory1L1.y]], [0, 0, 255]);
+  if (editableElements.L1 !== '0' && l1Pos && l1IndexPos && ppn2Pos) {
+    // Arrow from L1Index to PPN of Page Directory 2
+    drawMultiCornerArrow([
+      [l1IndexPos.x + 20, l1IndexPos.bottom], 
+      [l1IndexPos.x + 20, l1IndexPos.bottom + 60], 
+      [width * 0.22, l1IndexPos.bottom + 60], 
+      [width * 0.22, ppn2Pos.y], 
+      [ppn2Pos.left - 40, ppn2Pos.y]
+    ], [0, 0, 255]);
+    
     // Arrow from PD2 PPN to Page Directory 3 Address
-    drawMultiCornerArrow([[width * 0.3, ArrowsPositions.pageDirectory1L1Index.y - 12], [width * 0.3, ArrowsPositions.pageDirectory1L1Index.y], [width * 0.4, ArrowsPositions.pageDirectory1L1Index.y], [width * 0.4, height * 0.265], [width * 0.46, height * 0.265]], [255, 0, 0]);
-  } else {
+    drawMultiCornerArrow([
+      [ppn2Pos.x, ppn2Pos.bottom],
+      [ppn2Pos.x, ppn2Pos.bottom + 15],
+      [ppn2Pos.right + 100, ppn2Pos.bottom + 15],
+      [ppn2Pos.right + 100, height * 0.265], 
+      [width * 0.46, height * 0.265]
+    ], [255, 0, 0]);
+  } else if (satpPos) {
     // Arrow from SATP to Page Directory 3
-    drawMultiCornerArrow([[width * 0.04, height * 0.855], [width * 0.04, height * 0.265], [width * 0.46, height * 0.265], [], [width * 0.46, height * 0.265]], [255, 0, 0]);
+    drawMultiCornerArrow([
+      [satpPos.x - 40, satpPos.top], 
+      [satpPos.x - 40, height * 0.265], 
+      [width * 0.46, height * 0.265]
+    ], [255, 0, 0]);
   }
 
-  // Arrow from L0Index to PPN od Page Directory 3
-  drawMultiCornerArrow([[], [width * 0.175, height * 0.15], [width * 0.42,  height * 0.15], [width * 0.42, ArrowsPositions.pageDirectory1L0.y], [width * 0.45, ArrowsPositions.pageDirectory1L0.y]], [0, 0, 255]);
+  if (l0IndexPos && ppn3Pos) {
+    // Arrow from L0Index to PPN of Page Directory 3
+    drawMultiCornerArrow([
+      [l0IndexPos.x + 25, l0IndexPos.bottom], 
+      [l0IndexPos.x + 25, l0IndexPos.bottom + 30], 
+      [width * 0.42, l0IndexPos.bottom + 30], 
+      [width * 0.42, ppn3Pos.y], 
+      [ppn3Pos.left - 40, ppn3Pos.y]  // End directly at the left side of the PPN3 element
+    ], [0, 0, 255]);
+  }
 
-  // Arrow from SATP to Page Directory 1
-  drawMultiCornerArrow([[width * 0.04, height * 0.855], [width * 0.04, height * 0.265], [width * 0.06, height * 0.265], [], [width * 0.06, height * 0.265]], [255, 0, 0]);
+  if (satpPos) {
+    // Arrow from SATP to Page Directory 1
+    drawMultiCornerArrow([
+      [satpPos.x - 40, satpPos.top], 
+      [satpPos.x - 40, height * 0.265], 
+      [width * 0.06, height * 0.265]  // End at the exact address position
+    ], [255, 0, 0]);
+  }
 
-  // Arrow from PD3 PPN to Physical Address
-  drawMultiCornerArrow([[width * 0.5, ArrowsPositions.pageDirectory1L0Index.y - 12], [width * 0.5, ArrowsPositions.pageDirectory1L0Index.y], [width * 0.67, ArrowsPositions.pageDirectory1L0Index.y], [width * 0.67, height * 0.135]], [255, 0, 0]);
+  if (ppn3Pos) {
+    // Arrow from PD3 PPN to Physical Address
+    const physAddrY = height * 0.135;
+    const physAddrX = width * 0.635;
+    drawMultiCornerArrow([
+      [ppn3Pos.x, ppn3Pos.bottom], 
+      [ppn3Pos.x, ppn3Pos.bottom + 15], 
+      [physAddrX + 40, ppn3Pos.bottom + 15], 
+      [physAddrX + 40, physAddrY - 10]
+    ], [255, 0, 0]);
+  }
 
-  // Arrow for Offset in Physical Address
-  drawMultiCornerArrow([[width * 0.24, height * 0.1], [width * 0.6, height * 0.1],[width * 0.6, height * 0.175], [width * 0.72, height * 0.175], [width * 0.72, height * 0.135]], [255, 0, 0]);
+  if (offsetPos) {
+    // Arrow for Offset in Physical Address
+    const physAddrOffsetY = height * 0.135;
+    const physAddrOffsetX = width * 0.735;
+    drawMultiCornerArrow([
+      [offsetPos.x + 40, offsetPos.bottom], 
+      [offsetPos.x + 40, offsetPos.bottom + 20], 
+      [physAddrOffsetX - 50, offsetPos.bottom + 20], 
+      [physAddrOffsetX - 50, physAddrOffsetY - 10],
+    ], [255, 0, 0]);
+  }
 }
 
 // Function to draw arrows with multiple corners
@@ -328,7 +452,6 @@ function toggleAllModals() {
       modals[modalKey].style('transform', 'scale(0.9)');
       setTimeout(() => modals[modalKey].style('display', 'none'), 300); // Hide after transition
     }
-    
   }
 }
 
@@ -340,7 +463,7 @@ function createModal(x, y, content, width, height) {
   `);
   modal.position(x, y); // Position on the canvas
   modal.size(width, height); // Width and height of the modal
-  modal.style('padding', '20px');
+  modal.style('padding', '10px');
   modal.style('border', '2px solid #333'); // Darker border for better contrast
   modal.style('background-color', '#ffffff'); // White background for cleaner look
   modal.style('border-radius', '12px'); // Slightly more rounded corners
@@ -348,8 +471,11 @@ function createModal(x, y, content, width, height) {
   modal.style('font-family', 'Arial, sans-serif'); // Cleaner font
   modal.style('color', '#333'); // Dark text for readability
   modal.style('line-height', '1.5'); // Improve text readability
-  modal.style('text-align', 'center'); // Center text
+  modal.style('text-align', 'left'); // Left-align text for better readability
   modal.style('transition', 'opacity 0.3s ease, transform 0.3s ease'); // Smooth transitions
+  modal.style('z-index', '100'); // Ensure modals are on top
+  modal.style('opacity', '0'); // Start with 0 opacity
+  modal.style('transform', 'scale(0.9)'); // Start slightly smaller
 
   return modal;
 }
@@ -445,30 +571,37 @@ function drawVirtualAddress(x, y) {
   fill(173, 216, 230);      // Blue for virtual address
   stroke(0);
   rect(x, y, width * 0.04, height * 0.05);       // EXT
-  rect(x + width * 0.04, y, width * 0.04, height * 0.05);  // L2
-  rect(x + width * 0.08, y, width * 0.04, height * 0.05); // L1
-  rect(x + width * 0.12, y, width * 0.04, height * 0.05); // L0
+  rect(x, y - height * 0.03, width * 0.04, height * 0.03);
+  rect(x + width * 0.04, y, width * 0.04, height * 0.05);  // L2Index
+  rect(x + width * 0.04, y - height * 0.03, width * 0.04, height * 0.03); // L2Size
+  rect(x + width * 0.08, y, width * 0.04, height * 0.05); // L1Index
+  rect(x + width * 0.08, y - height * 0.03, width * 0.04, height * 0.03); // L1Size
+  rect(x + width * 0.12, y, width * 0.04, height * 0.05); // L0Index
+  rect(x + width * 0.12, y - height * 0.03, width * 0.04, height * 0.03); // L0Size
   rect(x + width * 0.16, y, width * 0.07, height * 0.05); // Offset
+  rect(x + width * 0.16, y - height * 0.03, width * 0.07, height * 0.03);
 
   fill(0);
   noStroke();
   textSize(14);
   text('EXT', x + width * 0.01, y + height * 0.030);
+  text('Size', x + width * 0.01, y - height * 0.010);
   text('L2', x + width * 0.055, y + height * 0.075); 
   text('L1', x + width * 0.095, y + height * 0.075);  
   text('L0', x + width * 0.135, y + height * 0.075);  
   text('Offset', x + width * 0.18, y + height * 0.075);
 
-  textSize(14);
+  textSize(20);
   text('Virtual address', x + width * 0.07, y - height * 0.04);
-
-  hoverElements.push({ label: 'L2', x: width * 0.075, y: height * 0.045, w: width * 0.02, h: height * 0.03, highlight: [1, 2, 3], key: 'L2' });
-  hoverElements.push({ label: 'L1', x: width * 0.115, y: height * 0.045, w: width * 0.02, h: height * 0.03, highlight: [2, 3], key: 'L1' });
-  hoverElements.push({ label: 'L0', x: width * 0.155, y: height * 0.045, w: width * 0.02, h: height * 0.03, highlight: [3], key: 'L0' });
-  hoverElements.push({ label: 'L2Index', x: width * 0.065, y: height * 0.08, w: width * 0.04, h: height * 0.05, highlight: [1, 2, 3], key: 'L2Index' });
-  hoverElements.push({ label: 'L1Index', x: width * 0.105, y: height * 0.08, w: width * 0.04, h: height * 0.05, highlight: [2, 3], key: 'L1Index' });
-  hoverElements.push({ label: 'L0Index', x: width * 0.145, y: height * 0.08, w: width * 0.04, h: height * 0.05, highlight: [3], key: 'L0Index' });
-  hoverElements.push({ label: 'Offset', x: width * 0.200, y: height * 0.09, w: width * 0.04, h: height * 0.03, key: 'Offset' }); 
+  textSize(14);
+  // Fix hover elements with proper dimensions
+  hoverElements.push({ label: 'L2', x: x + width * 0.04, y: y - height * 0.03, w: width * 0.04, h: height * 0.03, key: 'L2' });
+  hoverElements.push({ label: 'L1', x: x + width * 0.08, y: y - height * 0.03, w: width * 0.04, h: height * 0.03, key: 'L1' });
+  hoverElements.push({ label: 'L0', x: x + width * 0.12, y: y - height * 0.03, w: width * 0.04, h: height * 0.03, key: 'L0' });
+  hoverElements.push({ label: 'L2Index', x: x + width * 0.04, y: y, w: width * 0.04, h: height * 0.05, key: 'L2Index' });
+  hoverElements.push({ label: 'L1Index', x: x + width * 0.08, y: y, w: width * 0.04, h: height * 0.05, key: 'L1Index' });
+  hoverElements.push({ label: 'L0Index', x: x + width * 0.12, y: y, w: width * 0.04, h: height * 0.05, key: 'L0Index' });
+  hoverElements.push({ label: 'Offset', x: x + width * 0.16, y: y, w: width * 0.07, h: height * 0.05, key: 'Offset' });
 }
 
 function drawPageDirectory(x, y, Lnum, Lindex, PPN, color, key, pdnumber) {
@@ -730,6 +863,17 @@ function mousePressed() {
 }
 
 function windowResized() {
+  // Remove existing buttons to prevent duplicates
+  removeInterfaceButtons();
+  
+  // Also need to remove existing modals
+  for (let modalKey in modals) {
+    if (modals[modalKey]) {
+      modals[modalKey].remove();
+    }
+  }
+  modals = {}; // Clear modals object
+  
   resizeCanvas(windowWidth, document.body.scrollHeight);
   
   // Recalculate positions of all elements
@@ -745,6 +889,16 @@ function windowResized() {
   
   activeElement = null;
   redraw();
+}
+
+// Helper function to remove all buttons
+function removeInterfaceButtons() {
+  for (let button of interfaceButtons) {
+    if (button) {
+      button.remove();
+    }
+  }
+  interfaceButtons = []; // Clear the array
 }
 
 function mouseMoved() {
