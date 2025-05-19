@@ -1,16 +1,16 @@
-// We have only one dataBlock in our array:
+// Only 1 data block
 let dataBlocks = [
   { id: "dataBlock1", x: 1250, y: 100, w: 300, h: 150, label: "data" }
 ];
 
 let canvas;
 
-// This array will hold the "active" arrows we want to draw.
+// "Active" arrows we want to draw.
 let activeArrows = [];
 let indirectArrowsVisible = false;
 let indirectArrows = [];
 
-// Initially, the data block is hidden
+// The data block is hidden
 let showDataBlock = false; 
 
 let movingData = null;
@@ -18,6 +18,194 @@ let movingData = null;
 let animationInProgress = false;
 
 let fileImg;
+
+// Language support variables
+let currentLanguage = 'en'; // Default language is English
+let translations = {}; // Object to hold loaded translations
+let isLanguageLoaded = false; // Flag to track if language file is loaded
+
+// Function to load language data from JSON file
+function loadLanguage(lang) {
+  fetch(`lang/${lang}.json`)
+    .then(response => {
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+      return response.json();
+    })
+    .then(data => {
+      translations[lang] = data;
+      
+      // If this is the current language, update UI
+      if (lang === currentLanguage) {
+        updateUILanguage();
+        isLanguageLoaded = true;
+      }
+    })
+    .catch(error => {
+      console.error(`Error loading language file ${lang}.json:`, error);
+      // Fall back to English if there's an error
+      if (lang !== 'en') {
+        loadLanguage('en');
+        currentLanguage = 'en';
+      }
+    });
+}
+
+// Load both language files at startup
+document.addEventListener('DOMContentLoaded', () => {
+  // Check for saved language preference
+  const savedLanguage = localStorage.getItem('preferredLanguage');
+  if (savedLanguage) {
+    currentLanguage = savedLanguage;
+    document.getElementById('currentLanguage').textContent = 
+      savedLanguage === 'en' ? 'English' : 'Slovenčina';
+  }
+  
+  loadLanguage('en');
+  loadLanguage('sk');
+});
+
+// Function to change the language
+function changeLanguage(lang) {
+  currentLanguage = lang;
+  
+  // Update the language indicator in the UI
+  document.getElementById('currentLanguage').textContent = lang === 'en' ? 'English' : 'Slovenčina';
+  
+  // Make sure the language is loaded
+  if (!translations[lang]) {
+    loadLanguage(lang);
+    return; // Will be called again when language is loaded
+  }
+  
+  // Update UI elements with new language
+  updateUILanguage();
+  
+  // Save language preference in localStorage
+  localStorage.setItem('preferredLanguage', lang);
+}
+
+// Function to update UI elements with the selected language
+function updateUILanguage() {
+  // Update navbar elements
+    document.querySelector('.navbar-brand').textContent = translations[currentLanguage].nav.title;
+    document.querySelector('a.nav-link[href="../index.html"]').textContent = translations[currentLanguage].nav.virtualMemory;
+    document.querySelector('.nav-link.dropdown-toggle').textContent = translations[currentLanguage].nav.fileSystem;
+    
+    const dropdownItems = document.querySelectorAll('.dropdown-item');
+    dropdownItems[0].textContent = translations[currentLanguage].nav.fileSystemIndirect;
+    dropdownItems[1].textContent = translations[currentLanguage].nav.fileSystemDindirect;
+    dropdownItems[2].textContent = translations[currentLanguage].nav.fileSystemSize;
+    
+    document.querySelector('a.nav-link[href="../MMAP/Mmap.html"]').textContent = translations[currentLanguage].nav.mmap;
+  
+  // Update legend
+  const legendButton = document.querySelector('.legend-toggle');
+  if (legendButton) {
+    const legendIcon = legendButton.querySelector('i');
+    if (legendIcon) {
+      legendButton.textContent = '';
+      legendButton.appendChild(legendIcon);
+      legendButton.appendChild(document.createTextNode(' ' + translations[currentLanguage].legend));
+    }
+  }
+  
+  const legendTitle = document.querySelector('.card-title');
+  if (legendTitle) legendTitle.textContent = translations[currentLanguage].legend;
+  
+  // Update tooltip content - improved implementation
+  const tooltips = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+  tooltips.forEach(tooltip => {
+    const headerId = tooltip.querySelector('span')?.id;
+    if (headerId) {
+      if (headerId.includes('gcb')) {
+        tooltip.setAttribute('data-bs-original-title', translations[currentLanguage].glossary.GCB);
+      } else if (headerId.includes('lcb')) {
+        tooltip.setAttribute('data-bs-original-title', translations[currentLanguage].glossary.LCB);
+      } else if (headerId.includes('dni')) {
+        tooltip.setAttribute('data-bs-original-title', translations[currentLanguage].glossary.DNI);
+      } else if (headerId.includes('ni')) {
+        tooltip.setAttribute('data-bs-original-title', translations[currentLanguage].glossary.NI);
+      }
+    }
+  });
+  
+  // Update legend items
+  const legendItems = document.querySelectorAll('.legend-content ul li');
+  legendItems.forEach(item => {
+    const strong = item.querySelector('strong');
+    if (strong) {
+      const key = strong.textContent.trim();
+      if (key === 'GČB' || key === 'GBN') {
+        item.innerHTML = `<strong>${translations[currentLanguage].tableHeaders.GCB}</strong> - ${translations[currentLanguage].legendItems.GCB}`;
+      } else if (key === 'LČB' || key === 'LBN') {
+        item.innerHTML = `<strong>${translations[currentLanguage].tableHeaders.LCB}</strong> - ${translations[currentLanguage].legendItems.LCB}`;
+      } else if (key === 'DNI' || key === 'DII') {
+        item.innerHTML = `<strong>${translations[currentLanguage].tableHeaders.DNI}</strong> - ${translations[currentLanguage].legendItems.DNI}`;
+      } else if (key === 'NI' || key === 'II') {
+        item.innerHTML = `<strong>${translations[currentLanguage].tableHeaders.NI}</strong> - ${translations[currentLanguage].legendItems.NI}`;
+      }
+    }
+  });
+
+  // Update table column headers
+  const headerMappings = {
+    'gcb-header': 'GCB',
+    'gcb-header2': 'GCB',
+    'gcb-header3': 'GCB',
+    'gcb-header4': 'GCB',
+    'lcb-header': 'LCB',
+    'lcb-header2': 'LCB',
+    'dni-header': 'DNI',
+    'ni-header': 'NI',
+    'ni-header2': 'NI'
+  };
+
+  Object.entries(headerMappings).forEach(([id, key]) => {
+    const element = document.getElementById(id);
+    if (element) {
+      element.textContent = translations[currentLanguage].tableHeaders[key];
+    }
+  });
+  
+  // Update table headers
+  const tableHeaders = document.querySelectorAll('h5.text-primary');
+  tableHeaders.forEach(header => {
+    const text = header.textContent.trim();
+    if (text === 'Dinode') {
+      header.textContent = translations[currentLanguage].dinode;
+    } else if (text === 'Double Indirect Block' || text === 'Dvojitý Nepriamy Blok') {
+      header.textContent = translations[currentLanguage].doubleIndirectBlock;
+    } else if (text === 'Indirect Block' || text === 'Nepriamy Blok') {
+      header.textContent = translations[currentLanguage].indirectBlock;
+    }
+  });
+  
+  // Update table cell text for dinode rows
+  const dinodeRows = {
+    'typeRow': translations[currentLanguage].type,
+    'majorRow': translations[currentLanguage].major,
+    'minorRow': translations[currentLanguage].minor,
+    'nlinkRow': translations[currentLanguage].nlink,
+    'sizeRow': translations[currentLanguage].size,
+    'addr1Row': `${translations[currentLanguage].address} 1`,
+    'addr2Row': `${translations[currentLanguage].address} 2`,
+    'indirectRow': `${translations[currentLanguage].address} 12 ${translations[currentLanguage].indirect}`,
+    'dIndirectRow': `${translations[currentLanguage].address} 267 ${translations[currentLanguage].dindirect}`
+  };
+  
+  for (const [id, text] of Object.entries(dinodeRows)) {
+    const row = document.getElementById(id);
+    if (row) {
+      const cell = row.querySelector('td:first-child');
+      if (cell) cell.textContent = text;
+    }
+  }
+  
+  // Re-initialize tooltips to update their content
+  refreshTooltips();
+}
 
 // Function to highlight a row with grey background
 function highlightRow(rowId, highlight) {
@@ -157,7 +345,6 @@ function setup() {
     });
   }
 
-  // Remove click event for indirectRow since we want it to always show the arrow
   if (indirectRow) {
     console.log("indirectRow element found");
     // No click event listener - the arrow is permanent
@@ -193,7 +380,6 @@ function setup() {
     });
   }
 
-  // Remove click event for dIndirectRow since we want it to always show the arrow
   if (dIndirectRow) {
     console.log("dIndirectRow element found");
     // No click event listener - the arrow is permanent
@@ -381,6 +567,11 @@ function draw() {
   // Clear background each frame
   clear();
   
+  // Update data block label with translation if available
+  if (translations[currentLanguage] && dataBlocks[0]) {
+    dataBlocks[0].label = translations[currentLanguage].data;
+  }
+  
   // Draw the data block only if it is visible
   if (showDataBlock) {
     for (let block of dataBlocks) {
@@ -438,7 +629,11 @@ function draw() {
     textAlign(CENTER, CENTER);
     textSize(20);
     textStyle(BOLD);
-    text("data", 0, 0);
+    if (translations[currentLanguage]) {
+      text(translations[currentLanguage].data, 0, 0);
+    } else {
+      text("data", 0, 0);
+    }
     
     // Add binary data visual
     textSize(10);
@@ -492,9 +687,15 @@ function drawDataBlock(block) {
   textSize(32);
   textAlign(CENTER, CENTER);
   textStyle(BOLD);
-  text(block.label, block.x + block.w / 2, block.y + block.h / 2);
   
-  // Add a small icon/visual to make it look like a data block
+  // Use translation if available
+  if (translations[currentLanguage]) {
+    text(translations[currentLanguage].data, block.x + block.w / 2, block.y + block.h / 2);
+  } else {
+    text(block.label, block.x + block.w / 2, block.y + block.h / 2);
+  }
+  
+  // Add a small icon/visual 
   textSize(16);
   textStyle(NORMAL);
   text("0101010110101", block.x + block.w / 2, block.y + block.h / 2 - 30);
@@ -631,7 +832,7 @@ function drawArrowFromRowToBlock(startElemId, endElemId, offsetStartX, offsetSta
   }
 }
 
-// Draw line + arrowhead from (x1,y1) to (x2,y2) with enhanced styling
+// Draw line + arrowhead from (x1,y1) to (x2,y2)
 function lineWithArrowhead(x1, y1, x2, y2) {
   // Draw a bezier curve instead of straight line for more organic look
   noFill();
@@ -661,22 +862,53 @@ function windowResized() {
   resizeCanvas(windowWidth, document.body.scrollHeight);
 }
 
-// After all other code, at the end of the file
-// Add this separate DOM ready event listener to ensure tooltips work properly
-document.addEventListener('DOMContentLoaded', function() {
-  // Initialize Bootstrap tooltips explicitly
+// Initialize tooltips
+function initTooltips() {
   const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
   
-  // Use Array.from for better browser compatibility
   Array.from(tooltipTriggerList).forEach(tooltipTriggerEl => {
+    // Dispose existing tooltip if it exists to prevent duplicates
+    const tooltip = bootstrap.Tooltip.getInstance(tooltipTriggerEl);
+    if (tooltip) tooltip.dispose();
+    
+    // Create new tooltip
     new bootstrap.Tooltip(tooltipTriggerEl, {
       html: true,
-      trigger: 'hover focus', // Make sure tooltips respond to hover
+      trigger: 'hover focus',
       container: 'body',
       boundary: 'window',
       template: '<div class="tooltip" role="tooltip"><div class="tooltip-arrow"></div><div class="tooltip-inner" style="max-width: 300px;"></div></div>'
     });
   });
+}
+
+// Function to refresh tooltips after language change
+function refreshTooltips() {
+  const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+  
+  tooltipTriggerList.forEach(tooltipTriggerEl => {
+    // Get the current tooltip instance
+    const tooltipInstance = bootstrap.Tooltip.getInstance(tooltipTriggerEl);
+    
+    // If tooltip exists, dispose it first
+    if (tooltipInstance) {
+      tooltipInstance.dispose();
+    }
+    
+    // Create new tooltip
+    new bootstrap.Tooltip(tooltipTriggerEl, {
+      html: true,
+      trigger: 'hover focus',
+      container: 'body',
+      boundary: 'window'
+    });
+  });
+}
+
+// Add this separate DOM ready event listener to ensure tooltips work properly
+document.addEventListener('DOMContentLoaded', function() {
+  // Initialize Bootstrap tooltips explicitly
+  initTooltips();
   
   // Initialize the legend collapse functionality
   const legendToggle = document.querySelector('.legend-toggle');
@@ -691,16 +923,16 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     });
   }
+  
+  // Add global function for language changing
+  window.changeLanguage = changeLanguage;
 });
 
-// Also add a window load event listener as a backup
+// Added a window load event listener as a backup
 window.addEventListener('load', function() {
   // Re-initialize tooltips again after window load
   // This ensures they work even if DOMContentLoaded didn't properly initialize them
   setTimeout(() => {
-    const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
-    Array.from(tooltipTriggerList).forEach(tooltipTriggerEl => {
-      new bootstrap.Tooltip(tooltipTriggerEl);
-    });
+    initTooltips();
   }, 500); // Small delay to ensure everything is rendered
 });

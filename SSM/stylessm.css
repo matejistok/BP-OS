@@ -95,6 +95,8 @@ input[type="submit"], input[type="button"],
     overflow-x: auto;
     border-radius: 0; /* Removed border radius */
     box-shadow: none; /* Removed shadow completely */
+    margin-bottom: 30px;
+    padding-bottom: 15px;
   }
 
   .table {
@@ -123,6 +125,23 @@ input[type="submit"], input[type="button"],
   /* Tooltip trigger area */
   .table thead th[data-bs-toggle="tooltip"] {
     cursor: help;
+    position: relative;
+    padding-right: 30px;  /* Add space for the icon */
+    min-width: 90px;      /* Ensure enough width for text + icon */
+  }
+
+  /* Position the info icon to the right of the text */
+  .table thead th[data-bs-toggle="tooltip"] .bi-info-circle-fill {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+  }
+
+  /* Prevent text wrapping in table headers */
+  .table thead th span {
+    white-space: nowrap;
+    display: inline-block;
   }
 
   /* Better tooltip styling */
@@ -213,3 +232,39 @@ input[type="submit"], input[type="button"],
     margin-bottom: 20px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
   }
+
+  /* Language selector styles */
+#languageDropdown {
+  cursor: pointer;
+  color: #333;
+  font-weight: 500;
+}
+
+.dropdown-menu-end {
+  right: 0;
+  left: auto;
+}
+
+/* Hover effect for language options */
+.dropdown-item:hover {
+  background-color: #f0f0f0;
+}
+
+/* Ensure the language dropdown appears in front of the glossary */
+.navbar .dropdown-menu {
+  z-index: 1100;
+}
+
+/* Set minimum width for the tables */
+.table-responsive table {
+  width: 100%;
+  min-width: 300px;
+}
+
+/* Increase column widths to ensure enough space */
+.table th.col-1, .table td.col-1,
+.table th.col-2, .table td.col-2,
+.table th.col-3, .table td.col-3 {
+  min-width: 80px;
+}
+

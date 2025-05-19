@@ -1,0 +1,43 @@
+{
+  "data": "data",
+  "binaryData1": "0101010110101",
+  "binaryData2": "1010101001010",
+  "nav": {
+    "virtualMemory": "Virtual Memory",
+    "fileSystem": "File System",
+    "fileSystemIndirect": "File System Indirect",
+    "fileSystemDindirect": "File System Double Indirect",
+    "fileSystemSize": "File System Size",
+    "mmap": "MMAP"
+  },
+  "legend": "Glossary",
+  "glossary": {
+    "GCB": "Global Block Number - Index of the block within the file.",
+    "LCB": "Local Block Number - NI%256 - Index of the file block within the indirect block.",
+    "DNI": "Double Indirect Index - NI/256 - Position of the item in the double indirect block table. Determines which block of indirect indexes should be used.",
+    "NI": "Indirect Index - Cumulative index within the entire file system structure. Starts from zero and numbers all data blocks."
+  },
+  "legendItems": {
+    "GCB": "Global Block Number",
+    "LCB": "Local Block Number",
+    "DNI": "Double Indirect Index",
+    "NI": "Indirect Index"
+  },
+  "dinode": "Dinode",
+  "doubleIndirectBlock": "Double Indirect Block",
+  "indirectBlock": "Indirect Block",
+  "type": "type",
+  "major": "major",
+  "minor": "minor",
+  "nlink": "nlink",
+  "size": "size",
+  "address": "address",
+  "indirect": "indirect",
+  "dindirect": "dindirect",
+  "tableHeaders": {
+    "GCB": "GBN",
+    "LCB": "LBN",
+    "DNI": "DII",
+    "NI": "II"
+  }
+}

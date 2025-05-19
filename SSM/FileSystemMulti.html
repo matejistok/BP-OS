@@ -24,7 +24,7 @@
 
   <nav class="navbar navbar-expand-lg navbar-light bg-light">
     <div class="container-fluid">
-        <a class="navbar-brand" href="#">File System Double Indirect</a>
+        <a class="navbar-brand" href="#"></a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent">
             <span class="navbar-toggler-icon"></span>
         </button>
@@ -45,9 +45,21 @@
                     </ul>
                 </li>
                 <li class="nav-item">
-                  <a class="nav-link active" href="../MMAP/Mmap.html">MMAP</a>
+                  <a class="nav-link" href="../MMAP/Mmap.html">MMAP</a>
                 </li>
             </ul>
+            <!-- Language selector -->
+            <div class="navbar-nav ms-auto">
+              <div class="nav-item dropdown">
+                  <a class="nav-link dropdown-toggle" href="#" id="languageDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                      <span id="currentLanguage">English</span>
+                  </a>
+                  <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="languageDropdown">
+                      <li><a class="dropdown-item" href="#" onclick="changeLanguage('en')">English</a></li>
+                      <li><a class="dropdown-item" href="#" onclick="changeLanguage('sk')">Slovenčina</a></li>
+                  </ul>
+              </div>
+            </div>
         </div>
     </div>
   </nav>
@@ -78,15 +90,17 @@
     <div class="row w-100">
       <!-- Left column: dinode table -->
       <div class="col-md-4">
-        <h5 class="mb-3 text-primary fw-bold">Dinode</h5>
+        <h5 class="mb-3 text-primary fw-bold">struct dinode</h5>
         <div class="table-responsive">
           <table class="table table-hover table-bordered table-striped" style="max-width: 300px">
-            <!-- <thead>
+            <thead>
               <tr class="text-center bg-primary text-white">
-                <th>Field</th>
-                <th>Value</th>
+                <th></th>
+                <th data-bs-toggle="tooltip" data-bs-placement="top" title="Globálne Číslo Bloku - Fyzické číslo bloku uložené na disku. Predstavuje skutočnú adresu bloku v diskovom priestore.">
+                  <span id="gcb-header4">GČB</span> <i class="bi bi-info-circle-fill text-white-50 ms-1"></i>
+                </th>
               </tr>
-            </thead> -->
+            </thead>
             <tbody>
               <tr id="typeRow" class="text-center"><td class="fw-medium">type</td><td></td></tr>
               <tr id="majorRow" class="text-center"><td class="fw-medium">major</td><td></td></tr>
@@ -116,17 +130,18 @@
         
         <h5 class="mb-3 mt-4 text-primary fw-bold">Double Indirect Block</h5>
         <div class="table-responsive">
-          <table class="table table-hover table-bordered table-striped" style="max-width: 300px">
+          <table class="table table-hover table-bordered table-striped" style="max-width: 400px">
             <thead>
               <tr class="text-center bg-primary text-white">
                 <th class="col-1" data-bs-toggle="tooltip" data-bs-placement="top" title="Globálne Číslo Bloku - Fyzické číslo bloku uložené na disku. Predstavuje skutočnú adresu bloku v diskovom priestore.">
-                  GČB <i class="bi bi-info-circle-fill text-white-50 ms-1"></i>
+                  <span id="gcb-header">GČB</span> <i class="bi bi-info-circle-fill text-white-50 ms-1"></i>
                 </th>
+                
                 <th class="col-2" data-bs-toggle="tooltip" data-bs-placement="top" title="Double Nepriamy Index - Poradie položky v tabuľke dvojito nepriamych blokov. Určuje, ktorý blok nepriamych indexov sa má použiť.">
-                  DNI <i class="bi bi-info-circle-fill text-white-50 ms-1"></i>
+                  <span id="dni-header">DNI</span> <i class="bi bi-info-circle-fill text-white-50 ms-1"></i>
                 </th>
                 <th class="col-3" data-bs-toggle="tooltip" data-bs-placement="top" title="Nepriamy Index - Súhrnný index v rámci celej štruktúry súborového systému. Začína od nuly a čísluje všetky dátové bloky.">
-                  NI <i class="bi bi-info-circle-fill text-white-50 ms-1"></i>
+                  <span id="ni-header">NI</span> <i class="bi bi-info-circle-fill text-white-50 ms-1"></i>
                 </th>
                 <th class="col-4"></th>
               </tr>
@@ -160,14 +175,14 @@
       <div class="col-md-4" style="margin-top:200px;">
         <h5 class="mb-3 text-primary fw-bold">Indirect Block</h5>
         <div class="table-responsive">
-          <table class="table table-hover table-bordered table-striped" style="max-width: 300px">
+          <table class="table table-hover table-bordered table-striped" style="max-width: 400px">
             <thead>
               <tr class="text-center bg-primary text-white">
                 <th class="col-1" data-bs-toggle="tooltip" data-bs-placement="top" title="Globálne Číslo Bloku - Fyzické číslo bloku na disku, ktoré jednoznačne identifikuje umiestnenie dát v diskovom priestore.">
-                  GČB <i class="bi bi-info-circle-fill text-white-50 ms-1"></i>
+                  <span id="gcb-header2">GČB</span> <i class="bi bi-info-circle-fill text-white-50 ms-1"></i>
                 </th>
                 <th class="col-2" data-bs-toggle="tooltip" data-bs-placement="top" title="Lokálne Číslo Bloku - Relatívna pozícia v rámci nepriameho bloku. Používa sa na rýchle indexovanie v rámci jedného nepriameho bloku.">
-                  LČB <i class="bi bi-info-circle-fill text-white-50 ms-1"></i>
+                  <span id="lcb-header">LČB</span> <i class="bi bi-info-circle-fill text-white-50 ms-1"></i>
                 </th>
                 <th></th>
               </tr>
@@ -195,17 +210,17 @@
         
         <h5 class="mb-3 mt-4 text-primary fw-bold">Indirect Block</h5>
         <div class="table-responsive">
-          <table class="table table-hover table-bordered table-striped" style="max-width: 300px">
+          <table class="table table-hover table-bordered table-striped" style="max-width: 400px">
             <thead>
               <tr class="text-center bg-primary text-white">
                 <th class="col-1" data-bs-toggle="tooltip" data-bs-placement="top" title="Globálne Číslo Bloku - Absolútne číslo bloku v rámci celého diskového priestoru. Každý blok má jedinečné GČB.">
-                  GČB <i class="bi bi-info-circle-fill text-white-50 ms-1"></i>
+                  <span id="gcb-header3">GČB</span> <i class="bi bi-info-circle-fill text-white-50 ms-1"></i>
                 </th>
                 <th class="col-2" data-bs-toggle="tooltip" data-bs-placement="top" title="Lokálne Číslo Bloku - Pozícia v rámci aktuálneho nepriameho bloku (0-255). Používa sa na indexovanie v rámci bloku.">
-                  LČB <i class="bi bi-info-circle-fill text-white-50 ms-1"></i>
+                  <span id="ni-header2">NI</span> <i class="bi bi-info-circle-fill text-white-50 ms-1"></i>
                 </th>
                 <th class="col-3" data-bs-toggle="tooltip" data-bs-placement="top" title="Nepriamy Index - Celkový index bloku v rámci súboru. Vyjadruje logickú pozíciu dátového bloku v súbore.">
-                  NI <i class="bi bi-info-circle-fill text-white-50 ms-1"></i>
+                  <span id="lcb-header2">LČ<Base></Base></span> <i class="bi bi-info-circle-fill text-white-50 ms-1"></i>
                 </th>
                 <th></th>
               </tr>
