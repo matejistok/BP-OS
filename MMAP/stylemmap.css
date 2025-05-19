@@ -31,6 +31,7 @@ body {
     width: 100%;
     max-width: 450px;
     float: right;
+    overflow-x: auto;
 }
 
 .fd-title {
@@ -40,6 +41,9 @@ body {
     color: #2c3e50;
     text-transform: uppercase;
     letter-spacing: 1px;
+    text-align: center; 
+    width: 100%; 
+    display: block;
 }
 
 .table {
@@ -310,7 +314,6 @@ input[type=number] {
 .tooltip-container {
     position: relative;
     display: inline-block;
-    z-index: 1; 
 }
 
 .tooltip-icon {
@@ -344,7 +347,7 @@ input[type=number] {
 
 /* Default position: top */
 .tooltip-top {
-    bottom: 125%;
+    bottom: 75%;
     left: 50%;
     transform: translateX(-50%) translateY(-20px) !important;
 }
@@ -503,3 +506,20 @@ input[type="submit"], input[type="button"], .map-button,
 .error-close, .interactive, .clickable, [role="button"] {
     cursor: pointer;
 }
+
+/* Language selector styles */
+#languageDropdown {
+    cursor: pointer;
+    color: #333;
+    font-weight: 500;
+  }
+  
+  .dropdown-menu-end {
+    right: 0;
+    left: auto;
+  }
+  
+  /* Hover effect for language options */
+  .dropdown-item:hover {
+    background-color: #f0f0f0;
+  }

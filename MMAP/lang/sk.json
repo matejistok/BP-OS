@@ -1,0 +1,73 @@
+{
+  "nav": {
+    "virtualMemory": "Virtuálna pamäť",
+    "fileSystem": "Súborový systém",
+    "fileSystemIndirect": "Súborový systém nepriamy",
+    "fileSystemDindirect": "Súborový systém dvojito nepriamy",
+    "fileSystemSize": "Veľkosť súborového systému",
+    "mmap": "MMAP"
+  },
+  "mmapFunction": {
+    "addr": "addr",
+    "addrTooltip": "uint64 addr; // adresa, na ktorej začína mapovaná oblasť\n(0 pre automatickú voľbu)\n\nKeď je 0, systém automaticky vyberie adresu.",
+    "len": "length", 
+    "lenTooltip": "int length; // dĺžka mapovanej oblasti\n\nVeľkosť oblasti, ktorá má byť mapovaná v bajtoch.",
+    "prot": "prot",
+    "protTooltip": "int prot; \nOchrana pre mapovaný región:\nPROT_READ - čítanie\nPROT_WRITE - zápis\nPROT_EXEC - vykonávanie",
+    "flags": "flags",
+    "flagsTooltip": "int flags; // viditeľnosť úprav mapovanej oblasti\n\nMAP_SHARED - zmeny sú viditeľné pre ostatné procesy\nMAP_PRIVATE - zmeny sú privátne",
+    "fd": "fd",
+    "fdTooltip": "struct file *file; // mapovaný súbor\n\nDeskriptor súboru, ktorý sa má mapovať.",
+    "offset": "offset",
+    "offsetTooltip": "int offset; // posunutie mapovanej oblasti od začiatku súboru (B)\n\nOffset od začiatku súboru v jednotkách PGSIZE.",
+    "mapButton": "NAMAPOVAŤ"
+  },
+  "unmapFunction": {
+    "addr": "addr",
+    "addrTooltip": "uint64 addr; // adresa, na ktorej začína mapovaná oblasť\nMusí byť platnou adresou v rámci existujúceho mapovania.",
+    "len": "length",
+    "lenTooltip": "int length; // dĺžka mapovanej oblasti\n\nDĺžka oblasti na zrušenie mapovania.",
+    "unmapButton": "ODMAPOVAŤ"
+  },
+  "protectionOptions": {
+    "execOnly": "PROT_EXEC",
+    "readOnly": "PROT_READ",
+    "writeOnly": "PROT_WRITE",
+    "readWrite": "PROT_READ|PROT_WRITE"
+  },
+  "flagOptions": {
+    "shared": "MAP_SHARED",
+    "private": "MAP_PRIVATE"
+  },
+  "fdTable": {
+    "title": "TABUĽKA DESKRIPTOROV SÚBOROV",
+    "mode": "REŽIM",
+    "fd": "FD",
+    "size": "VEĽKOSŤ",
+    "mapped": "NAMAPOVANÝ?"
+  },
+  "vma": {
+    "title": "Štruktúry VMA",
+    "noMappings": "Žiadne aktívne mapovania",
+    "addr": "addr",
+    "length": "length",
+    "prot": "prot",
+    "flag": "flag",
+    "fd": "fd",
+    "offset": "offset"
+  },
+  "errors": {
+    "selectFd": "Prosím, vyberte deskriptor súboru z tabuľky FD.",
+    "invalidCombo": "Neplatná kombinácia: Nemožno mapovať súbor len na čítanie s príznakmi MAP_SHARED a PROT_READ|PROT_WRITE.\nZmeny by sa zapisovali späť do súboru len na čítanie.",
+    "negativeOffset": "Offset nemôže byť záporný.",
+    "offsetExceedsSize": "Offset nemôže presiahnuť veľkosť súboru (%s)",
+    "negativeAddress": "Efektívna adresa (addr - offset) nemôže byť záporná. Použite menší offset alebo väčšiu adresu.",
+    "fdAlreadyMapped": "Deskriptor súboru %s je už mapovaný. Použite iný deskriptor súboru.",
+    "addressOverlap": "Nové mapovanie sa prekrýva s existujúcim mapovaním vo virtuálnej pamäti. Automaticky generujem novú adresu...",
+    "noMappingsToUnmap": "Žiadne mapovania na odmapovanie.",
+    "invalidAddressLength": "Zadajte platné hodnoty adresy a dĺžky.",
+    "noMappingAtAddress": "Na zadanej adrese sa nenašlo žiadne mapovanie.",
+    "unmapMiddle": "Podporované je len úplné odmapovanie, odmapovanie od začiatku alebo odmapovanie od konca.\n\nPre odmapovanie od konca nastavte adresu v rámci mapovania a uistite sa, že dĺžka siaha až za koniec mapovania.",
+    "lengthPositive": "Dĺžka musí byť kladné číslo."
+  }
+}

@@ -2,6 +2,10 @@
 const PGSIZE = 1000; // PGSIZE is 1000
 const ADDR_ALIGN = 1000; // Address alignment for better readability
 
+// Translation variables
+let translations = {}; // Object to hold loaded translations
+let currentLanguage = 'en'; // Default language is English
+
 // Global variables
 let fdTable = [
     { mode: 'O_RDONLY', fd: 3, size: 4*PGSIZE, mapped: false },
@@ -39,6 +43,114 @@ const DOM = {
     canvasContainer: null
 };
 
+// Function to load language data from JSON file
+function loadLanguage(lang) {
+    fetch(`./lang/${lang}.json`)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            translations[lang] = data;
+            
+            // If this is the current language, update UI
+            if (lang === currentLanguage) {
+                updateUILanguage();
+            }
+        })
+        .catch(error => {
+            console.error(`Error loading language file ${lang}.json:`, error);
+            // Fall back to English if there's an error
+            if (lang !== 'en') {
+                currentLanguage = 'en';
+                updateUILanguage();
+            }
+        });
+}
+
+// Function to change the language
+function changeLanguage(lang) {
+    currentLanguage = lang;
+    
+    // Update the language indicator in the UI
+    document.getElementById('currentLanguage').textContent = lang === 'en' ? 'English' : 'Slovenčina';
+    
+    // Update UI elements with new language
+    updateUILanguage();
+    
+    // Save language preference in localStorage
+    localStorage.setItem('preferredLanguage', lang);
+}
+
+// Function to update UI elements with the selected language
+function updateUILanguage() {
+    if (!translations[currentLanguage]) return;
+    
+    // Update navbar elements
+    document.querySelector('.navbar-brand').textContent = translations[currentLanguage].nav.title;
+    document.querySelector('a.nav-link[href="../index.html"]').textContent = translations[currentLanguage].nav.virtualMemory;
+    document.querySelector('.nav-link.dropdown-toggle').textContent = translations[currentLanguage].nav.fileSystem;
+    
+    const dropdownItems = document.querySelectorAll('.dropdown-item');
+    dropdownItems[0].textContent = translations[currentLanguage].nav.fileSystemIndirect;
+    dropdownItems[1].textContent = translations[currentLanguage].nav.fileSystemDindirect;
+    dropdownItems[2].textContent = translations[currentLanguage].nav.fileSystemSize;
+    
+    document.querySelector('a.nav-link[href="../MMAP/Mmap.html"]').textContent = translations[currentLanguage].nav.mmap;
+    
+    // Update MMAP function UI
+    updateAddressInputField();
+    updateLengthInputField();
+    updateFdInputField();
+    document.querySelector('.map-button').textContent = translations[currentLanguage].mmapFunction.mapButton;
+    
+    // Update PROT options
+    const protOptions = document.querySelectorAll('#protDropdown div');
+    protOptions[0].textContent = translations[currentLanguage].protectionOptions.execOnly;
+    protOptions[1].textContent = translations[currentLanguage].protectionOptions.readOnly;
+    protOptions[2].textContent = translations[currentLanguage].protectionOptions.writeOnly;
+    protOptions[3].textContent = translations[currentLanguage].protectionOptions.readWrite;
+    
+    // Update FLAG options
+    const flagOptions = document.querySelectorAll('#flagsDropdown div');
+    flagOptions[0].textContent = translations[currentLanguage].flagOptions.shared;
+    flagOptions[1].textContent = translations[currentLanguage].flagOptions.private;
+    
+    // Update offset tooltip
+    const offsetTooltip = document.querySelector('input#offsetInput').closest('.tooltip-container').querySelector('.tooltip-icon');
+    offsetTooltip.setAttribute('data-tooltip', translations[currentLanguage].mmapFunction.offsetTooltip);
+    
+    // Update FD table
+    document.querySelector('.fd-title').textContent = translations[currentLanguage].fdTable.title;
+    const tableHeaders = document.querySelectorAll('table.table th');
+    tableHeaders[0].textContent = translations[currentLanguage].fdTable.mode;
+    tableHeaders[1].textContent = translations[currentLanguage].fdTable.fd;
+    tableHeaders[2].textContent = translations[currentLanguage].fdTable.size;
+    tableHeaders[3].textContent = translations[currentLanguage].fdTable.mapped;
+    
+    // Update VMA info title and placeholder
+    const vmaTitle = document.querySelector('.vma-title');
+    if (vmaTitle) {
+        vmaTitle.textContent = translations[currentLanguage].vma.title;
+        
+        // If there are no mappings, update the placeholder
+        if (vmaMappings.length === 0) {
+            document.querySelector('#vmaInfo div:not(.vma-title)').textContent = translations[currentLanguage].vma.noMappings;
+        } else {
+            // Refresh VMA info to update labels in the current language
+            updateVmaInfo();
+        }
+    }
+    
+    // Update UNMAP section
+    updateMunmapUI();
+    
+    // Setup tooltips with new language
+    setTimeout(setupTooltips, 100);
+}
+
 // Functions to toggle dropdown menus
 function toggleProtectionDropdown() {
     document.getElementById("protDropdown").classList.toggle("show");
@@ -62,14 +174,38 @@ window.onclick = function(event) {
     }
 }
 
-// New function to show styled error messages
+// New function to show styled error messages with translation
 function showError(message) {
+    // Look for known error messages in the translations
+    let translatedMessage = message;
+    
+    // Check if this is a known error that needs translation
+    if (translations[currentLanguage] && translations[currentLanguage].errors) {
+        for (const [key, errorText] of Object.entries(translations[currentLanguage].errors)) {
+            // Simple message replacement for exact matches
+            if (message === translations['en'].errors[key]) {
+                translatedMessage = errorText;
+                break;
+            }
+            
+            // Handle parametrized error messages
+            if (message.includes('%s') && translations['en'].errors[key].includes('%s')) {
+                const englishPattern = translations['en'].errors[key].replace('%s', '(.+)');
+                const match = message.match(new RegExp(englishPattern));
+                if (match && match[1]) {
+                    translatedMessage = errorText.replace('%s', match[1]);
+                    break;
+                }
+            }
+        }
+    }
+    
     // Create error notification element
     const errorNotification = document.createElement('div');
     errorNotification.className = 'error-notification';
     errorNotification.innerHTML = `
         <div class="error-icon">⚠️</div>
-        <div class="error-message">${message}</div>
+        <div class="error-message">${translatedMessage}</div>
         <div class="error-close" onclick="this.parentElement.remove()">×</div>
     `;
     
@@ -244,12 +380,18 @@ function setupTooltips() {
 function updateAddressInputField() {
     const addrInputElement = document.getElementById('addrInput');
     
+    if (!translations[currentLanguage]) {
+        // If translations aren't loaded yet, try again shortly
+        setTimeout(updateAddressInputField, 100);
+        return;
+    }
+    
     // Replace the div content with an input element with fixed width and tooltip
     addrInputElement.innerHTML = `
         <div class="tooltip-container" style="position: relative;">
             <div style="position: absolute; top: -30px; width: 100%; text-align: center;">
-                <span class="tooltip-icon" data-tooltip="uint64 addr; // adresa, na ktorej začína mapovaná oblasť\n(0 pre automatickú voľbu)\n\nKeď je 0, systém automaticky vyberie adresu." 
-                      data-tooltip-width="250px" data-tooltip-max-width="300px" data-tooltip-position="bottom">addr ⓘ</span>
+                <span class="tooltip-icon" data-tooltip="${translations[currentLanguage].mmapFunction.addrTooltip}" 
+                      data-tooltip-width="250px" data-tooltip-max-width="300px" data-tooltip-position="bottom">${translations[currentLanguage].mmapFunction.addr} ⓘ</span>
             </div>
             <input type="number" id="addrInputField" value="0" style="width: 80px; border: none; text-align: center;" readonly>
         </div>`;
@@ -259,12 +401,18 @@ function updateAddressInputField() {
 function updateLengthInputField() {
     const lengthInputElement = document.getElementById('lengthInput');
     
+    if (!translations[currentLanguage]) {
+        // If translations aren't loaded yet, try again shortly
+        setTimeout(updateLengthInputField, 100);
+        return;
+    }
+    
     // Replace the div content with an input element with fixed width and tooltip
     lengthInputElement.innerHTML = `
         <div class="tooltip-container" style="position: relative;">
             <div style="position: absolute; top: -30px; width: 100%; text-align: center;">
-                <span class="tooltip-icon" data-tooltip="int len; // dĺžka mapovanej oblasti\n\nVeľkosť oblasti, ktorá má byť mapovaná v bajtoch." 
-                      data-tooltip-width="180px" data-tooltip-position="bottom">len ⓘ</span>
+                <span class="tooltip-icon" data-tooltip="${translations[currentLanguage].mmapFunction.lenTooltip}" 
+                      data-tooltip-width="180px" data-tooltip-position="bottom">${translations[currentLanguage].mmapFunction.len} ⓘ</span>
             </div>
             <input type="text" id="lengthInputField" style="width: 80px; border: none; text-align: center;" placeholder="Length">
         </div>`;
@@ -280,12 +428,18 @@ function updateLengthInputField() {
 function updateFdInputField() {
     const fdInputElement = document.getElementById('fdInput');
     
+    if (!translations[currentLanguage]) {
+        // If translations aren't loaded yet, try again shortly
+        setTimeout(updateFdInputField, 100);
+        return;
+    }
+    
     // Replace the div content with an input element with tooltip
     fdInputElement.innerHTML = `
         <div class="tooltip-container" style="position: relative;">
             <div style="position: absolute; top: -30px; width: 100%; text-align: center;">
-                <span class="tooltip-icon" data-tooltip="struct file *file; // mapovaný súbor\n\nDeskriptor súboru, ktorý sa má mapovať." 
-                      data-tooltip-width="200px" data-tooltip-position="bottom">fd ⓘ</span>
+                <span class="tooltip-icon" data-tooltip="${translations[currentLanguage].mmapFunction.fdTooltip}" 
+                      data-tooltip-width="200px" data-tooltip-position="top">${translations[currentLanguage].mmapFunction.fd} ⓘ</span>
             </div>
             <input type="number" id="fdInputField" style="width: 60px; border: none; text-align: center;" placeholder="fd">
         </div>`;
@@ -618,17 +772,17 @@ function executeUnmap() {
     showError('Only complete unmap, unmap from start, or unmap from end are supported.\n\nFor unmapping from the end, set the address within the mapping and make sure the length extends to or beyond the end of the mapping.');
 }
 
-// Update VMA info display to show all mappings - optimized with DOM fragment
+// Update VMA info display to show all mappings - optimized with DOM fragment and translation
 function updateVmaInfo() {
     if (vmaMappings.length === 0) {
-        DOM.vmaInfo.innerHTML = '<div class="vma-title">VMAs</div><div>No active mappings</div>';
+        DOM.vmaInfo.innerHTML = `<div class="vma-title">${translations[currentLanguage].vma.title}</div><div>${translations[currentLanguage].vma.noMappings}</div>`;
         return;
     }
     
     const fragment = document.createDocumentFragment();
     const titleDiv = document.createElement('div');
     titleDiv.className = 'vma-title';
-    titleDiv.textContent = 'VMAs';
+    titleDiv.textContent = translations[currentLanguage].vma.title;
     fragment.appendChild(titleDiv);
     
     // Display each mapping
@@ -642,14 +796,14 @@ function updateVmaInfo() {
         vmaBox.style.paddingLeft = '8px';
         vmaBox.style.marginBottom = '12px';
         
-        // Add VMA details with decimal values
+        // Add VMA details with 0x prefix for addresses and decimal values for other fields
         const details = [
-            `addr: ${mapping.address}`,
-            `length: ${mapping.length/PGSIZE}*PGSIZE`,
-            `prot: ${protStr}`,
-            `flag: ${mapping.flags}`,
-            `fd: ${mapping.fd}`,
-            `offset: ${mapping.offsetMultiplier}*PGSIZE`
+            `${translations[currentLanguage].vma.addr}: 0x${mapping.address}`,
+            `${translations[currentLanguage].vma.length}: ${mapping.length/PGSIZE}*PGSIZE`,
+            `${translations[currentLanguage].vma.prot}: ${protStr}`,
+            `${translations[currentLanguage].vma.flag}: ${mapping.flags}`,
+            `${translations[currentLanguage].vma.fd}: ${mapping.fd}`,
+            `${translations[currentLanguage].vma.offset}: ${mapping.offsetMultiplier}*PGSIZE`
         ];
         
         details.forEach(detail => {
@@ -766,12 +920,12 @@ function setupP5Canvas() {
                 // Draw address markers at start and end with clean decimal values
                 p.noStroke();
                 p.fill(0);
-                p.textSize(12);
+                p.textSize(14);
                 p.textAlign(p.LEFT, p.CENTER);
-                p.text(drawCache.roundedStartAddr, leftMargin, 95); 
+                p.text(`0x${drawCache.roundedStartAddr}`, leftMargin, 105); 
                 
                 p.textAlign(p.RIGHT, p.CENTER);
-                p.text(drawCache.roundedEndAddr, leftMargin + availableWidth, 95); 
+                p.text(`0x${drawCache.roundedEndAddr}`, leftMargin + availableWidth, 105); 
                 
                 // Draw vertical lines
                 p.stroke(220);
@@ -839,10 +993,10 @@ function setupP5Canvas() {
                     
                     // Draw the memory address at original file start (fileBaseAddr)
                     p.noStroke();
-                    p.textSize(10);
+                    p.textSize(12);
                     p.textAlign(p.CENTER, p.TOP);
-                    p.text(fileBaseAddr - PGSIZE, fileVisStartX, fdYPosition + fdHeight + 5);
-                    p.text(fileBaseAddr + totalFileSize, fileVisStartX + expandedFileWidth, fdYPosition + fdHeight + 5);
+                    p.text(`0x${fileBaseAddr - PGSIZE}`, fileVisStartX, fdYPosition + fdHeight + 5);
+                    p.text(`0x${fileBaseAddr + totalFileSize}`, fileVisStartX + expandedFileWidth, fdYPosition + fdHeight + 5);
                     
                     // Add file descriptor label
                     p.fill(0);
@@ -941,12 +1095,12 @@ function setupP5Canvas() {
                     // Add address labels for memory mapping start and end
                     p.noStroke();
                     p.fill(0);
-                    p.textSize(10);
+                    p.textSize(12);
                     p.textAlign(p.CENTER, p.TOP);
-                    // Show address at start of memory mapping 
-                    p.text(mapping.address, startX, 30);
-                    // Show address at end of memory mapping
-                    p.text(mapping.address + mapping.length, endX, 30);
+                    // Show address at start of memory mapping with 0x prefix
+                    p.text(`0x${mapping.address}`, startX, 30);
+                    // Show address at end of memory mapping with 0x prefix
+                    p.text(`0x${mapping.address + mapping.length}`, endX, 30);
                 });
             } else {
                 // Display empty canvas - increased positioning for more space
@@ -962,12 +1116,12 @@ function setupP5Canvas() {
                 // Draw address markers
                 p.noStroke();
                 p.fill(0);
-                p.textSize(12);
+                p.textSize(14);
                 p.textAlign(p.LEFT, p.CENTER);
-                p.text("0", leftMargin, 105); 
+                p.text("0x0", leftMargin, 115); 
                 
                 p.textAlign(p.RIGHT, p.CENTER);
-                p.text("10000", leftMargin + availableWidth, 105);
+                p.text("0x10000", leftMargin + availableWidth, 115);
                 
                 // Draw vertical lines
                 p.stroke(220);
@@ -988,16 +1142,23 @@ function roundToPageSize(value) {
 // Update the munmap function UI
 function updateMunmapUI() {
     const unmapSection = document.querySelector('.unmap-section');
+    
+    if (!translations[currentLanguage]) {
+        // If translations aren't loaded yet, try again shortly
+        setTimeout(updateMunmapUI, 100);
+        return;
+    }
+    
     unmapSection.innerHTML = `
         <div>munmap(
             <div class="param-box">
                 <div class="tooltip-container" style="position: relative;">
                     <div style="position: absolute; top: -30px; width: 100%; text-align: center;">
                         <span class="tooltip-icon" 
-                              data-tooltip="uint64 addr; // adresa, na ktorej začína mapovaná oblasť\nMusí byť platnou adresou v rámci existujúceho mapovania." 
+                              data-tooltip="${translations[currentLanguage].unmapFunction.addrTooltip}" 
                               data-tooltip-position="bottom"
                               data-tooltip-width="400px" 
-                              data-tooltip-max-width="350px">addr ⓘ</span>
+                              data-tooltip-max-width="350px">${translations[currentLanguage].unmapFunction.addr} ⓘ</span>
                     </div>
                     <input type="text" id="unmapAddrInput" style="width: 80px; border: none; text-align: center;" placeholder="addr">
                 </div>
@@ -1006,15 +1167,15 @@ function updateMunmapUI() {
                 <div class="tooltip-container" style="position: relative;">
                     <div style="position: absolute; top: -30px; width: 100%; text-align: center;">
                         <span class="tooltip-icon" 
-                              data-tooltip="int len; // dĺžka mapovanej oblasti\n\nDĺžka oblasti na zrušenie mapovania."
+                              data-tooltip="${translations[currentLanguage].unmapFunction.lenTooltip}"
                               data-tooltip-position="right"
-                              data-tooltip-width="180px">len ⓘ</span>
+                              data-tooltip-width="180px">${translations[currentLanguage].unmapFunction.len} ⓘ</span>
                     </div>
                     <input type="text" id="unmapLengthInput" style="width: 80px; border: none; text-align: center;" placeholder="length">
                 </div>
             </div>
         );
-        <div class="map-button" onclick="executeUnmap()">UNMAP</div>
+        <div class="map-button" onclick="executeUnmap()">${translations[currentLanguage].unmapFunction.unmapButton}</div>
         </div>
     `;
     
@@ -1030,6 +1191,19 @@ document.addEventListener('DOMContentLoaded', function() {
     DOM.fdInput = document.getElementById('fdInput');
     DOM.vmaInfo = document.getElementById('vmaInfo');
     DOM.canvasContainer = document.getElementById('canvas-container');
+    
+    // Initial language setup
+    // Load both language files
+    loadLanguage('en');
+    loadLanguage('sk');
+    
+    // Check for saved language preference
+    const savedLanguage = localStorage.getItem('preferredLanguage');
+    if (savedLanguage) {
+        currentLanguage = savedLanguage;
+        document.getElementById('currentLanguage').textContent = 
+            savedLanguage === 'en' ? 'English' : 'Slovenčina';
+    }
     
     // Add CSS for tooltips
     const styleElement = document.createElement('style');
@@ -1128,7 +1302,7 @@ document.addEventListener('DOMContentLoaded', function() {
     offsetLabel.style.top = '-30px';
     offsetLabel.style.width = '100%';
     offsetLabel.style.textAlign = 'center';
-    offsetLabel.innerHTML = '<span class="tooltip-icon" data-tooltip="int offset; // posunutie mapovanej oblasti od začiatku súboru (B)\n\nOfset od začiatku súboru v jednotkách PGSIZE." data-tooltip-width="250px" data-tooltip-position="bottom" data-tooltip-align="center">offset ⓘ</span>';
+    offsetLabel.innerHTML = '<span class="tooltip-icon" data-tooltip="int offset; // posunutie mapovanej oblasti od začiatku súboru (B)\n\nOfset od začiatku súboru v jednotkách PGSIZE." data-tooltip-width="250px" data-tooltip-position="top" data-tooltip-align="center">offset ⓘ</span>';
     offsetContainer.insertBefore(offsetLabel, DOM.offsetInput);
     
     const fdContainer = document.createElement('div');
@@ -1142,7 +1316,7 @@ document.addEventListener('DOMContentLoaded', function() {
     fdLabel.style.top = '-22px';
     fdLabel.style.width = '100%';
     fdLabel.style.textAlign = 'center';
-    fdLabel.innerHTML = '<span class="tooltip-icon" data-tooltip="struct file *file; // mapovaný súbor\n\nDeskriptor súboru, ktorý sa má mapovať." data-tooltip-width="200px" data-tooltip-position="bottom">fd ⓘ</span>';
+    fdLabel.innerHTML = '<span class="tooltip-icon" data-tooltip="struct file *file; // mapovaný súbor\n\nDeskriptor súboru, ktorý sa má mapovať." data-tooltip-width="200px" data-tooltip-position="top">fd ⓘ</span>';
     fdContainer.insertBefore(fdLabel, DOM.fdInput);
     
     // Cache protection options
@@ -1160,7 +1334,7 @@ document.addEventListener('DOMContentLoaded', function() {
     protLabel.style.top = '-22px';
     protLabel.style.width = '100%';
     protLabel.style.textAlign = 'center';
-    protLabel.innerHTML = '<span class="tooltip-icon" data-tooltip="int prot; // ochranné príznaky pre mapovanie v pamäti\n\nOchrana pre mapovaný región:\nPROT_READ - čítanie\nPROT_WRITE - zápis\nPROT_EXEC - vykonávanie" data-tooltip-width="250px" data-tooltip-position="bottom">prot ⓘ</span>';
+    protLabel.innerHTML = '<span class="tooltip-icon" data-tooltip="int prot;\n\nOchrana pre mapovaný región:\nPROT_READ - čítanie\nPROT_WRITE - zápis\nPROT_EXEC - vykonávanie" data-tooltip-width="250px" data-tooltip-position="top">prot ⓘ</span>';
     protContainer.insertBefore(protLabel, DOM.protectionOptions);
     
     // Cache flags options
@@ -1178,7 +1352,7 @@ document.addEventListener('DOMContentLoaded', function() {
     flagsLabel.style.top = '-22px';
     flagsLabel.style.width = '100%';
     flagsLabel.style.textAlign = 'center';
-    flagsLabel.innerHTML = '<span class="tooltip-icon" data-tooltip="int flags; // viditeľnosť úprav mapovanej oblasti\n\nMAP_SHARED - zmeny sú viditeľné pre ostatné procesy\nMAP_PRIVATE - zmeny sú privátne" data-tooltip-width="250px" data-tooltip-max-width="300px" data-tooltip-position="bottom">flags ⓘ</span>';
+    flagsLabel.innerHTML = '<span class="tooltip-icon" data-tooltip="int flags; // viditeľnosť úprav mapovanej oblasti\n\nMAP_SHARED - zmeny sú viditeľné pre ostatné procesy\nMAP_PRIVATE - zmeny sú privátne" data-tooltip-width="250px" data-tooltip-max-width="300px" data-tooltip-position="top">flags ⓘ</span>';
     flagsContainer.insertBefore(flagsLabel, DOM.flagsOptions);
     
     // Update the munmap UI
@@ -1197,17 +1371,6 @@ document.addEventListener('DOMContentLoaded', function() {
     // Apply tooltips after all HTML elements are created
     setTimeout(setupTooltips, 100);
     
-    // Hook up the fd input field's change event to update length field with appropriate file size
-    DOM.fdInputField.addEventListener('change', function() {
-        const fdValue = parseInt(this.value, 10);
-        if (!isNaN(fdValue)) {
-            const fdEntry = fdTable.find(entry => entry.fd === fdValue);
-            if (fdEntry) {
-                DOM.lengthInputField.value = `0x${fdEntry.size}`;
-            }
-        }
-    });
-    
     // Use one event listener instead of many
     window.addEventListener('click', function(event) {
         // Use event delegation for tooltips
@@ -1218,3 +1381,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 });
+
+// Make changeLanguage global so it can be accessed from HTML
+window.changeLanguage = changeLanguage;
