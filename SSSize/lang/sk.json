@@ -1,20 +1,25 @@
 {
-  "pageTitle": "Veľkosť Súborového Systému",
-  "fileSystem": "Súborový Systém",
-  "fileSystemSize": "Veľkosť Súborového Systému",
+  "nav": {
+    "virtualMemory": "Virtuálna pamäť",
+    "fileSystem": "Súborový systém",
+    "fileSystemIndirect": "Súborový systém nepriamy",
+    "fileSystemDindirect": "Súborový systém dvojito nepriamy",
+    "fileSystemSize": "Veľkosť súborového systému",
+    "mmap": "MMAP"
+  },
   "blockSizeLabel": "Veľkosť Bloku (musí byť deliteľná ",
-  "selectPointerSize": "Vyberte Veľkosť Ukazovateľa:",
-  "bytes": "bajtov",
-  "bytesUnit": "Bajtov",
+  "selectPointerSize": "Vyberte veľkosť čísla bloku:",
+  "bytes": "bajty",
+  "bytesUnit": "bajtov",
   "kbUnit": "KB",
   "mbUnit": "MB",
-  "storageBlocks": "Bloky Úložiska",
+  "storageBlocks": "Bloky v štruktúre dinode",
   "addBlock": "Pridať Blok",
   "formula": "Vzorec",
   "maxFileSize": "Maximálna Veľkosť Súborového Systému",
   "priamy": "Priamy",
   "nepriamy": "Nepriamy",
-  "dnepriamy": "2x Nepriamy",
+  "dnepriamy": "Dvojito nepriamy",
   "selectType": "Vyberte typ",
   "selectBlockType": "Vyberte Typ Bloku",
   "remove": "Odstrániť",
@@ -23,5 +28,6 @@
   "errorValidSize": "Zadajte platnú veľkosť bloku.",
   "errorMinSize": "Chyba: Veľkosť bloku musí byť aspoň ",
   "errorMinSizeEnd": "bajtov (aktuálna veľkosť ukazovateľa)!",
-  "errorSelectType": "Najprv vyberte typ pre všetky existujúce bloky"
+  "errorSelectType": "Najprv vyberte typ pre všetky existujúce bloky",
+  "enterBlockSize": "Zadajte veľkosť bloku"
 }

@@ -2,9 +2,111 @@ let pointerSize = 4;
 let translations = {}; // Object to hold loaded translations
 let currentLanguage = 'en'; // Default language is English
 
+// Function to calculate the maximum file size - moved outside document.ready
+function calculateMaxFileSize() {
+    // Check if the necessary DOM elements exist
+    if (!$('#blockSize').length || !$('.file-box').length) {
+        return; // Exit if we're on a different page or elements don't exist yet
+    }
+
+    let blockSize = parseInt($('#blockSize').val());
+    
+    if (isNaN(blockSize) || blockSize <= 0) {
+        return;
+    }
+
+    let maxSize = 0;
+    let formulaParts = [];
+    
+    $(".file-box span").each(function () {
+        let type = $(this).text();
+        // Match the text regardless of language
+        if (type === translations[currentLanguage].priamy) {
+            maxSize += blockSize;
+            formulaParts.push(`<span class="formula-part priamy-border">(${blockSize})</span>`);
+        } else if (type === translations[currentLanguage].nepriamy) {
+            let size = (blockSize / pointerSize) * blockSize;
+            maxSize += size;
+            formulaParts.push(`<span class="formula-part nepriamy-border">($\\frac{${blockSize}}{${pointerSize}} \\times ${blockSize}$)</span>`);
+        } else if (type === translations[currentLanguage].dnepriamy) {
+            let size = (blockSize / pointerSize) * (blockSize / pointerSize) * blockSize;
+            maxSize += size;
+            formulaParts.push(`<span class="formula-part dnepriamy-border">($\\frac{${blockSize}}{${pointerSize}} \\times \\frac{${blockSize}}{${pointerSize}} \\times ${blockSize}$)</span>`);
+        }
+    });
+
+    let formulaText = formulaParts.join(" + ");
+    if (formulaText === "") {
+        formulaText = "0";
+    }
+    
+    // Update with more readable format
+    if (maxSize > 0) {
+        // Format the size in KB, MB if appropriate
+        let formattedSize = maxSize;
+        let unit = translations[currentLanguage].bytesUnit;
+        
+        if (maxSize >= 1024 * 1024) {
+            formattedSize = (maxSize / (1024 * 1024)).toFixed(2);
+            unit = translations[currentLanguage].mbUnit;
+        } else if (maxSize >= 1024) {
+            formattedSize = (maxSize / 1024).toFixed(2);
+            unit = translations[currentLanguage].kbUnit;
+        }
+        
+        $("#maxFileSize").html(`
+            <div class="card-header bg-light">
+                <h5 class="mb-0">${translations[currentLanguage].maxFileSize}</h5>
+            </div>
+            <div class="card-body">
+                <p class="mb-0">${formattedSize} ${unit}</p>
+            </div>
+        `);
+        
+        $("#formula").html(`
+            <div class="card-header bg-light">
+                <h5 class="mb-0">${translations[currentLanguage].formula}</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3 small">
+                    <span class="color-box priamy-color"></span> ${translations[currentLanguage].priamy}
+                    <span class="color-box nepriamy-color ms-3"></span> ${translations[currentLanguage].nepriamy}
+                    <span class="color-box dnepriamy-color ms-3"></span> ${translations[currentLanguage].dnepriamy}
+                </div>
+                <div class="formula-container mb-0">
+                    ${formulaText} = ${maxSize} ${translations[currentLanguage].bytesUnit}
+                </div>
+            </div>
+        `);
+    } else {
+        $("#formula").html(`
+            <div class="card-header bg-light">
+                <h5 class="mb-0">${translations[currentLanguage].formula}</h5>
+            </div>
+            <div class="card-body">
+                <p class="mb-0">${translations[currentLanguage].addBlocksToSeeFormula}</p>
+            </div>
+        `);
+        
+        $("#maxFileSize").html(`
+            <div class="card-header bg-light">
+                <h5 class="mb-0">${translations[currentLanguage].maxFileSize}</h5>
+            </div>
+            <div class="card-body">
+                <p class="mb-0">0 ${translations[currentLanguage].bytesUnit}</p>
+            </div>
+        `);
+    }
+    
+    // Trigger MathJax to process the new formula
+    if (window.MathJax) {
+        MathJax.typeset();
+    }
+}
+
 // Function to load language data from JSON file
 function loadLanguage(lang) {
-    fetch(`../SSSize/lang/${lang}.json`)
+    fetch(`lang/${lang}.json`)
         .then(response => {
             if (!response.ok) {
                 throw new Error(`HTTP error! Status: ${response.status}`);
@@ -48,24 +150,50 @@ function updateUILanguage() {
     if (!translations[currentLanguage]) return;
     
     // Update navbar elements
-    document.querySelector('.navbar-brand').textContent = translations[currentLanguage].pageTitle;
-    document.querySelector('.nav-link.dropdown-toggle').textContent = translations[currentLanguage].fileSystemSize;
+    document.querySelector('.navbar-brand').textContent = translations[currentLanguage].nav.title;
+    document.querySelector('a.nav-link[href="../index.html"]').textContent = translations[currentLanguage].nav.virtualMemory;
+    document.querySelector('.nav-link.dropdown-toggle').textContent = translations[currentLanguage].nav.fileSystem;
+    
+    const dropdownItems = document.querySelectorAll('.dropdown-item');
+    dropdownItems[0].textContent = translations[currentLanguage].nav.fileSystemIndirect;
+    dropdownItems[1].textContent = translations[currentLanguage].nav.fileSystemDindirect;
+    dropdownItems[2].textContent = translations[currentLanguage].nav.fileSystemSize;
+    
+    document.querySelector('a.nav-link[href="../MMAP/Mmap.html"]').textContent = translations[currentLanguage].nav.mmap;
     
     // Update page title
     document.querySelector('h3.text-primary').textContent = translations[currentLanguage].pageTitle;
     
-    // Update labels and headings
+    // Better selectors for storageBlocks and blockSizeLabel
     $("label[for='blockSize']").text(`${translations[currentLanguage].blockSizeLabel} ${pointerSize}):`);
-    $("label.form-label:contains('Select Pointer Size')").text(translations[currentLanguage].selectPointerSize);
     
-    // Update button text
-    $(".pointer-size-btn").each(function() {
-        let size = $(this).data('size');
-        $(this).text(`${size} ${translations[currentLanguage].bytes}`);
+    // The selector for pointer size -
+    $(".form-label").each(function() {
+        if ($(this).text().includes("Select Pointer Size") || $(this).text().includes("Vyberte") || $(this).text().includes("čísla")) {
+            $(this).text(translations[currentLanguage].selectPointerSize);
+        }
     });
     
-    // Update card headers and buttons
-    $(".card-header h5:contains('Storage Blocks')").text(translations[currentLanguage].storageBlocks);
+    // Update the input placeholder
+    $("#blockSize").attr("placeholder", translations[currentLanguage].enterBlockSize);
+    
+    // Update button texts
+    $(".pointer-size-btn").each(function(index) {
+        let size = $(this).data('size');
+        if (index === 1) { // Second button (index 1)
+            $(this).text(`${size} ${translations[currentLanguage].bytesUnit}`);
+        } else {
+            $(this).text(`${size} ${translations[currentLanguage].bytes}`);
+        }
+    });
+    
+    // Update storageBlocks with better selector
+    $(".card-header h5").each(function() {
+        if ($(this).text().includes("Storage") || $(this).text().includes("Bloky")) {
+            $(this).text(translations[currentLanguage].storageBlocks);
+        }
+    });
+    
     $("#add-box").text(translations[currentLanguage].addBlock);
     $("#formula .card-header h5").text(translations[currentLanguage].formula);
     $("#maxFileSize .card-header h5").text(translations[currentLanguage].maxFileSize);
@@ -118,7 +246,8 @@ function updateUILanguage() {
     }
     
     // Re-calculate to update any displayed formulas with new language
-    if ($("#blockSize").val()) {
+    // Only call if we're on the file system size page and blockSize element exists
+    if ($("#blockSize").length && $("#blockSize").val()) {
         calculateMaxFileSize();
     }
 }
@@ -275,104 +404,8 @@ $(document).ready(function () {
         // Re-validate the current block size with new pointer size
         $("#blockSize").trigger("input");
     });
-
-    // Function to calculate the maximum file size
-    function calculateMaxFileSize() {
-        let blockSize = parseInt($('#blockSize').val());
-        
-        if (isNaN(blockSize) || blockSize <= 0) {
-            return;
-        }
-
-        let maxSize = 0;
-        let formulaParts = [];
-        
-        $(".file-box span").each(function () {
-            let type = $(this).text();
-            // Match the text regardless of language
-            if (type === translations[currentLanguage].priamy) {
-                maxSize += blockSize;
-                formulaParts.push(`<span class="formula-part priamy-border">(${blockSize})</span>`);
-            } else if (type === translations[currentLanguage].nepriamy) {
-                let size = (blockSize / pointerSize) * blockSize;
-                maxSize += size;
-                formulaParts.push(`<span class="formula-part nepriamy-border">($\\frac{${blockSize}}{${pointerSize}} \\times ${blockSize}$)</span>`);
-            } else if (type === translations[currentLanguage].dnepriamy) {
-                let size = (blockSize / pointerSize) * (blockSize / pointerSize) * blockSize;
-                maxSize += size;
-                formulaParts.push(`<span class="formula-part dnepriamy-border">($\\frac{${blockSize}}{${pointerSize}} \\times \\frac{${blockSize}}{${pointerSize}} \\times ${blockSize}$)</span>`);
-            }
-        });
-
-        let formulaText = formulaParts.join(" + ");
-        if (formulaText === "") {
-            formulaText = "0";
-        }
-        
-        // Update with more readable format
-        if (maxSize > 0) {
-            // Format the size in KB, MB if appropriate
-            let formattedSize = maxSize;
-            let unit = translations[currentLanguage].bytesUnit;
-            
-            if (maxSize >= 1024 * 1024) {
-                formattedSize = (maxSize / (1024 * 1024)).toFixed(2);
-                unit = translations[currentLanguage].mbUnit;
-            } else if (maxSize >= 1024) {
-                formattedSize = (maxSize / 1024).toFixed(2);
-                unit = translations[currentLanguage].kbUnit;
-            }
-            
-            $("#maxFileSize").html(`
-                <div class="card-header bg-light">
-                    <h5 class="mb-0">${translations[currentLanguage].maxFileSize}</h5>
-                </div>
-                <div class="card-body">
-                    <p class="mb-0">${formattedSize} ${unit}</p>
-                </div>
-            `);
-            
-            $("#formula").html(`
-                <div class="card-header bg-light">
-                    <h5 class="mb-0">${translations[currentLanguage].formula}</h5>
-                </div>
-                <div class="card-body">
-                    <div class="mb-3 small">
-                        <span class="color-box priamy-color"></span> ${translations[currentLanguage].priamy}
-                        <span class="color-box nepriamy-color ms-3"></span> ${translations[currentLanguage].nepriamy}
-                        <span class="color-box dnepriamy-color ms-3"></span> ${translations[currentLanguage].dnepriamy}
-                    </div>
-                    <div class="formula-container mb-0">
-                        ${formulaText} = ${maxSize} ${translations[currentLanguage].bytesUnit}
-                    </div>
-                </div>
-            `);
-        } else {
-            $("#formula").html(`
-                <div class="card-header bg-light">
-                    <h5 class="mb-0">${translations[currentLanguage].formula}</h5>
-                </div>
-                <div class="card-body">
-                    <p class="mb-0">${translations[currentLanguage].addBlocksToSeeFormula}</p>
-                </div>
-            `);
-            
-            $("#maxFileSize").html(`
-                <div class="card-header bg-light">
-                    <h5 class="mb-0">${translations[currentLanguage].maxFileSize}</h5>
-                </div>
-                <div class="card-body">
-                    <p class="mb-0">0 ${translations[currentLanguage].bytesUnit}</p>
-                </div>
-            `);
-        }
-        
-        // Trigger MathJax to process the new formula
-        if (window.MathJax) {
-            MathJax.typeset();
-        }
-    }
 });
 
-// Make changeLanguage global so it can be accessed from HTML
+// Make calculateMaxFileSize and changeLanguage global so they can be accessed from outside
+window.calculateMaxFileSize = calculateMaxFileSize;
 window.changeLanguage = changeLanguage;

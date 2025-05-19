@@ -1,11 +1,16 @@
 {
-  "pageTitle": "File System Size",
-  "fileSystem": "File System",
-  "fileSystemSize": "File System Size",
+  "nav": {
+    "virtualMemory": "Virtual Memory",
+    "fileSystem": "File System",
+    "fileSystemIndirect": "File System Indirect",
+    "fileSystemDindirect": "File System Double Indirect",
+    "fileSystemSize": "File System Size",
+    "mmap": "MMAP"
+  },
   "blockSizeLabel": "Block Size (must be divisible by",
-  "selectPointerSize": "Select Pointer Size:",
+  "selectPointerSize": "Select block number size:",
   "bytes": "bytes",
-  "bytesUnit": "Bytes",
+  "bytesUnit": "bytes",
   "kbUnit": "KB",
   "mbUnit": "MB",
   "storageBlocks": "Storage Blocks",
@@ -23,5 +28,6 @@
   "errorValidSize": "Please enter a valid block size.",
   "errorMinSize": "Error: Block size must be at least",
   "errorMinSizeEnd": "bytes (current pointer size)!",
-  "errorSelectType": "Please select a type for all existing blocks first"
+  "errorSelectType": "Please select a type for all existing blocks first",
+  "enterBlockSize": "Enter a block size"
 }
