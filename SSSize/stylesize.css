@@ -167,3 +167,20 @@ input[type="submit"], input[type="button"],
 .nav-link, .dropdown-toggle, .btn, .page-link {
     cursor: pointer;
 }
+
+/* Language selector styles */
+#languageDropdown {
+    cursor: pointer;
+    color: #333;
+    font-weight: 500;
+  }
+  
+  .dropdown-menu-end {
+    right: 0;
+    left: auto;
+  }
+  
+  /* Hover effect for language options */
+  .dropdown-item:hover {
+    background-color: #f0f0f0;
+  }

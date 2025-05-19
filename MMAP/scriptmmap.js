@@ -28,6 +28,7 @@ let usedColorIndices = [];
 const DOM = {
     fdTableBody: null,
     fdInput: null,
+    fdInputField: null,
     lengthInputField: null,
     protectionOptions: null,
     flagsOptions: null,
@@ -105,7 +106,7 @@ function selectFlags(flag) {
     document.getElementById("flagsDropdown").classList.remove("show");
 }
 
-// Updated function to render the FD table - disable mapped fds
+// Updated function to render the FD table - with checkmarks for mapped fds
 function renderFdTable() {
     const fragment = document.createDocumentFragment(); // Use document fragment for better performance
     
@@ -124,73 +125,31 @@ function renderFdTable() {
         const sizeCell = document.createElement('td');
         sizeCell.textContent = `${entry.size/PGSIZE}*PGSIZE`;
         
-        // Mapped column
+        // Mapped column - show checkmark if mapped
         const mappedCell = document.createElement('td');
         mappedCell.className = 'checkbox-cell';
         
-        const checkbox = document.createElement('input');
-        checkbox.type = 'checkbox';
-        checkbox.className = 'form-check-input';
-        checkbox.checked = entry.mapped;
-        
-        // If already mapped by another mapping, disable the checkbox
-        const isAlreadyMapped = vmaMappings.some(mapping => mapping.fd === entry.fd);
-        if (isAlreadyMapped && !entry.mapped) {
-            checkbox.disabled = true;
-            checkbox.title = "This file descriptor is already mapped";
+        // If mapped through vmaMappings, show a checked and disabled checkbox
+        const isMapped = vmaMappings.some(mapping => mapping.fd === entry.fd);
+        if (isMapped) {
+            const checkmark = document.createElement('span');
+            checkmark.innerHTML = '✓';
+            checkmark.style.color = '#4CAF50';
+            checkmark.style.fontWeight = 'bold';
+            checkmark.style.fontSize = '16px';
+            mappedCell.appendChild(checkmark);
+            
+            // Highlight rows that are mapped
+            row.style.backgroundColor = "#f0f8ff"; // Light blue background
+        } else {
+            mappedCell.textContent = '';
         }
-        
-        checkbox.addEventListener('change', function() {
-            if (this.checked) {
-                // When selecting a new fd, unselect any previously selected fd
-                // that isn't actually mapped yet
-                fdTable.forEach(e => {
-                    if (e.fd !== entry.fd && e.mapped && !vmaMappings.some(m => m.fd === e.fd)) {
-                        e.mapped = false;
-                    }
-                });
-                
-                // Mark this fd as selected
-                entry.mapped = true;
-                selectedFd = entry.fd;
-            } else {
-                // Unselecting is only allowed if not actually mapped
-                if (!vmaMappings.some(mapping => mapping.fd === entry.fd)) {
-                    entry.mapped = false;
-                    selectedFd = null;
-                } else {
-                    // Don't allow unchecking a mapped fd
-                    checkbox.checked = true;
-                    return;
-                }
-            }
-            
-            // Update fd input in mmap function
-            DOM.fdInput.textContent = selectedFd !== null ? selectedFd : '';
-            
-            // Update length input based on selected fd
-            if (DOM.lengthInputField && selectedFd !== null) {
-                const selectedEntry = fdTable.find(e => e.fd === selectedFd);
-                DOM.lengthInputField.value = selectedEntry.size;
-            } else if (DOM.lengthInputField) {
-                DOM.lengthInputField.value = '';
-            }
-            
-            renderFdTable();
-        });
-        
-        mappedCell.appendChild(checkbox);
         
         // Append all cells to the row
         row.appendChild(modeCell);
         row.appendChild(fdCell);
         row.appendChild(sizeCell);
         row.appendChild(mappedCell);
-        
-        // Highlight rows that are actually mapped
-        if (vmaMappings.some(mapping => mapping.fd === entry.fd)) {
-            row.style.backgroundColor = "#f0f8ff"; // Light blue background
-        }
         
         fragment.appendChild(row);
     });
@@ -307,65 +266,96 @@ function updateLengthInputField() {
                 <span class="tooltip-icon" data-tooltip="int len; // dĺžka mapovanej oblasti\n\nVeľkosť oblasti, ktorá má byť mapovaná v bajtoch." 
                       data-tooltip-width="180px" data-tooltip-position="bottom">len ⓘ</span>
             </div>
-            <input type="number" id="lengthInputField" style="width: 80px; border: none; text-align: center;" placeholder="Length">
+            <input type="text" id="lengthInputField" style="width: 80px; border: none; text-align: center;" placeholder="Length">
         </div>`;
     
     // Cache the DOM reference
     DOM.lengthInputField = document.getElementById('lengthInputField');
     
-    // Add event listener for validating the length
-    DOM.lengthInputField.addEventListener('change', validateLength);
-    
-    // Initialize with a default value if we have a selected fd
-    if (selectedFd !== null) {
-        const selectedEntry = fdTable.find(e => e.fd === selectedFd);
-        DOM.lengthInputField.value = selectedEntry.size;
-    }
+    // Initialize with a default value with 0x prefix
+    DOM.lengthInputField.value = "0x2000";
 }
 
-// Function to validate that the entered length is within the file size
+// Function to update the mmap UI fd input to be an editable field
+function updateFdInputField() {
+    const fdInputElement = document.getElementById('fdInput');
+    
+    // Replace the div content with an input element with tooltip
+    fdInputElement.innerHTML = `
+        <div class="tooltip-container" style="position: relative;">
+            <div style="position: absolute; top: -30px; width: 100%; text-align: center;">
+                <span class="tooltip-icon" data-tooltip="struct file *file; // mapovaný súbor\n\nDeskriptor súboru, ktorý sa má mapovať." 
+                      data-tooltip-width="200px" data-tooltip-position="bottom">fd ⓘ</span>
+            </div>
+            <input type="number" id="fdInputField" style="width: 60px; border: none; text-align: center;" placeholder="fd">
+        </div>`;
+    
+    // Cache the DOM reference
+    DOM.fdInputField = document.getElementById('fdInputField');
+}
+
+// Function to validate that the entered length has a valid value
 function validateLength() {
-    if (selectedFd === null) return;
+    // Get input value and remove 0x prefix if present for parsing
+    const inputValue = DOM.lengthInputField.value;
+    const valueToProcess = inputValue.startsWith('0x') ? inputValue.substring(2) : inputValue;
+    const value = parseInt(valueToProcess, 10);
     
-    const value = parseInt(DOM.lengthInputField.value, 10);
-    const selectedEntry = fdTable.find(e => e.fd === selectedFd);
-    
-    // Make sure length is positive and not larger than file size
+    // Make sure length is positive
     if (isNaN(value) || value <= 0) {
         showError('Length must be a positive number.');
-        DOM.lengthInputField.value = selectedEntry.size;
         return false;
     }
-    
-    // if (value > selectedEntry.size) {
-    //     showError(`Length cannot exceed file size (${selectedEntry.size})`);
-    //     DOM.lengthInputField.value = selectedEntry.size;
-    //     return false;
-    // }
     
     // Round up to nearest page size
     const roundedValue = Math.ceil(value / PGSIZE) * PGSIZE;
     if (roundedValue !== value) {
-        DOM.lengthInputField.value = roundedValue;
+        DOM.lengthInputField.value = `0x${roundedValue}`;
     }
     
     return true;
 }
 
-// Updated executeMmap function to track color usage
+// Updated executeMmap function to handle typed fd values
 function executeMmap() {
-    if (selectedFd === null) {
-        showError('Please select a file descriptor from the FD table.');
+    // Get the typed fd value
+    const fdValue = parseInt(DOM.fdInputField.value, 10);
+    
+    // Validate the fd input
+    if (isNaN(fdValue)) {
+        showError('Please enter a valid file descriptor.');
         return;
     }
+    
+    // Check if the fd exists in the fd table
+    const fdEntry = fdTable.find(entry => entry.fd === fdValue);
+    if (!fdEntry) {
+        showError(`File descriptor ${fdValue} does not exist in the fd table.`);
+        return;
+    }
+    
+    // Check if the fd is already mapped
+    if (vmaMappings.some(mapping => mapping.fd === fdValue)) {
+        showError(`File descriptor ${fdValue} is already mapped. Please use a different file descriptor.`);
+        return;
+    }
+    
+    // Get length from input field, removing 0x prefix if present
+    const lengthInput = DOM.lengthInputField.value;
+    const lenValueStr = lengthInput.startsWith('0x') ? lengthInput.substring(2) : lengthInput;
+    const lenValue = parseInt(lenValueStr, 10);
     
     // Validate length input
-    if (!validateLength()) {
+    if (isNaN(lenValue) || lenValue <= 0) {
+        showError('Length must be a positive number.');
         return;
     }
     
-    // Get the fd entry for the selected fd
-    const fdEntry = fdTable.find(entry => entry.fd === selectedFd);
+    // Round length to page size if needed
+    const len = Math.ceil(lenValue / PGSIZE) * PGSIZE;
+    if (len !== lenValue) {
+        DOM.lengthInputField.value = `0x${len}`;
+    }
     
     // Check for invalid combination: O_RDONLY + MAP_SHARED + PROT_READ|PROT_WRITE
     const protection = DOM.protectionOptions.textContent;
@@ -400,12 +390,10 @@ function executeMmap() {
         }
     }
     
-    const fd = selectedFd;
+    const fd = fdValue;
     const offsetText = DOM.offsetInput.value || "0";
-    const offsetMultiplier = parseInt(offsetText) || 0;
-    
-    // Get length from input field
-    const len = parseInt(DOM.lengthInputField.value, 10);
+    const offsetValueStr = offsetText.startsWith('0x') ? offsetText.substring(2) : offsetText;
+    const offsetMultiplier = parseInt(offsetValueStr, 10) || 0;
     
     // Calculate offset in bytes
     const offsetBytes = offsetMultiplier * PGSIZE;
@@ -416,21 +404,14 @@ function executeMmap() {
         return;
     }
 
-    if(offsetMultiplier > len/1000) {
-        showError(`Offset cannot exceed file size (${len/1000})`);
+    if(offsetMultiplier > fdEntry.size/PGSIZE) {
+        showError(`Offset cannot exceed file size (${fdEntry.size/PGSIZE})`);
         return;
     }
     
     // Ensure that addr - offset is not negative
     if (addr - offsetBytes < 0) {
         showError('Effective address (addr - offset) cannot be negative. Please use a smaller offset or a larger address.');
-        return;
-    }
-    
-    // Check if the fd is already mapped
-    const fdAlreadyMapped = vmaMappings.some(mapping => mapping.fd === fd);
-    if (fdAlreadyMapped) {
-        showError(`File descriptor ${fd} is already mapped. Please use a different file descriptor.`);
         return;
     }
     
@@ -490,29 +471,26 @@ function executeMmap() {
         offsetMultiplier: offsetMultiplier,
         color: vmaColors[colorIndex],
         colorIndex: colorIndex, // Store the color index for later reference
-        fileSize: fdTable.find(entry => entry.fd === fd).size // Store the complete file size
+        fileSize: fdEntry.size // Store the complete file size
     };
     
     // Add the new mapping to the array
     vmaMappings.push(newMapping);
     
     // Mark the file descriptor as mapped in the fd table
-    const fdEntryToUpdate = fdTable.find(entry => entry.fd === fd);
-    if (fdEntryToUpdate) {
-        fdEntryToUpdate.mapped = true;
-    }
+    fdEntry.mapped = true;
     
     // Update VMA info
     updateVmaInfo();
     
     // Update the munmap UI fields with default values from the latest mapping
     if (DOM.unmapAddrInput) {
-        DOM.unmapAddrInput.value = addr;
-        DOM.unmapLengthInput.value = len;
+        DOM.unmapAddrInput.value = `0x${addr}`;
+        DOM.unmapLengthInput.value = `0x${len}`;
     }
     
-    // Select the next available fd for convenience
-    selectNextAvailableFd();
+    // Clear the fd input field for the next mapping
+    DOM.fdInputField.value = '';
     
     // Re-render the fd table to reflect changes
     renderFdTable();
@@ -521,22 +499,27 @@ function executeMmap() {
     resizeCanvas();
 }
 
-// Updated executeUnmap function to track released colors
+// Updated executeUnmap function to clear the checkmark when unmapped
 function executeUnmap() {
     if (vmaMappings.length === 0) {
         showError('No mappings to unmap.');
         return;
     }
     
-    // Get munmap parameters
-    const unmapAddr = parseInt(DOM.unmapAddrInput.value || 0, 10);
-    let unmapLength = parseInt(DOM.unmapLengthInput.value || 0, 10);
+    // Get munmap parameters, removing 0x prefix if present
+    const addrInput = DOM.unmapAddrInput.value || "0";
+    const addrValueStr = addrInput.startsWith('0x') ? addrInput.substring(2) : addrInput;
+    const unmapAddr = parseInt(addrValueStr, 10);
+    
+    const lengthInput = DOM.unmapLengthInput.value || "0";
+    const lenValueStr = lengthInput.startsWith('0x') ? lengthInput.substring(2) : lengthInput;
+    let unmapLength = parseInt(lenValueStr, 10);
     
     // Round up length to nearest PGSIZE
     unmapLength = roundToPageSize(unmapLength);
     
-    // Update UI to show rounded value
-    DOM.unmapLengthInput.value = unmapLength;
+    // Update UI to show rounded value with 0x prefix
+    DOM.unmapLengthInput.value = `0x${unmapLength}`;
     
     // Validate parameters
     if (unmapAddr <= 0 || unmapLength <= 0) {
@@ -659,7 +642,7 @@ function updateVmaInfo() {
         vmaBox.style.paddingLeft = '8px';
         vmaBox.style.marginBottom = '12px';
         
-        // Add VMA details
+        // Add VMA details with decimal values
         const details = [
             `addr: ${mapping.address}`,
             `length: ${mapping.length/PGSIZE}*PGSIZE`,
@@ -1016,7 +999,7 @@ function updateMunmapUI() {
                               data-tooltip-width="400px" 
                               data-tooltip-max-width="350px">addr ⓘ</span>
                     </div>
-                    <input type="number" id="unmapAddrInput" style="width: 80px; border: none; text-align: center;" placeholder="addr">
+                    <input type="text" id="unmapAddrInput" style="width: 80px; border: none; text-align: center;" placeholder="addr">
                 </div>
             </div>,
             <div class="param-box">
@@ -1027,7 +1010,7 @@ function updateMunmapUI() {
                               data-tooltip-position="right"
                               data-tooltip-width="180px">len ⓘ</span>
                     </div>
-                    <input type="number" id="unmapLengthInput" style="width: 80px; border: none; text-align: center;" placeholder="length">
+                    <input type="text" id="unmapLengthInput" style="width: 80px; border: none; text-align: center;" placeholder="length">
                 </div>
             </div>
         );
@@ -1123,11 +1106,15 @@ document.addEventListener('DOMContentLoaded', function() {
     // Convert lengthInput to an input field
     updateLengthInputField();
     
-    // Set initial offset to 0 and set fixed width
+    // Convert fdInput to an input field
+    updateFdInputField();
+    
+    // Set initial offset to 0x1000 and set fixed width
     DOM.offsetInput = document.getElementById('offsetInput');
-    DOM.offsetInput.value = "0";
+    DOM.offsetInput.value = "0x1000";
     DOM.offsetInput.style.width = "80px";
     DOM.offsetInput.style.textAlign = "center";
+    DOM.offsetInput.type = "text"; // Change to text to better display 0x prefix
     
     // Add tooltip to the offset input - improved version with custom width
     const offsetContainer = document.createElement('div');
@@ -1204,25 +1191,22 @@ document.addEventListener('DOMContentLoaded', function() {
     DOM.protectionOptions.textContent = 'PROT_READ|PROT_WRITE';
     DOM.flagsOptions.textContent = 'MAP_SHARED';
     
-    // Auto-select fd 6 initially
-    const fd6Entry = fdTable.find(entry => entry.fd === 6);
-    if (fd6Entry) {
-        fd6Entry.mapped = true;
-        selectedFd = 6;
-        DOM.fdInput.textContent = "6";
-        
-        // Set the length input field value
-        if (DOM.lengthInputField) {
-            DOM.lengthInputField.value = fd6Entry.size;
-        }
-        renderFdTable();
-    }
-    
     // Setup p5.js canvas
     setupP5Canvas();
     
     // Apply tooltips after all HTML elements are created
     setTimeout(setupTooltips, 100);
+    
+    // Hook up the fd input field's change event to update length field with appropriate file size
+    DOM.fdInputField.addEventListener('change', function() {
+        const fdValue = parseInt(this.value, 10);
+        if (!isNaN(fdValue)) {
+            const fdEntry = fdTable.find(entry => entry.fd === fdValue);
+            if (fdEntry) {
+                DOM.lengthInputField.value = `0x${fdEntry.size}`;
+            }
+        }
+    });
     
     // Use one event listener instead of many
     window.addEventListener('click', function(event) {

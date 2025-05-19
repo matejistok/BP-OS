@@ -1,0 +1,60 @@
+{
+    "title": "MMAP Visualization",
+    "navbar": {
+      "brand": "MMAP",
+      "fileSystem": "File System",
+      "fileSystemIndirect": "File System Indirect",
+      "fileSystemDindirect": "File System Dindirect",
+      "fileSystemSize": "File System Size",
+      "virtualMemory": "Virtual Memory",
+      "mmap": "MMAP"
+    },
+    "fdTable": {
+      "title": "FILE DESCRIPTOR TABLE",
+      "mode": "MODE",
+      "fd": "FD",
+      "size": "SIZE",
+      "mapped": "MAPPED?"
+    },
+    "mmap": {
+      "addr": "addr",
+      "addrTooltip": "uint64 addr; // address where the mapped area begins\n(0 for automatic choice)\n\nWhen it's 0, the system automatically selects an address.",
+      "len": "len",
+      "lenTooltip": "int len; // length of the mapped area\n\nSize of the area to be mapped in bytes.",
+      "prot": "prot",
+      "protTooltip": "int prot; // protection flags for memory mapping\n\nProtection for the mapped region:\nPROT_READ - reading\nPROT_WRITE - writing\nPROT_EXEC - executing",
+      "flags": "flags",
+      "flagsTooltip": "int flags; // visibility of changes to the mapped area\n\nMAP_SHARED - changes are visible to other processes\nMAP_PRIVATE - changes are private",
+      "fd": "fd",
+      "fdTooltip": "struct file *file; // mapped file\n\nFile descriptor to be mapped.",
+      "offset": "offset",
+      "offsetTooltip": "int offset; // offset of mapped area from the beginning of the file (B)\n\nOffset from the beginning of the file in PGSIZE units.",
+      "mapButton": "MAP"
+    },
+    "munmap": {
+      "addr": "addr",
+      "addrTooltip": "uint64 addr; // address where the mapped area begins\nMust be a valid address within an existing mapping.",
+      "len": "len",
+      "lenTooltip": "int len; // length of the mapped area\n\nLength of the area to unmap.",
+      "unmapButton": "UNMAP"
+    },
+    "vmas": {
+      "title": "VMAs",
+      "noMappings": "No active mappings"
+    },
+    "errors": {
+      "selectFd": "Please select a file descriptor from the FD table.",
+      "positiveLength": "Length must be a positive number.",
+      "exceedsFileSize": "Length cannot exceed file size",
+      "invalidCombination": "Invalid combination: Cannot map a read-only file with MAP_SHARED and PROT_READ|PROT_WRITE permissions.\nChanges would be written back to a read-only file.",
+      "negativeOffset": "Offset cannot be negative.",
+      "exceedsOffset": "Offset cannot exceed file size",
+      "negativeEffectiveAddr": "Effective address (addr - offset) cannot be negative. Please use a smaller offset or a larger address.",
+      "fdAlreadyMapped": "File descriptor ${fd} is already mapped. Please use a different file descriptor.",
+      "addrOverlap": "New mapping overlaps with an existing mapping in virtual memory. Auto-generating a new address...",
+      "noMappingsToUnmap": "No mappings to unmap.",
+      "validAddrLength": "Please enter valid address and length values.",
+      "noMappingAtAddr": "No mapping found at the specified address.",
+      "unmapLimitation": "Only complete unmap, unmap from start, or unmap from end are supported.\n\nFor unmapping from the end, set the address within the mapping and make sure the length extends to or beyond the end of the mapping."
+    }
+  }

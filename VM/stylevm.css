@@ -44,20 +44,89 @@ html, body {
 }
 
 /* Modal styles */
-.arrow-box p {
+.modal-content {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.modal-content p {
   margin: 0;
   font-size: 14px;
+  color: #333;
+  line-height: 1.6;
 }
 
 .arrow-box {
   overflow-y: auto;
   max-height: 100%;
-  cursor: pointer;
+  cursor: default; /* Changed from pointer to default */
+}
+
+.arrow-box p {
+  margin: 0;
+  font-size: 14px;
+}
+
+/* Add a hover effect to the close button */
+button.modal-close:hover {
+  color: #ff3b30;
+}
+
+/* Add some transition effects */
+.modal-show {
+  opacity: 1 !important;
+  transform: scale(1) !important;
+}
+
+.modal-hide {
+  opacity: 0 !important;
+  transform: scale(0.9) !important;
+}
+
+/* Add focus styles for accessibility */
+button:focus {
+  outline: 2px solid #45515f;
+  outline-offset: 2px;
 }
 
 /* Any interactive element should have a pointer cursor */
 a, select, input[type="checkbox"], input[type="radio"], 
 input[type="submit"], input[type="button"], 
 .interactive, .clickable, [role="button"] {
+  cursor: pointer;
+}
+
+/* Language selector styles */
+#languageDropdown {
+  cursor: pointer;
+  color: #333;
+  font-weight: 500;
+}
+
+.dropdown-menu-end {
+  right: 0;
+  left: auto;
+}
+
+/* Hover effect for language options */
+.dropdown-item:hover {
+  background-color: #f0f0f0;
+}
+
+/* Editable element indicators */
+.editable-hint {
+  cursor: pointer;
+  border-bottom: 1px dashed #333;
+}
+
+/* Add styles for p5.js canvas editable elements */
+#Canvas {
+  cursor: default;
+}
+
+/* Custom cursor for editable elements on canvas */
+.editable-cursor {
   cursor: pointer;
 }

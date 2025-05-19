@@ -14,40 +14,53 @@
   <!-- p5.js -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
 
-  <!-- Your JavaScript file -->
+  <!-- Your JavaScript files -->
   <script src="VM/scriptvm.js" defer></script>
 
 </head>
 <body>
   <nav class="navbar navbar-expand-lg navbar-light bg-light">
     <div class="container-fluid">
-        <a class="navbar-brand" href="#">Virtual Memory</a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarContent">
-            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                <!-- File System Dropdown -->
-                <li class="nav-item">
-                    <a class="nav-link" href="index.html">Virtual Memory</a>
-                </li>
-                <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" id="fileSystemDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                        File System
-                    </a>
-                    <ul class="dropdown-menu" aria-labelledby="fileSystemDropdown">
-                        <li><a class="dropdown-item" href="SS/FileSystem.html">File System Indirect</a></li>
-                        <li><a class="dropdown-item" href="SSM/FileSystemMulti.html">File System Dindirect</a></li>
-                        <li><a class="dropdown-item" href="SSSize/FileSystemSize.html">File System Size</a></li>
-                    </ul>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link active" href="MMAP/Mmap.html">MMAP</a>
-                </li>
+      <a class="navbar-brand" href="#"></a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarContent">
+        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+          <!-- File System Dropdown -->
+          <li class="nav-item">
+            <a class="nav-link" href="../index.html">Virtual Memory</a>
+          </li>
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" id="fileSystemDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+              File System
+            </a>
+            <ul class="dropdown-menu" aria-labelledby="fileSystemDropdown">
+              <li><a class="dropdown-item" href="../SS/FileSystem.html">File System Indirect</a></li>
+              <li><a class="dropdown-item" href="../SSM/FileSystemMulti.html">File System Dindirect</a></li>
+              <li><a class="dropdown-item" href="../SSSize/FileSystemSize.html">File System Size</a></li>
             </ul>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="../MMAP/Mmap.html">MMAP</a>
+          </li>
+        </ul>
+        <!-- Language selector -->
+        <div class="navbar-nav ms-auto">
+          <div class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle" href="#" id="languageDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                  <span id="currentLanguage">English</span>
+              </a>
+              <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="languageDropdown">
+                  <li><a class="dropdown-item" href="#" onclick="changeLanguage('en')">English</a></li>
+                  <li><a class="dropdown-item" href="#" onclick="changeLanguage('sk')">Slovenčina</a></li>
+              </ul>
+          </div>
         </div>
+      </div>
     </div>
   </nav>
+
 
   <div class="container diagram-section">
 
