@@ -1,0 +1,43 @@
+{
+  "nav": {
+    "virtualMemory": "Virtual Memory",
+    "fileSystem": "File System",
+    "fileSystemIndirect": "File System Indirect",
+    "fileSystemDindirect": "File System Double Indirect",
+    "fileSystemSize": "File System Size",
+    "mmap": "MMAP"
+  },
+  "legend": {
+    "title": "Glossary",
+    "gcb": "Global Block Number - Block number on disk",
+    "lcb": "Local Block Number - Read more about local block numbers in our documentation",
+    "gcbShort": "GBN",
+    "lcbShort": "LBN"
+  },
+  "dinode": {
+    "title": "Dinode",
+    "type": "type",
+    "major": "major",
+    "minor": "minor",
+    "nlink": "nlink",
+    "size": "size",
+    "address": "address",
+    "addressIndirect": "address 13 indirect"
+  },
+  "indirectBlock": {
+    "title": "Indirect Block"
+  },
+  "data": "data",
+  "tableHeaders": {
+    "GCB": "GBN",
+    "LCB": "LBN"
+  },
+  "legendItems": {
+    "GCB": "Global Block Number",
+    "LCB": "Local Block Number"
+  },
+  "glossary": {
+    "GCB": "Global Block Number - Index of the block within the file.",
+    "LCB": "Local Block Number - Index of the file block within the indirect block."
+  }
+}

@@ -21,45 +21,57 @@
 
   <nav class="navbar navbar-expand-lg navbar-light bg-light">
     <div class="container-fluid">
-        <a class="navbar-brand" href="#">File System</a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarContent">
-            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                <!-- File System Dropdown -->
-                <li class="nav-item">
-                  <a class="nav-link" href="../index.html">Virtual Memory</a>
-                </li>
-                <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" id="fileSystemDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                        File System
-                    </a>
-                    <ul class="dropdown-menu" aria-labelledby="fileSystemDropdown">
-                        <li><a class="dropdown-item" href="../SS/FileSystem.html">File System Indirect</a></li>
-                        <li><a class="dropdown-item" href="../SSM/FileSystemMulti.html">File System Dindirect</a></li>
-                        <li><a class="dropdown-item" href="../SSSize/FileSystemSize.html">File System Size</a></li>
-                    </ul>
-                </li>
-                <li class="nav-item">
-                  <a class="nav-link active" href="../MMAP/Mmap.html">MMAP</a>
-                </li>
+      <a class="navbar-brand" href="#"></a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarContent">
+        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+          <!-- File System Dropdown -->
+          <li class="nav-item">
+            <a class="nav-link" href="../index.html">Virtual Memory</a>
+          </li>
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" id="fileSystemDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+              File System
+            </a>
+            <ul class="dropdown-menu" aria-labelledby="fileSystemDropdown">
+              <li><a class="dropdown-item" href="../SS/FileSystem.html">File System Indirect</a></li>
+              <li><a class="dropdown-item" href="../SSM/FileSystemMulti.html">File System Dindirect</a></li>
+              <li><a class="dropdown-item" href="../SSSize/FileSystemSize.html">File System Size</a></li>
             </ul>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="../MMAP/Mmap.html">MMAP</a>
+          </li>
+        </ul>
+        <!-- Language selector -->
+        <div class="navbar-nav ms-auto">
+          <div class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle" href="#" id="languageDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                  <span id="currentLanguage">English</span>
+              </a>
+              <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="languageDropdown">
+                  <li><a class="dropdown-item" href="#" onclick="changeLanguage('en')">English</a></li>
+                  <li><a class="dropdown-item" href="#" onclick="changeLanguage('sk')">Slovenčina</a></li>
+              </ul>
+          </div>
         </div>
+      </div>
     </div>
   </nav>
 
   <!-- Legend/Glossary dropdown in top right corner -->
   <div class="legend-container">
     <button class="btn btn-sm btn-outline-primary legend-toggle" type="button" data-bs-toggle="collapse" data-bs-target="#legendContent" aria-expanded="false" aria-controls="legendContent">
-      <i class="bi bi-info-circle"></i> Legenda
+      <i class="bi bi-info-circle"></i> Legend
     </button>
     <div class="collapse legend-content" id="legendContent">
       <div class="card card-body">
-        <h6 class="card-title">Legenda</h6>
+        <h6 class="card-title">Legend</h6>
         <ul class="list-unstyled mb-0">
-          <li><strong>GČB</strong> - Globálne Číslo Bloku (Global Block Number)</li>
-          <li><strong>LČB</strong> - Lokálne Číslo Bloku (Local Block Number)</li>
+          <li><strong>GBN</strong> - Global Block Number - Block number on disk</li>
+          <li><strong>LBN</strong> - Local Block Number - Read more about local block numbers in our documentation</li>
         </ul>
       </div>
     </div>
@@ -76,12 +88,14 @@
         <h5 class="mb-3 text-primary fw-bold">Dinode</h5>
         <div class="table-responsive">
           <table class="table table-hover table-bordered table-striped" style="max-width: 300px">
-            <!-- <thead>
+            <thead>
               <tr class="text-center bg-primary text-white">
-                <th>Field</th>
-                <th>Value</th>
+                <th></th>
+                <th class="col-4" data-bs-toggle="tooltip" data-bs-placement="top" title="Global Block Number - Block number on disk">
+                  <span id="dinode-gcb-header">GBN</span> <i class="bi bi-info-circle-fill text-white-50 ms-1"></i>
+                </th>
               </tr>
-            </thead> -->
+            </thead>
             <tbody>
               <tr id="typeRow" class="text-center"><td class="fw-medium">type</td><td></td></tr>
               <tr id="majorRow" class="text-center"><td class="fw-medium">major</td><td></td></tr>
@@ -90,20 +104,20 @@
               <tr id="sizeRow" class="text-center"><td class="fw-medium">size</td><td></td></tr>
               <tr id="addr1Row" class="text-center highlight-row">
                 <td class="fw-medium">address 1</td>
-                <td class="col-1 text-primary">0</td>
+                <td class="col-4 text-primary">0</td>
               </tr>
               <tr id="addr2Row" class="text-center">
                 <td class="fw-medium">address 2</td>
-                <td class="col-1 text-primary">1</td>
+                <td class="col-4 text-primary">1</td>
               </tr>
               <tr class="text-center"><td>...</td><td>...</td></tr>
               <tr id="addr12Row" class="text-center">
                 <td class="fw-medium">address 12</td>
-                <td class="col-1 text-primary">11</td>
+                <td class="col-4 text-primary">11</td>
               </tr>
               <tr id="indirectRow" class="text-center">
                 <td class="fw-medium">address 13 indirect</td>
-                <td class="col-1 text-primary">12</td>
+                <td class="col-4 text-primary">12</td>
               </tr>
             </tbody>
           </table>
@@ -117,11 +131,11 @@
           <table class="table table-hover table-bordered table-striped" style="max-width: 300px">
             <thead>
               <tr class="text-center bg-primary text-white">
-                <th class="col-3" data-bs-toggle="tooltip" data-bs-placement="top" title="Globálne Číslo Bloku - Číslo bloku na disku">
-                  GČB <i class="bi bi-info-circle-fill text-white-50 ms-1"></i>
+                <th class="col-4" data-bs-toggle="tooltip" data-bs-placement="top" title="Global Block Number - Block number on disk">
+                  <span id="gcb-header">GBN</span> <i class="bi bi-info-circle-fill text-white-50 ms-1"></i>
                 </th>
-                <th class="col-4" data-bs-toggle="tooltip" data-bs-placement="top" title="Lokálne Číslo Bloku - Prečítajte si viac o lokálnych číslach blokov v našej &lt;a href='https://en.wikipedia.org/wiki/File_system' target='_blank'&gt;dokumentácii&lt;/a&gt;">
-                  LČB <i class="bi bi-info-circle-fill text-white-50 ms-1"></i>
+                <th class="col-4" data-bs-toggle="tooltip" data-bs-placement="top" title="Local Block Number - Read more about local block numbers in our documentation">
+                  <span id="lcb-header">LBN</span> <i class="bi bi-info-circle-fill text-white-50 ms-1"></i>
                 </th>
                 <th></th>
               </tr>

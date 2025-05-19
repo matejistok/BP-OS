@@ -41,16 +41,12 @@ input[type="submit"], input[type="button"],
     background-color: #ffffff;
     box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075); /* Bootstrap table box shadow */
   }
-  /* So that p5 canvas can sit behind everything */
+  /* p5 canvas can sit behind everything */
   #arrowCanvas {
     position: absolute;
     top: 0;
     left: 0;
-    z-index: 0; /* behind the tables and blocks */
-  }
-
-  .highlight {
-    background-color: yellow; /* Change this to your desired highlight color */
+    z-index: 0; 
   }
   
   /* Enhanced hover effect with transition */
@@ -214,7 +210,7 @@ input[type="submit"], input[type="button"],
     }
   }
 
-  /* Legend styling */
+  /* glossary styling */
   .legend-container {
     position: fixed;
     top: 70px;
@@ -262,3 +258,35 @@ input[type="submit"], input[type="button"],
       max-width: 250px;
     }
   }
+
+  /* Language selector styles */
+#languageDropdown {
+  cursor: pointer;
+  color: #333;
+  font-weight: 500;
+}
+
+.dropdown-menu-end {
+  right: 0;
+  left: auto;
+}
+
+/* Hover effect for language options */
+.dropdown-item:hover {
+  background-color: #f0f0f0;
+}
+
+/* Ensure the language dropdown appears in front of the glossary */
+.navbar .dropdown-menu {
+  z-index: 1100;
+}
+
+/* Ensure columns have consistent width */
+.col-4.text-primary {
+  width: 40%;
+}
+
+/* Make sure the table maintains its structure */
+.table-responsive table {
+  table-layout: fixed;
+}

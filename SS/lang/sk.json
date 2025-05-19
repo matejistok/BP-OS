@@ -1,0 +1,43 @@
+{
+  "nav": {
+    "virtualMemory": "Virtuálna pamäť",
+    "fileSystem": "Súborový systém",
+    "fileSystemIndirect": "Súborový systém nepriamy",
+    "fileSystemDindirect": "Súborový systém dvojito nepriamy",
+    "fileSystemSize": "Veľkosť súborového systému",
+    "mmap": "MMAP"
+  },
+  "legend": {
+    "title": "Legenda",
+    "gcb": "Globálne Číslo Bloku - Číslo bloku na disku",
+    "lcb": "Lokálne Číslo Bloku - Prečítajte si viac o lokálnych číslach blokov v našej dokumentácii",
+    "gcbShort": "GČB",
+    "lcbShort": "LČB"
+  },
+  "dinode": {
+    "title": "Dinode",
+    "type": "type",
+    "major": "major",
+    "minor": "minor",
+    "nlink": "nlink",
+    "size": "size",
+    "address": "adresa",
+    "addressIndirect": "adresa 13 nepriama"
+  },
+  "indirectBlock": {
+    "title": "Nepriamy Blok"
+  },
+  "data": "dáta",
+  "tableHeaders": {
+    "GCB": "GČB",
+    "LCB": "LČB"
+  },
+  "legendItems": {
+    "GCB": "Globálne Číslo Bloku",
+    "LCB": "Lokálne Číslo Bloku"
+  },
+  "glossary": {
+    "GCB": "Globálne Číslo Bloku - Index bloku v rámci súboru.",
+    "LCB": "Lokálne Číslo Bloku - Index bloku súboru v rámci nepriameho bloku."
+  }
+}
