@@ -140,17 +140,25 @@ function updateUILanguage() {
   // Skip if translations aren't loaded yet
   if (!translations[currentLanguage]) return;
   
-  // Update navbar elements
-  document.querySelector('.navbar-brand').textContent = translations[currentLanguage].nav.title;
-  document.querySelector('a.nav-link[href="index.html"]').textContent = translations[currentLanguage].nav.virtualMemory;
-  document.querySelector('.nav-link.dropdown-toggle').textContent = translations[currentLanguage].nav.fileSystem;
+  // Make sure all DOM elements exist before trying to update them
+  const navbarBrand = document.querySelector('.navbar-brand');
+  const virtualMemoryLink = document.querySelector('a.nav-link[href="index.html"]');
+  const fileSystemDropdown = document.querySelector('.nav-link.dropdown-toggle');
+  const mmapLink = document.querySelector('a.nav-link[href="MMAP/Mmap.html"]');
+  
+  // Check if elements exist before modifying them
+  if (navbarBrand) navbarBrand.textContent = translations[currentLanguage].nav.title;
+  if (virtualMemoryLink) virtualMemoryLink.textContent = translations[currentLanguage].nav.virtualMemory;
+  if (fileSystemDropdown) fileSystemDropdown.textContent = translations[currentLanguage].nav.fileSystem;
     
   const dropdownItems = document.querySelectorAll('.dropdown-item');
-  dropdownItems[0].textContent = translations[currentLanguage].nav.fileSystemIndirect;
-  dropdownItems[1].textContent = translations[currentLanguage].nav.fileSystemDindirect;
-  dropdownItems[2].textContent = translations[currentLanguage].nav.fileSystemSize;
+  if (dropdownItems.length >= 3) {
+    dropdownItems[0].textContent = translations[currentLanguage].nav.fileSystemIndirect;
+    dropdownItems[1].textContent = translations[currentLanguage].nav.fileSystemDindirect;
+    dropdownItems[2].textContent = translations[currentLanguage].nav.fileSystemSize;
+  }
     
-  document.querySelector('a.nav-link[href="MMAP/Mmap.html"]').textContent = translations[currentLanguage].nav.mmap;
+  if (mmapLink) mmapLink.textContent = translations[currentLanguage].nav.mmap;
   
   // Update buttons
   for (let button of interfaceButtons) {
