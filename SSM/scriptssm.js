@@ -299,7 +299,7 @@ function setup() {
     end: "indBlockAddr1", 
     offsetStartX: 0, 
     offsetStartY: 0, 
-    offsetEndX: -150, 
+    offsetEndX: -200, 
     offsetEndY: 0 
   });
   
@@ -416,7 +416,7 @@ function setup() {
           end: "indBlock2Addr1", 
           offsetStartX: 0, 
           offsetStartY: 0, 
-          offsetEndX: -150, 
+          offsetEndX: -200, 
           offsetEndY: 0 
         });
         
@@ -466,7 +466,7 @@ function setup() {
           end: "indBlock2Addr1", 
           offsetStartX: 0, 
           offsetStartY: 0, 
-          offsetEndX: -150, 
+          offsetEndX: -200, 
           offsetEndY: 0 
         });
         
@@ -516,7 +516,7 @@ function setup() {
           end: "indBlock2Addr1", 
           offsetStartX: 0, 
           offsetStartY: 0, 
-          offsetEndX: -150, 
+          offsetEndX: -200, 
           offsetEndY: 0 
         });
         
