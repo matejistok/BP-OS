@@ -108,6 +108,10 @@ function updateUILanguage() {
     updateLengthInputField();
     updateFdInputField();
     document.querySelector('.map-button').textContent = translations[currentLanguage].mmapFunction.mapButton;
+
+    // Update PROT tooltip
+    const protTooltip = document.querySelector('#protectionOptions').closest('.tooltip-container').querySelector('.tooltip-icon');
+    protTooltip.setAttribute('data-tooltip', translations[currentLanguage].mmapFunction.protTooltip);
     
     // Update PROT options
     const protOptions = document.querySelectorAll('#protDropdown div');
@@ -115,11 +119,18 @@ function updateUILanguage() {
     protOptions[1].textContent = translations[currentLanguage].protectionOptions.readOnly;
     protOptions[2].textContent = translations[currentLanguage].protectionOptions.writeOnly;
     protOptions[3].textContent = translations[currentLanguage].protectionOptions.readWrite;
+
+    // Update FLAGS tooltip
+    const flagsTooltip = document.querySelector('#flagsOptions').closest('.tooltip-container').querySelector('.tooltip-icon');
+    flagsTooltip.setAttribute('data-tooltip', translations[currentLanguage].mmapFunction.flagsTooltip);
     
     // Update FLAG options
     const flagOptions = document.querySelectorAll('#flagsDropdown div');
     flagOptions[0].textContent = translations[currentLanguage].flagOptions.shared;
     flagOptions[1].textContent = translations[currentLanguage].flagOptions.private;
+
+    const fdTooltip = document.querySelector('#fdInput').closest('.tooltip-container').querySelector('.tooltip-icon');
+    fdTooltip.setAttribute('data-tooltip', translations[currentLanguage].mmapFunction.fdTooltip);
     
     // Update offset tooltip
     const offsetTooltip = document.querySelector('input#offsetInput').closest('.tooltip-container').querySelector('.tooltip-icon');
