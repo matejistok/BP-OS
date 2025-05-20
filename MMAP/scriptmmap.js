@@ -219,6 +219,22 @@ function showError(message) {
                     break;
                 }
             }
+            
+            // New handling for error messages with additional instructions
+            // Check if the message starts with the same text as a known error
+            const englishError = translations['en'].errors[key];
+            if (message.startsWith(englishError.split('\n')[0])) {
+                // Found a potential match at the beginning
+                // Replace the base error message with its translation
+                // and preserve any additional instructions
+                const additionalText = message.substring(englishError.length);
+                if (additionalText) {
+                    // If there's additional text beyond the known error message, 
+                    // translate the base message and append the additional text
+                    translatedMessage = errorText + additionalText;
+                    break;
+                }
+            }
         }
     }
     
@@ -344,7 +360,13 @@ const tooltipManager = {
         // Find any existing tooltip text element and remove it
         const existingTooltip = container.querySelector('.tooltip-text');
         if (existingTooltip) {
-            container.removeChild(existingTooltip);
+            // Check if the tooltip is a direct child of the container before removing
+            if (existingTooltip.parentNode === container) {
+                container.removeChild(existingTooltip);
+            } else if (existingTooltip.parentNode) {
+                // If it exists but is not a direct child, remove it from its parent
+                existingTooltip.parentNode.removeChild(existingTooltip);
+            }
         }
         
         // Create tooltip text element
@@ -584,7 +606,7 @@ function executeMmap() {
     if (fdEntry.mode === 'O_RDONLY' && 
         flags === 'MAP_SHARED' && 
         protection === 'PROT_READ|PROT_WRITE') {
-        showError('Invalid combination: Cannot map a read-only file with MAP_SHARED and PROT_READ|PROT_WRITE permissions.\nChanges would be written back to a read-only file.');
+        showError(translations['en'].errors.invalidCombo);
         return;
     }
     
@@ -1114,7 +1136,7 @@ function setupP5Canvas() {
                     }
                     
                     // Draw all page boundary lines with consistent styling
-                    p.stroke(255); // White color for all page boundaries
+                    p.stroke(128); // White color for all page boundaries
                     p.strokeWeight(2); // Consistent stroke weight
                     
                     // Draw vertical lines for all page boundaries in the file
@@ -1165,10 +1187,10 @@ function setupP5Canvas() {
                             p.line(endX, 75, endX, fdYPosition);
                             
                             // Then draw a horizontal line to the appropriate position in the file
-                            p.line(endX, fdYPosition, lowerPoint, fdYPosition);
+                            p.line(lowerPoint, fdYPosition, lowerPoint, fdYPosition);
                         } else {
                             // For other cases, draw a direct line
-                            p.line(endX, 75, lowerPoint, fdYPosition);
+                            p.line(lowerPoint, 75, lowerPoint, fdYPosition);
                         }
                     }
                     

@@ -4,7 +4,7 @@
     "fileSystem": "File System",
     "fileSystemIndirect": "File System Indirect",
     "fileSystemDindirect": "File System Double Indirect",
-    "fileSystemSize": "File System Size",
+    "fileSystemSize": "Maximum File Size",
     "mmap": "MMAP"
   },
   "help": "Help",

@@ -119,8 +119,10 @@ input[type="submit"], input[type="button"],
   /* Table styling enhancements */
   .table-responsive {
     overflow-x: auto;
-    border-radius: 0; /* Removed border radius */
-    box-shadow: none; /* Removed shadow completely */
+    border-radius: 0;
+    box-shadow: none;
+    margin-bottom: 30px;
+    padding-bottom: 15px;
   }
 
   .table {

@@ -4,7 +4,7 @@
     "fileSystem": "Súborový systém",
     "fileSystemIndirect": "Súborový systém nepriamy",
     "fileSystemDindirect": "Súborový systém dvojito nepriamy",
-    "fileSystemSize": "Veľkosť súborového systému",
+    "fileSystemSize": "Maximálna veľkosť súboru v systéme",
     "mmap": "MMAP"
   },
   "mmapFunction": {
@@ -44,7 +44,7 @@
     "mode": "REŽIM",
     "fd": "FD",
     "size": "VEĽKOSŤ",
-    "mapped": "NAMAPOVANÝ?"
+    "mapped": "MAPOVANÝ?"
   },
   "vma": {
     "title": "Štruktúry VMA",

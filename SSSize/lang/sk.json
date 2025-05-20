@@ -4,7 +4,7 @@
     "fileSystem": "Súborový systém",
     "fileSystemIndirect": "Súborový systém nepriamy",
     "fileSystemDindirect": "Súborový systém dvojito nepriamy",
-    "fileSystemSize": "Veľkosť súborového systému",
+    "fileSystemSize": "Maximálna veľkosť súboru v systéme",
     "mmap": "MMAP"
   },
   "blockSizeLabel": "Veľkosť Bloku (musí byť deliteľná ",
@@ -16,7 +16,7 @@
   "storageBlocks": "Bloky v štruktúre dinode",
   "addBlock": "Pridať Blok",
   "formula": "Vzorec",
-  "maxFileSize": "Maximálna Veľkosť Súborového Systému",
+  "maxFileSize": "Maximálna veľkosť súboru",
   "priamy": "Priamy",
   "nepriamy": "Nepriamy",
   "dnepriamy": "Dvojito nepriamy",

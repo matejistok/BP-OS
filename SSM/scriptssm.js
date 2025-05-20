@@ -121,17 +121,24 @@ function updateUILanguage() {
     if (headerId) {
       if (headerId.includes('gcb')) {
         tooltip.setAttribute('data-bs-original-title', translations[currentLanguage].glossary.GCB);
-      } else if (headerId.includes('lcb')) {
+      } else if (headerId === 'lcb-header') { 
+        // First LCB header - use LCB2 tooltip
+        tooltip.setAttribute('data-bs-original-title', translations[currentLanguage].glossary.LCB2);
+      } else if (headerId === 'lcb-header2') {
+        // Second LCB header - use LCB tooltip
         tooltip.setAttribute('data-bs-original-title', translations[currentLanguage].glossary.LCB);
       } else if (headerId.includes('dni')) {
         tooltip.setAttribute('data-bs-original-title', translations[currentLanguage].glossary.DNI);
-      } else if (headerId.includes('ni')) {
+      } else if (headerId === 'ni-header') {
         tooltip.setAttribute('data-bs-original-title', translations[currentLanguage].glossary.NI);
+      } else if (headerId === 'ni-header2') {
+        // Second NI header - use NI2 tooltip
+        tooltip.setAttribute('data-bs-original-title', translations[currentLanguage].glossary.NI2);
       }
     }
   });
   
-  // Update legend items
+  // Update legend items 
   const legendItems = document.querySelectorAll('.legend-content ul li');
   legendItems.forEach(item => {
     const strong = item.querySelector('strong');
@@ -145,6 +152,10 @@ function updateUILanguage() {
         item.innerHTML = `<strong>${translations[currentLanguage].tableHeaders.DNI}</strong> - ${translations[currentLanguage].legendItems.DNI}`;
       } else if (key === 'NI' || key === 'II') {
         item.innerHTML = `<strong>${translations[currentLanguage].tableHeaders.NI}</strong> - ${translations[currentLanguage].legendItems.NI}`;
+      } else if (key === 'NDIRECT') {
+        item.innerHTML = `<strong>NDIRECT</strong> - ${translations[currentLanguage].legendItems.NDIRECT}`;
+      } else if (key === 'NINDIRECT') {
+        item.innerHTML = `<strong>NINDIRECT</strong> - ${translations[currentLanguage].legendItems.NINDIRECT}`;
       }
     }
   });
@@ -155,7 +166,7 @@ function updateUILanguage() {
     'gcb-header2': 'GCB',
     'gcb-header3': 'GCB',
     'gcb-header4': 'GCB',
-    'lcb-header': 'LCB',
+    'lcb-header': 'LCB1',
     'lcb-header2': 'LCB',
     'dni-header': 'DNI',
     'ni-header': 'NI',
@@ -299,7 +310,7 @@ function setup() {
     end: "indBlockAddr1", 
     offsetStartX: 0, 
     offsetStartY: 0, 
-    offsetEndX: -200, 
+    offsetEndX: -150, 
     offsetEndY: 0 
   });
   
@@ -311,6 +322,15 @@ function setup() {
     offsetEndX: 100, 
     offsetEndY: -20 
   });
+
+  indirectArrows.push({
+    start: "DAddr1Row", 
+    end: "indBlock2Addr1", 
+    offsetStartX: 0, 
+    offsetStartY: 0, 
+    offsetEndX: -150, 
+    offsetEndY: 0
+  });
   
   indirectArrowsVisible = true;
   
@@ -319,6 +339,7 @@ function setup() {
   highlightRow("indBlockAddr1", true);
   highlightRow("dIndirectRow", true);
   highlightRow("DAddr1Row", true);
+   highlightRow("indBlock2Addr1", true); 
 
   if (row1) {
     console.log("addr1Row element found");
@@ -416,7 +437,7 @@ function setup() {
           end: "indBlock2Addr1", 
           offsetStartX: 0, 
           offsetStartY: 0, 
-          offsetEndX: -200, 
+          offsetEndX: -150, 
           offsetEndY: 0 
         });
         
@@ -466,7 +487,7 @@ function setup() {
           end: "indBlock2Addr1", 
           offsetStartX: 0, 
           offsetStartY: 0, 
-          offsetEndX: -200, 
+          offsetEndX: -150, 
           offsetEndY: 0 
         });
         
@@ -477,7 +498,7 @@ function setup() {
         document.getElementById("indBlock2Addr256").children[0].innerText = "779";
         document.getElementById("indBlock2Addr1").children[1].innerText = "256";
         document.getElementById("indBlock2Addr2").children[1].innerText = "257";
-        document.getElementById("indBlock2Addr256").children[1].innerText = "258";
+        document.getElementById("indBlock2Addr256").children[1].innerText = "512";
       }
       
       indirectArrowsVisible = indirectArrows.length > 0;
@@ -516,7 +537,7 @@ function setup() {
           end: "indBlock2Addr1", 
           offsetStartX: 0, 
           offsetStartY: 0, 
-          offsetEndX: -200, 
+          offsetEndX: -150, 
           offsetEndY: 0 
         });
         

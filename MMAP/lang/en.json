@@ -4,7 +4,7 @@
     "fileSystem": "File System",
     "fileSystemIndirect": "File System Indirect",
     "fileSystemDindirect": "File System Double Indirect",
-    "fileSystemSize": "File System Size",
+    "fileSystemSize": "Maximum File Size",
     "mmap": "MMAP"
   },
   "mmapFunction": {
@@ -58,7 +58,7 @@
   },
   "errors": {
     "selectFd": "Please select a file descriptor from the FD table.",
-    "invalidCombo": "Invalid combination: Cannot map a read-only file with MAP_SHARED and PROT_READ|PROT_WRITE permissions.\nChanges would be written back to a read-only file.",
+    "invalidCombo": "Invalid combination: Cannot map a read-only file with MAP_SHARED and PROT_READ|PROT_WRITE permissions.\nChanges would be written back to a read-only file.\n\nChange flags to MAP_PRIVATE.",
     "negativeOffset": "Offset cannot be negative.",
     "offsetExceedsSize": "Offset cannot exceed file size (%s)",
     "negativeAddress": "Effective address (addr - offset) cannot be negative. Please use a smaller offset or a larger address.",

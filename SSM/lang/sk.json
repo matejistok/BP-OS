@@ -7,21 +7,28 @@
     "fileSystem": "Súborový systém",
     "fileSystemIndirect": "Súborový systém nepriamy",
     "fileSystemDindirect": "Súborový systém dvojito nepriamy",
-    "fileSystemSize": "Veľkosť súborového systému",
+    "fileSystemSize": "Maximálna veľkosť súboru v systéme",
     "mmap": "MMAP"
   },
   "legend": "Legenda",
   "glossary": {
     "GCB": "Globálne Číslo Bloku - Index bloku v rámci súboru.",
-    "LCB": "Lokálne Číslo Bloku = NI%256 - Relatívna pozícia v rámci nepriameho bloku. Používa sa na rýchle indexovanie v rámci jedného nepriameho bloku.",
+    "LCB": "Lokálne Číslo Bloku = NI%256 - Index bloku súboru v rámci nepriameho bloku",
     "DNI": "Dvojito Nepriamy Index = NI/256 - Poradie položky v tabuľke dvojito nepriamych blokov. Určuje, ktorý blok nepriamych indexov sa má použiť.",
-    "NI": "Nepriamy Index - Súhrnný index v rámci celej štruktúry súborového systému. Začína od nuly a čísluje všetky dátové bloky."
+    "LCB2": "Lokálne Číslo Bloku = Index bloku súboru v rámci nepriameho bloku",
+    "NI": "Nepriamy Index = GČB − NDIRECT(11) − NINDIRECT(256). Inými slovami, indexovanie blokov v rámci dvojito nempriameho bloku.",
+    "NI2": "Indexovanie blokov v ramci dvojito nepriameho bloku",
+    "NDIRECT": "Počet priamych blokov(11)",
+    "NINDIRECT": "Počet priamych blokov na ktoré odkazuje nepriamy blok(256)"
   },
   "legendItems": {
     "GCB": "Globálne Číslo Bloku",
     "LCB": "Lokálne Číslo Bloku",
     "DNI": "Dvojito nepriamy index",
-    "NI": "Nepriamy Index"
+    "NI": "Nepriamy Index",
+    "NI2": "indexing blocks within the double indirect block",
+    "NDIRECT": "Počet priamych blokov(11)",
+    "NINDIRECT": "Počet priamych blokov na ktoré odkazuje nepriamy blok(256)"
   },
   "dinode": "Dinode",
   "doubleIndirectBlock": "Dvojitý Nepriamy Blok",
@@ -38,6 +45,7 @@
     "GCB": "GČB",
     "LCB": "LČB",
     "DNI": "DNI",
-    "NI": "NI"
+    "NI": "NI",
+    "LCB1": "LČB"
   }
 }
