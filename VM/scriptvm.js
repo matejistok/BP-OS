@@ -142,7 +142,7 @@ function updateUILanguage() {
   
   // Update navbar elements
   document.querySelector('.navbar-brand').textContent = translations[currentLanguage].nav.title;
-  document.querySelector('a.nav-link[href="../index.html"]').textContent = translations[currentLanguage].nav.virtualMemory;
+  document.querySelector('a.nav-link[href="index.html"]').textContent = translations[currentLanguage].nav.virtualMemory;
   document.querySelector('.nav-link.dropdown-toggle').textContent = translations[currentLanguage].nav.fileSystem;
     
   const dropdownItems = document.querySelectorAll('.dropdown-item');
@@ -150,7 +150,7 @@ function updateUILanguage() {
   dropdownItems[1].textContent = translations[currentLanguage].nav.fileSystemDindirect;
   dropdownItems[2].textContent = translations[currentLanguage].nav.fileSystemSize;
     
-  document.querySelector('a.nav-link[href="../MMAP/Mmap.html"]').textContent = translations[currentLanguage].nav.mmap;
+  document.querySelector('a.nav-link[href="MMAP/Mmap.html"]').textContent = translations[currentLanguage].nav.mmap;
   
   // Update buttons
   for (let button of interfaceButtons) {
