@@ -58,7 +58,7 @@
   },
   "errors": {
     "selectFd": "Prosím, vyberte deskriptor súboru z tabuľky FD.",
-    "invalidCombo": "Neplatná kombinácia: Nemožno mapovať súbor len na čítanie s príznakmi MAP_SHARED a PROT_READ|PROT_WRITE.\nZmeny by sa zapisovali späť do súboru len na čítanie.",
+    "invalidCombo": "Neplatná kombinácia: Nemožno mapovať súbor len na čítanie s príznakmi MAP_SHARED a PROT_READ|PROT_WRITE.\nZmeny by sa zapisovali späť do súboru len na čítanie.\n\nZmeňte príznaky na MAP_PRIVATE.",
     "negativeOffset": "Offset nemôže byť záporný.",
     "offsetExceedsSize": "Offset nemôže presiahnuť veľkosť súboru (%s)",
     "negativeAddress": "Efektívna adresa (addr - offset) nemôže byť záporná. Použite menší offset alebo väčšiu adresu.",
