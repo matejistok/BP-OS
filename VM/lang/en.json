@@ -29,6 +29,7 @@
   "valueErrorNumber": "Value must be a number from 0 to 9.",
   "valueErrorRange": "Value must be a number from 0 to",
   "valueErrorHex": "Value must be a valid hexadecimal number.",
+  "valueErrorHexRange": "Value must be a hexadecimal number not exceeding FFFF.",
   "l0DependencyError": "L0 can be size 0 only when both L2 and L1 are size 0.",
   "l1DependencyError": "L1 can be size 0 only when L2 is size 0.",
   "size": "Size"

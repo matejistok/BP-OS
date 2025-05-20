@@ -259,19 +259,19 @@ function draw() {
     editableElements.PPN1 = '';
     editableElements.L2Index = '';
   } else if (editableElements.L2 !== '0' && editableElements.L2Index === '') {
-    editableElements.PPN1 = '1A2B';
+    editableElements.PPN1 = '0x1A2B'; // Add "0x" prefix
   }
   if (editableElements.L1 === '0') {
     editableElements.PPN2 = '';
     editableElements.L1Index = '';
   } else if (editableElements.L1 !== '0' && editableElements.L1Index === '') {
-    editableElements.PPN2 = '3C4D';
+    editableElements.PPN2 = '0x3C4D'; // Add "0x" prefix
   }
   if (editableElements.L0 === '0') {
     editableElements.PPN3 = '';
     editableElements.L0Index = '';
   } else if (editableElements.L0 !== '0' && editableElements.L0Index === '') {
-    editableElements.PPN3 = '5E6F';
+    editableElements.PPN3 = '0x5E6F'; // Add "0x" prefix
   }
 
   // Update Memory value based on L2, L1, and L0
@@ -1131,104 +1131,134 @@ function mousePressed() {
         inputBox.elt.select(); // Automatically select the content
       }, 10);
 
-      // An event listener to handle the Enter key press
-      inputBox.elt.addEventListener('keydown', (function(inputBox, element) {
-        return function(event) {
-          if (event.key === 'Enter') {
-            let newValue = inputBox.value();
-            if (['L0', 'L1', 'L2'].includes(element.key)) {
-              if (/^[0-9]$/.test(newValue)) {
-                // Enforce hierarchy rules for page table levels
-                if (element.key === 'L0' && newValue === '0') {
-                  // L0 can be 0 only if both L2 and L1 are 0
-                  if (editableElements.L2 !== '0' || editableElements.L1 !== '0') {
-                    alert(translations[currentLanguage].l0DependencyError || 
-                          "L0 can be size 0 only when both L2 and L1 are size 0");
-                    inputBox.remove();
-                    redraw();
-                    return;
-                  }
-                } else if (element.key === 'L1' && newValue === '0') {
-                  // L1 can be 0 only if L2 is 0
-                  if (editableElements.L2 !== '0') {
-                    alert(translations[currentLanguage].l1DependencyError || 
-                          "L1 can be size 0 only when L2 is size 0");
-                    inputBox.remove();
-                    redraw();
-                    return;
-                  }
-                } else if (element.key === 'L2' && newValue !== '0' && editableElements.L2 === '0') {
-                  // If L2 changes from 0 to non-zero, enforce L1 and L0 to be non-zero
-                  if (editableElements.L1 === '0') {
-                    editableElements.L1 = '9';
-                  }
-                  if (editableElements.L0 === '0') {
-                    editableElements.L0 = '9';
-                  }
-                }
-                
-                editableElements[element.key] = newValue;
-                
-                // Handle dependencies when setting to zero
-                if (element.key === 'L2' && newValue === '0') {
-                  // If L2 is set to 0, clear the L2Index
-                  editableElements.L2Index = '';
-                }
-                if (element.key === 'L1' && newValue === '0') {
-                  // If L1 is set to 0, clear the L1Index
-                  editableElements.L1Index = '';
-                }
-                if (element.key === 'L0' && newValue === '0') {
-                  // If L0 is set to 0, clear the L0Index
-                  editableElements.L0Index = '';
-                }
-                
-                if (element.key === 'L1' && editableElements.L2 === '0' && newValue !== '9') {
-                  l1Changed = true;
-                }
-              } else {
-                alert(translations[currentLanguage].valueErrorNumber);
+      // Function to save the input value
+      const saveValue = function(newValue) {
+        if (['L0', 'L1', 'L2'].includes(element.key)) {
+          if (/^[0-9]$/.test(newValue)) {
+            // Enforce hierarchy rules for page table levels
+            if (element.key === 'L0' && newValue === '0') {
+              // L0 can be 0 only if both L2 and L1 are 0
+              if (editableElements.L2 !== '0' || editableElements.L1 !== '0') {
+                alert(translations[currentLanguage].l0DependencyError || 
+                      "L0 can be size 0 only when both L2 and L1 are size 0");
+                inputBox.remove();
+                redraw();
+                return false;
               }
-            } else if (['L2Index', 'L1Index', 'L0Index'].includes(element.key)) {
-              const maxIndex = Math.pow(2, parseInt(editableElements[element.key.replace('Index', '')]));
-              if (/^[0-9]+$/.test(newValue) && parseInt(newValue) < maxIndex) {
-                editableElements[element.key] = newValue;
-              } else {
-                alert(`${translations[currentLanguage].valueErrorRange} ${maxIndex - 1}.`);
+            } else if (element.key === 'L1' && newValue === '0') {
+              // L1 can be 0 only if L2 is 0
+              if (editableElements.L2 !== '0') {
+                alert(translations[currentLanguage].l1DependencyError || 
+                      "L1 can be size 0 only when L2 is size 0");
+                inputBox.remove();
+                redraw();
+                return false;
               }
-            } else if (['PPN1', 'PPN2', 'PPN3', 'SATP'].includes(element.key)) {
-              if (/^[0-9a-fA-F]+$/.test(newValue)) {
-                editableElements[element.key] = '0x' + newValue.toUpperCase();
-              } else {
-                alert(translations[currentLanguage].valueErrorHex);
+            } else if (element.key === 'L2' && newValue !== '0' && editableElements.L2 === '0') {
+              // If L2 changes from 0 to non-zero, enforce L1 and L0 to be non-zero
+              if (editableElements.L1 === '0') {
+                editableElements.L1 = '9';
               }
-            } else if (element.key === 'Offset') {
-              if (/^[0-9a-fA-F]+$/.test(newValue)) {
-                // Convert to uppercase and ensure it doesn't exceed FFF (12 bits)
-                newValue = newValue.toUpperCase();
-                
-                // Check if the value exceeds FFF (12 bits)
-                if (parseInt(newValue, 16) > 0xFFF) {
-                  alert("Offset cannot exceed FFF (12 bits)");
-                } else {
-                  editableElements[element.key] = '0x' + newValue;
-                }
-              } else {
-                alert(translations[currentLanguage].valueErrorHex);
+              if (editableElements.L0 === '0') {
+                editableElements.L0 = '9';
               }
             }
+            
+            editableElements[element.key] = newValue;
+            
+            // Handle dependencies when setting to zero
+            if (element.key === 'L2' && newValue === '0') {
+              // If L2 is set to 0, clear the L2Index
+              editableElements.L2Index = '';
+            }
+            if (element.key === 'L1' && newValue === '0') {
+              // If L1 is set to 0, clear the L1Index
+              editableElements.L1Index = '';
+            }
+            if (element.key === 'L0' && newValue === '0') {
+              // If L0 is set to 0, clear the L0Index
+              editableElements.L0Index = '';
+            }
+            
+            if (element.key === 'L1' && editableElements.L2 === '0' && newValue !== '9') {
+              l1Changed = true;
+            }
+          } else {
+            alert(translations[currentLanguage].valueErrorNumber);
+            return false;
+          }
+        } else if (['L2Index', 'L1Index', 'L0Index'].includes(element.key)) {
+          const maxIndex = Math.pow(2, parseInt(editableElements[element.key.replace('Index', '')]));
+          if (/^[0-9]+$/.test(newValue) && parseInt(newValue) < maxIndex) {
+            editableElements[element.key] = newValue;
+          } else {
+            alert(`${translations[currentLanguage].valueErrorRange} ${maxIndex - 1}.`);
+            return false;
+          }
+        } else if (['PPN1', 'PPN2', 'PPN3', 'SATP'].includes(element.key)) {
+          if (/^[0-9a-fA-F]+$/.test(newValue)) {
+            // Check if the value exceeds FFFF (16 bits)
+            if (parseInt(newValue, 16) > 0xFFFF) {
+              alert(translations[currentLanguage].valueErrorHexRange || 
+                    "Value must be a hexadecimal number not exceeding FFFF.");
+              inputBox.remove();
+              redraw();
+              return false;
+            } else {
+              editableElements[element.key] = '0x' + newValue.toUpperCase();
+            }
+          } else {
+            alert(translations[currentLanguage].valueErrorHex);
             inputBox.remove();
             redraw();
+            return false;
           }
-        };
-      })(inputBox, element));
+        } else if (element.key === 'Offset') {
+          if (/^[0-9a-fA-F]+$/.test(newValue)) {
+            // Convert to uppercase and ensure it doesn't exceed FFF (12 bits)
+            newValue = newValue.toUpperCase();
+            
+            // Check if the value exceeds FFF (12 bits)
+            if (parseInt(newValue, 16) > 0xFFF) {
+              alert("Offset cannot exceed FFF (12 bits)");
+              inputBox.remove();
+              redraw();
+              return false;
+            } else {
+              editableElements[element.key] = '0x' + newValue;
+            }
+          } else {
+            alert(translations[currentLanguage].valueErrorHex);
+            inputBox.remove();
+            redraw();
+            return false;
+          }
+        }
+        return true;
+      };
+
+      // An event listener to handle the Enter key press
+      inputBox.elt.addEventListener('keydown', function(event) {
+        if (event.key === 'Enter') {
+          let newValue = inputBox.value();
+          const isValid = saveValue(newValue);
+          inputBox.remove();
+          if (isValid) {
+            redraw();
+          }
+        }
+      });
 
       // An event listener to handle clicks outside the input box
       document.addEventListener('mousedown', function handleClickOutside(event) {
         if (!inputBox.elt.contains(event.target)) {
+          let newValue = inputBox.value();
+          const isValid = saveValue(newValue);
           inputBox.remove();
-          activeElement = null;
-          redraw();
+          if (isValid) {
+            activeElement = null;
+            redraw();
+          }
           document.removeEventListener('mousedown', handleClickOutside);
         }
       });

@@ -1059,37 +1059,78 @@ function setupP5Canvas() {
                     if (mapping.offsetMultiplier > 0) {
                         // Calculate offset distance in pixels
                         const offsetDistance = mapping.offsetMultiplier * filePageWidth;
-                        
+
                         // Account for unmapped regions like we do for the rectangle width
                         const unmappedStartLength = mapping.unmappedStart || 0;
                         const unmappedEndLength = mapping.unmappedEnd || 0;
                         const totalUnmappedLength = unmappedStartLength + unmappedEndLength;
                         const unmappedPixels = (totalUnmappedLength / drawCache.visibleRange) * availableWidth;
-                        
+
                         // Use an adjustable variable for the calculation
                         let adjustedUnmappedPixels = unmappedPixels;
                         if(adjustedUnmappedPixels > offsetDistance) {
                             adjustedUnmappedPixels = offsetDistance;
                         }
-                        console.log(unmappedPixels, offsetDistance);
-                        // Calculate endpoint positions that account for both offset and unmapped regions
-                        const upperPoint = endX - offsetDistance + adjustedUnmappedPixels;
-                        const lowerPoint = endX - offsetDistance + adjustedUnmappedPixels;
 
-                        // Draw vertical line with adjusted endpoints
-                        p.line(upperPoint, 75, lowerPoint, fdYPosition);
+                        // Calculate endpoint positions that account for both offset and unmapped regions
+                        const upperPoint = endX;
+                        let lowerPoint;
+
+                        // Determine which connection point to use based on size relationships
+                        if (mapping.fileSize <= mapping.length) {
+                            // If file is smaller than mapping, connect to the file's end
+                            lowerPoint = fileVisStartX + expandedFileWidth;
+                        } 
+                        else if (mapping.offsetMultiplier * PGSIZE + mapping.length >= mapping.fileSize) {
+                            // If mapping with offset reaches or exceeds file end, connect to file end
+                            lowerPoint = fileVisStartX + expandedFileWidth;
+                        }
+                        else {
+                            // Otherwise, use the specific position calculated from offset and mapping length
+                            // This is the position where the mapping would end in the file visualization
+                            lowerPoint = fileVisStartX + filePageWidth + offsetDistance + (mapping.length / drawCache.visibleRange) * availableWidth;
+
+                            // If we have unmapped regions, adjust accordingly
+                            if (totalUnmappedLength > 0) {
+                                lowerPoint -= (adjustedUnmappedPixels / drawCache.visibleRange) * availableWidth;
+                            }
+                        }
+
+                        // Draw vertical line from the end of memory mapping down
+                        p.stroke(0, 0, 0, 100);
+                        p.strokeWeight(1);
+                        p.line(upperPoint, 75, upperPoint, fdYPosition);
+
+                        // Then draw horizontal line to the calculated position
+                        p.line(upperPoint, fdYPosition, lowerPoint, fdYPosition);
+
                     } else {
                         // If no offset, still account for unmapped regions
                         const unmappedStartLength = mapping.unmappedStart || 0;
                         const unmappedEndLength = mapping.unmappedEnd || 0;
                         const totalUnmappedLength = unmappedStartLength + unmappedEndLength;
                         const unmappedPixels = (totalUnmappedLength / drawCache.visibleRange) * availableWidth;
-                        
-                        // Adjust the endpoint to account for unmapped regions
-                        const lowerPoint = endX + unmappedPixels;
-                        
-                        // Draw vertical line with adjusted endpoint
-                        p.line(endX, 75, lowerPoint, fdYPosition);
+
+                        // Determine connection point based on size relationships
+                        let lowerPoint;
+
+                        if (mapping.fileSize <= mapping.length) {
+                            // If file is smaller than mapping, connect to the file's end
+                            lowerPoint = fileVisStartX + expandedFileWidth;
+                        } else {
+                            // Otherwise, connect to the position corresponding to mapping size
+                            // This works when file size is larger than mapping size
+                            const mappingEndInFile = fileVisStartX + filePageWidth + (mapping.length / drawCache.visibleRange) * availableWidth;
+                            lowerPoint = mappingEndInFile;
+                        }
+
+                        // Draw vertical line from the end of memory mapping down
+                        p.stroke(0, 0, 0, 100);
+                        p.strokeWeight(1);
+                        p.line(endX, 75, endX, fdYPosition);
+
+                        // Then draw horizontal line to the calculated position
+                        p.line(endX, fdYPosition, lowerPoint, fdYPosition);
                     }
                     
                     // Add address labels for memory mapping start and end

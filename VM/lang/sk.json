@@ -29,6 +29,7 @@
   "valueErrorNumber": "Hodnota musí byť číslo od 0 do 9.",
   "valueErrorRange": "Hodnota musí byť číslo od 0 do",
   "valueErrorHex": "Hodnota musí byť platné hexadecimálne číslo.",
+  "valueErrorHexRange": "Hodnota musí byť hexadecimálne číslo neprevyšujúce FFFF.",
   "l0DependencyError": "L0 môže mať veľkosť 0 iba ak L2 aj L1 majú veľkosť 0.",
   "l1DependencyError": "L1 môže mať veľkosť 0 iba ak L2 má veľkosť 0.",
   "size": "Veľkosť"
