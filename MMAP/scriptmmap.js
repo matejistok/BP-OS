@@ -43,6 +43,9 @@ const DOM = {
     canvasContainer: null
 };
 
+// Track active error messages
+const activeErrors = new Set();
+
 // Function to load language data from JSON file
 function loadLanguage(lang) {
     fetch(`./lang/${lang}.json`)
@@ -176,6 +179,14 @@ window.onclick = function(event) {
 
 // New function to show styled error messages with translation
 function showError(message) {
+    // Don't show the same error message twice
+    if (activeErrors.has(message)) {
+        return;
+    }
+    
+    // Add to active errors
+    activeErrors.add(message);
+    
     // Look for known error messages in the translations
     let translatedMessage = message;
     
@@ -206,7 +217,7 @@ function showError(message) {
     errorNotification.innerHTML = `
         <div class="error-icon">⚠️</div>
         <div class="error-message">${translatedMessage}</div>
-        <div class="error-close" onclick="this.parentElement.remove()">×</div>
+        <div class="error-close" onclick="dismissError(this, '${encodeURIComponent(message)}')">×</div>
     `;
     
     // Add to body
@@ -217,17 +228,26 @@ function showError(message) {
         errorNotification.style.opacity = '1';
         errorNotification.style.transform = 'translateY(0)';
     }, 10);
+}
+
+// Function to dismiss an error
+function dismissError(closeButton, encodedMessage) {
+    const message = decodeURIComponent(encodedMessage);
+    const errorNotification = closeButton.parentElement;
     
-    // Auto remove after 5 seconds
+    // Remove from active errors set
+    activeErrors.delete(message);
+    
+    // Animate out
+    errorNotification.style.opacity = '0';
+    errorNotification.style.transform = 'translateY(20px)';
+    
+    // Remove from DOM after animation
     setTimeout(() => {
-        errorNotification.style.opacity = '0';
-        errorNotification.style.transform = 'translateY(20px)';
-        setTimeout(() => {
-            if (errorNotification.parentElement) {
-                errorNotification.remove();
-            }
-        }, 500);
-    }, 5000);
+        if (errorNotification.parentElement) {
+            errorNotification.remove();
+        }
+    }, 500);
 }
 
 // Select protection option
@@ -448,6 +468,41 @@ function updateFdInputField() {
     DOM.fdInputField = document.getElementById('fdInputField');
 }
 
+// Add new function to handle offset input formatting
+function formatOffsetInput() {
+    const offsetValue = DOM.offsetInput.value.trim();
+    
+    // Handle empty input
+    if (!offsetValue) {
+        DOM.offsetInput.value = "0x0";
+        return;
+    }
+    
+    // Remove 0x prefix if exists
+    const numericValue = offsetValue.startsWith('0x') ? offsetValue.substring(2) : offsetValue;
+    
+    // Parse the value
+    let intValue = parseInt(numericValue, 10);
+    
+    // Handle parsing errors
+    if (isNaN(intValue)) {
+        DOM.offsetInput.value = "0x0";
+        return;
+    }
+    
+    // If value is a small number (1, 2, etc.), multiply by PGSIZE
+    if (intValue > 0 && intValue < 100) {
+        intValue = intValue * PGSIZE;
+    } 
+    // If value doesn't align with PGSIZE, round it up
+    else if (intValue % PGSIZE !== 0) {
+        intValue = Math.ceil(intValue / PGSIZE) * PGSIZE;
+    }
+    
+    // Format the value with 0x prefix
+    DOM.offsetInput.value = `0x${intValue}`;
+}
+
 // Function to validate that the entered length has a valid value
 function validateLength() {
     // Get input value and remove 0x prefix if present for parsing
@@ -545,15 +600,14 @@ function executeMmap() {
     }
     
     const fd = fdValue;
-    const offsetText = DOM.offsetInput.value || "0";
+    const offsetText = DOM.offsetInput.value || "0x0";
     const offsetValueStr = offsetText.startsWith('0x') ? offsetText.substring(2) : offsetText;
-    const offsetMultiplier = parseInt(offsetValueStr, 10) || 0;
-    
-    // Calculate offset in bytes
-    const offsetBytes = offsetMultiplier * PGSIZE;
+    // Calculate the actual offset multiplier (divide by PGSIZE)
+    const offsetBytes = parseInt(offsetValueStr, 10) || 0;
+    const offsetMultiplier = offsetBytes / PGSIZE;
     
     // Validate that offset isn't negative
-    if (offsetMultiplier < 0) {
+    if (offsetBytes < 0) {
         showError('Offset cannot be negative.');
         return;
     }
@@ -1015,20 +1069,31 @@ function setupP5Canvas() {
                     }
                     
                     // 3. Draw mapped part (colored) aligned with memory mapping
+                    const remainingPagesAfter = totalPagesInFile - mapping.offsetMultiplier - pagesInMapping;
                     // The mapped part should start at the same X position as the memory mapping
                     p.fill(mapping.color);
                     p.noStroke();
                     // Calculate the adjusted width based on offset and any unmapped regions
+                    let totalUnmappedLength = 0;
                     const unmappedStartLength = mapping.unmappedStart || 0;
                     const unmappedEndLength = mapping.unmappedEnd || 0;
-                    const totalUnmappedLength = unmappedStartLength + unmappedEndLength;
-                    const offsetAdjustedWidth = width - (mapping.offsetMultiplier * filePageWidth) + (totalUnmappedLength / drawCache.visibleRange) * availableWidth;
+                    totalUnmappedLength = unmappedStartLength + unmappedEndLength;
+                    //let offsetAdjustedWidth = width - (mapping.offsetMultiplier * filePageWidth) + (totalUnmappedLength / drawCache.visibleRange) * availableWidth;
+                    let offsetAdjustedWidth = (mapping.fd ? (fdTable.find(entry => entry.fd === mapping.fd)?.size || mapping.length) : mapping.length) / drawCache.visibleRange * availableWidth - (mapping.offsetMultiplier * filePageWidth);
+                    if (mapping.fileSize < mapping.length){
+                        offsetAdjustedWidth = (mapping.fd ? (fdTable.find(entry => entry.fd === mapping.fd)?.size || mapping.length) : mapping.length) / drawCache.visibleRange * availableWidth - (mapping.offsetMultiplier * filePageWidth);
+                    }
+                    if(remainingPagesAfter > 0) {
+                        offsetAdjustedWidth = width;
+                    }
+                    // if ((mapping.fileSize - mapping.offsetMultiplier) < mapping.length){
+                    //     offsetAdjustedWidth = 0;
+                    // }
                     
                     // Draw the rectangle with adjusted width to account for offset and unmapping
                     p.rect(startX, fdYPosition, offsetAdjustedWidth, fdHeight);
                     
                     // 4. Draw grey unmapped remainder
-                    const remainingPagesAfter = totalPagesInFile - mapping.offsetMultiplier - pagesInMapping;
                     if (remainingPagesAfter > 0) {
                         const remainderStartX = startX + width;
                         
@@ -1060,36 +1125,40 @@ function setupP5Canvas() {
                         // Calculate offset distance in pixels
                         const offsetDistance = mapping.offsetMultiplier * filePageWidth;
                         
-                        // Account for unmapped regions like we do for the rectangle width
-                        const unmappedStartLength = mapping.unmappedStart || 0;
-                        const unmappedEndLength = mapping.unmappedEnd || 0;
-                        const totalUnmappedLength = unmappedStartLength + unmappedEndLength;
-                        const unmappedPixels = (totalUnmappedLength / drawCache.visibleRange) * availableWidth;
+                        // Calculate endpoint positions using the same offsetAdjustedWidth used for drawing the rectangle
+                        let upperPoint = endX;
+                        let lowerPoint = startX + offsetAdjustedWidth;
                         
-                        // Use an adjustable variable for the calculation
-                        let adjustedUnmappedPixels = unmappedPixels;
-                        if(adjustedUnmappedPixels > offsetDistance) {
-                            adjustedUnmappedPixels = offsetDistance;
+                        // When file size is higher than mapping and there's an offset, draw perpendicular line
+                        if (mapping.fileSize > mapping.length && mapping.offsetMultiplier > 0) {
+                            // First draw a vertical line down to the level of the file visualization
+                            p.line(lowerPoint, 75, lowerPoint, fdYPosition);
+                            
+                            // Then draw a horizontal line to the appropriate position in the file
+                            p.line(lowerPoint, fdYPosition, lowerPoint, fdYPosition);
+                        } else {
+                            // For other cases, draw a direct line
+                            p.line(lowerPoint, 75, lowerPoint, fdYPosition);
                         }
-                        console.log(unmappedPixels, offsetDistance);
-                        // Calculate endpoint positions that account for both offset and unmapped regions
-                        const upperPoint = endX - offsetDistance + adjustedUnmappedPixels;
-                        const lowerPoint = endX - offsetDistance + adjustedUnmappedPixels;
-
-                        // Draw vertical line with adjusted endpoints
-                        p.line(upperPoint, 75, lowerPoint, fdYPosition);
                     } else {
                         // If no offset, still account for unmapped regions
                         const unmappedStartLength = mapping.unmappedStart || 0;
                         const unmappedEndLength = mapping.unmappedEnd || 0;
-                        const totalUnmappedLength = unmappedStartLength + unmappedEndLength;
-                        const unmappedPixels = (totalUnmappedLength / drawCache.visibleRange) * availableWidth;
                         
-                        // Adjust the endpoint to account for unmapped regions
-                        const lowerPoint = endX + unmappedPixels;
+                        // Calculate the endpoint using the same logic as for the rectangle
+                        let lowerPoint = startX + offsetAdjustedWidth;
                         
-                        // Draw vertical line with adjusted endpoint
-                        p.line(endX, 75, lowerPoint, fdYPosition);
+                        // When file size is higher than mapping with no offset, also draw perpendicular lines
+                        if (mapping.fileSize > mapping.length) {
+                            // First draw a vertical line down to the level of the file visualization
+                            p.line(endX, 75, endX, fdYPosition);
+                            
+                            // Then draw a horizontal line to the appropriate position in the file
+                            p.line(endX, fdYPosition, lowerPoint, fdYPosition);
+                        } else {
+                            // For other cases, draw a direct line
+                            p.line(endX, 75, lowerPoint, fdYPosition);
+                        }
                     }
                     
                     // Add address labels for memory mapping start and end
@@ -1290,6 +1359,14 @@ document.addEventListener('DOMContentLoaded', function() {
     DOM.offsetInput.style.textAlign = "center";
     DOM.offsetInput.type = "text"; // Change to text to better display 0x prefix
     
+    // Add event handler to format offset input when it changes
+    DOM.offsetInput.addEventListener('blur', formatOffsetInput);
+    DOM.offsetInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') {
+            formatOffsetInput();
+        }
+    });
+    
     // Add tooltip to the offset input - improved version with custom width
     const offsetContainer = document.createElement('div');
     offsetContainer.className = 'tooltip-container';
@@ -1382,5 +1459,6 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
-// Make changeLanguage global so it can be accessed from HTML
+// Make functions global so they can be accessed from HTML
 window.changeLanguage = changeLanguage;
+window.dismissError = dismissError;
