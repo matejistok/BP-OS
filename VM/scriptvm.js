@@ -1053,8 +1053,8 @@ function drawPhysicalAddress(x, y) {
   text("PPN", x + 55, y + 55);       // Label for PPN
   text("Offset", x + 100, y + 55);  // Label for Offset
 
-  textSize(14);
-  text(translations[currentLanguage].physicalAddressTitle, x + 20, y - 10);
+  textSize(17);
+  text(translations[currentLanguage].physicalAddressTitle, x + 25, y - 10);
 }
 
 function drawVirtualMemorySpace(x, y) {
