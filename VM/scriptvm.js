@@ -952,7 +952,7 @@ function drawVirtualAddress(x, y) {
   if (!translations[currentLanguage]) return;
   
   hoverElements.length = 0; // Clear hover elements
-  fill(40, 190, 219);      // Blue for virtual address
+  fill(173, 216, 230);      // Blue for virtual address
   stroke(0);
   rect(x, y, width * 0.04, height * 0.05);       // EXT
   rect(x, y - height * 0.03, width * 0.04, height * 0.03);
