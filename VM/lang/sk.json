@@ -11,12 +11,12 @@
   "arrows": "Šípky",
   "virtualAddress": "Virtuálna Adresa",
   "virtualAddressHelp": "Virtuálna Adresa: Zobrazuje štruktúru virtuálnej adresy. Kliknite na L2, L1, L0 pre zmenu úrovní stránkovacej tabuľky a na indexové polia pre navigáciu cez stránkovacie tabuľky.",
-  "pageDirectory1": "Tabuľka stránok Úrovne 2: Prvá úroveň stránkovacích tabuliek, ktorá mapuje virtuálne adresy na ďalšiu úroveň. Kliknite na PPN1 pre zmenu fyzickej adresy ďalšej úrovne.",
-  "pageDirectory2": "Tabuľka stránok Úrovne 1: Druhá úroveň stránkovacích tabuliek, ktorá ďalej prekladá virtuálnu adresu. Kliknite na PPN2 pre zmenu fyzickej adresy ďalšej úrovne.",
-  "pageDirectory3": "Tabuľka stránok Tabuľka Úrovne 0: Posledná úroveň stránkovacích tabuliek, ktorá mapuje na skutočné fyzické pamäťové stránky. Kliknite na PPN3 pre nastavenie čísla fyzickej stránky.",
+  "pageDirectory1": "Tabuľka stránok L2: Prvá úroveň stránkovacích tabuliek, ktorá mapuje virtuálne adresy na ďalšiu úroveň. Kliknite na PPN1 pre zmenu fyzickej adresy ďalšej úrovne.",
+  "pageDirectory2": "Tabuľka stránok L1: Druhá úroveň stránkovacích tabuliek, ktorá ďalej prekladá virtuálnu adresu. Kliknite na PPN2 pre zmenu fyzickej adresy ďalšej úrovne.",
+  "pageDirectory3": "Tabuľka stránok L0: Posledná úroveň stránkovacích tabuliek, ktorá mapuje na skutočné fyzické pamäťové stránky. Kliknite na PPN3 pre nastavenie čísla fyzickej stránky.",
   "physicalAddress": "Fyzická Adresa: Konečná preložená pamäťová adresa, ktorá sa skladá z čísla stránky (PPN3) a offsetu v rámci stránky.",
   "virtualMemorySpace": "Priestor Virtuálnej Pamäte: Zobrazuje celkový adresovateľný pamäťový priestor. Veľkosť sa mení na základe nakonfigurovaných úrovní stránkovacích tabuliek (L2, L1, L0).",
-  "satp": "SATP Register: Obsahuje fyzickú adresu koreňovej stránkovacej tabuľky (Úroveň 2). Je to východiskový bod pre preklad adries.",
+  "satp": "SATP Register: Obsahuje fyzickú adresu stránkovacej tabuľky prvej úrovne. Je to východiskový bod pre preklad adries.",
   "arrowsHelp": "Šípky: Prepnite toto pre vizualizáciu ako tok prekladu adries prechádza cez stránkovacie tabuľky.",
   "pageDirectory": "Tabuľka stránok",
   "address": "Adresa",
@@ -26,11 +26,14 @@
   "usableVA": "Použiteľná veľkosť",
   "mb": "MB",
   "gb": "GB",
-  "valueErrorNumber": "Hodnota musí byť číslo od 0 do 9.",
-  "valueErrorRange": "Hodnota musí byť číslo od 0 do",
-  "valueErrorHex": "Hodnota musí byť platné hexadecimálne číslo.",
-  "valueErrorHexRange": "Hodnota musí byť hexadecimálne číslo neprevyšujúce FFFF.",
-  "l0DependencyError": "L0 môže mať veľkosť 0 iba ak L2 aj L1 majú veľkosť 0.",
-  "l1DependencyError": "L1 môže mať veľkosť 0 iba ak L2 má veľkosť 0.",
-  "size": "Veľkosť"
+  "size": "Veľkosť",
+  "errors": {
+    "valueErrorNumber": "Hodnota musí byť číslo od 0 do 9.",
+    "valueErrorRange": "Hodnota musí byť číslo od 0 do",
+    "valueErrorHex": "Hodnota musí byť platné hexadecimálne číslo.",
+    "valueErrorHexRange": "Hodnota musí byť hexadecimálne číslo neprevyšujúce FFFF.",
+    "offsetErrorRange": "Offset nemôže presiahnuť FFF (12 bitov).",
+    "l0DependencyError": "L0 môže mať veľkosť 0 iba ak L2 aj L1 majú veľkosť 0.",
+    "l1DependencyError": "L1 môže mať veľkosť 0 iba ak L2 má veľkosť 0."
+  }
 }

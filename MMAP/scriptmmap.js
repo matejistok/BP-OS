@@ -188,10 +188,10 @@ window.onclick = function(event) {
     }
 }
 
-// New function to show styled error messages with translation
+// Function to show error messages with translation
 function showError(message) {
     // Don't show the same error message twice
-    if (activeErrors.has(message)) {
+    if (activeErrors.size > 0) {
         return;
     }
     
@@ -1328,53 +1328,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     `;
     document.head.appendChild(styleElement);
-
-    // Add CSS for error notifications
-    const errorStyleElement = document.createElement('style');
-    errorStyleElement.textContent = `
-        .error-notification {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: linear-gradient(to right, #ff5f6d, #ffc371);
-            color: white;
-            padding: 15px 20px;
-            border-radius: 5px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-            z-index: 1000;
-            display: flex;
-            align-items: center;
-            min-width: 300px;
-            max-width: 450px;
-            opacity: 0;
-            transform: translateY(20px);
-            transition: opacity 0.3s ease, transform 0.3s ease;
-        }
-        
-        .error-icon {
-            font-size: 24px;
-            margin-right: 15px;
-        }
-        
-        .error-message {
-            flex-grow: 1;
-            font-size: 14px;
-            white-space: pre-line;
-        }
-        
-        .error-close {
-            font-size: 24px;
-            cursor: pointer;
-            margin-left: 15px;
-            opacity: 0.7;
-            transition: opacity 0.2s;
-        }
-        
-        .error-close:hover {
-            opacity: 1;
-        }
-    `;
-    document.head.appendChild(errorStyleElement);
 
     // Convert addrInput to an input field
     updateAddressInputField();

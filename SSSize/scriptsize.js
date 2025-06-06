@@ -2,6 +2,82 @@ let pointerSize = 4;
 let translations = {}; // Object to hold loaded translations
 let currentLanguage = 'en'; // Default language is English
 
+// Track active error messages
+const activeErrors = new Set();
+
+// Function to show styled error messages with translation
+function showError(message) {
+    // Don't show the same error message twice
+    if (activeErrors.size > 0) {
+        return;
+    }
+    
+    // Add to active errors
+    activeErrors.add(message);
+    
+    // Look for known error messages in the translations
+    let translatedMessage = message;
+    
+    // Check if this is a known error that needs translation
+    if (translations[currentLanguage] && translations[currentLanguage].errors) {
+        for (const [key, errorText] of Object.entries(translations[currentLanguage].errors)) {
+            // Simple message replacement for exact matches
+            if (message === translations['en'].errors[key]) {
+                translatedMessage = errorText;
+                break;
+            }
+            
+            // Handle parametrized error messages
+            if (message.includes('%s') && translations['en'].errors[key].includes('%s')) {
+                const englishPattern = translations['en'].errors[key].replace('%s', '(.+)');
+                const match = message.match(new RegExp(englishPattern));
+                if (match && match[1]) {
+                    translatedMessage = errorText.replace('%s', match[1]);
+                    break;
+                }
+            }
+        }
+    }
+    
+    // Create error notification element
+    const errorNotification = document.createElement('div');
+    errorNotification.className = 'error-notification';
+    errorNotification.innerHTML = `
+        <div class="error-icon">⚠️</div>
+        <div class="error-message">${translatedMessage}</div>
+        <div class="error-close" onclick="dismissError(this, '${encodeURIComponent(message)}')">×</div>
+    `;
+    
+    // Add to body
+    document.body.appendChild(errorNotification);
+    
+    // Fade in
+    setTimeout(() => {
+        errorNotification.style.opacity = '1';
+        errorNotification.style.transform = 'translateY(0)';
+    }, 10);
+}
+
+// Function to dismiss an error
+function dismissError(closeButton, encodedMessage) {
+    const message = decodeURIComponent(encodedMessage);
+    const errorNotification = closeButton.parentElement;
+    
+    // Remove from active errors set
+    activeErrors.delete(message);
+    
+    // Animate out
+    errorNotification.style.opacity = '0';
+    errorNotification.style.transform = 'translateY(20px)';
+    
+    // Remove from DOM after animation
+    setTimeout(() => {
+        if (errorNotification.parentElement) {
+            errorNotification.remove();
+        }
+    }, 500);
+}
+
 // Function to calculate the maximum file size - moved outside document.ready
 function calculateMaxFileSize() {
     // Check if the necessary DOM elements exist
@@ -167,6 +243,25 @@ function updateUILanguage() {
     // Better selectors for storageBlocks and blockSizeLabel
     $("label[for='blockSize']").text(`${translations[currentLanguage].blockSizeLabel} ${pointerSize}):`);
     
+    // Find the label near the pointer size buttons
+    $(".form-label:has(+ .btn-group .pointer-size-btn), .form-label:has(~ .btn-group .pointer-size-btn)").text(translations[currentLanguage].selectPointerSize);
+    
+    // Fallback method if the above doesn't work
+    if (!$(".form-label").filter(function() { 
+          return $(this).text() === translations[currentLanguage].selectPointerSize; 
+        }).length) {
+        // Target all form labels that might contain this text
+        $(".form-label").each(function() {
+            let text = $(this).text().trim();
+            // Check if this is likely the pointer size label
+            if (text.includes("Select") || text.includes("Vyberte") || 
+                text.includes("block number") || text.includes("čísla") ||
+                text.includes("size") || text.includes("veľkosť")) {
+                $(this).text(translations[currentLanguage].selectPointerSize);
+            }
+        });
+    }
+    
     // The selector for pointer size -
     $(".form-label").each(function() {
         if ($(this).text().includes("Select Pointer Size") || $(this).text().includes("Vyberte") || $(this).text().includes("čísla")) {
@@ -274,19 +369,15 @@ $(document).ready(function () {
         
         // Check if value is divisible by the current pointer size
         if (isNaN(value) || value <= 0) {
-            $("#error-msg").text(translations[currentLanguage].errorValidSize);
-            $("#error-msg").show();
+            showError(translations[currentLanguage]?.errors?.errorValidSize || "Please enter a valid block size.");
             hasError = true;
         } else if (value % pointerSize !== 0) {
-            $("#error-msg").text(`${translations[currentLanguage].errorDivisibleBy} ${pointerSize}!`);
-            $("#error-msg").show();
+            showError(`${translations[currentLanguage]?.errors?.errorDivisibleBy || "Error: Block size must be divisible by"} ${pointerSize}!`);
             hasError = true;
         } else if (value < pointerSize) {
-            $("#error-msg").text(`${translations[currentLanguage].errorMinSize} ${pointerSize} ${translations[currentLanguage].errorMinSizeEnd}`);
-            $("#error-msg").show();
+            showError(`${translations[currentLanguage]?.errors?.errorMinSize || "Error: Block size must be at least"} ${pointerSize} ${translations[currentLanguage]?.errors?.errorMinSizeEnd || "bytes (current pointer size)!"}`);
             hasError = true;
         } else {
-            $("#error-msg").hide();
             hasError = false;
         }
         
@@ -326,11 +417,8 @@ $(document).ready(function () {
                     </button>
                 </div>
             `);
-            $("#error-msg2").hide(); // Hide error message
         } else {
-            $("#error-msg2").show(); // Show error message
-            // Add animation to make error more noticeable
-            $("#error-msg2").fadeIn(100).fadeOut(100).fadeIn(100);
+            showError(translations[currentLanguage]?.errors?.errorSelectType || "Please select a type for all existing blocks first");
         }
     });
 
@@ -406,6 +494,7 @@ $(document).ready(function () {
     });
 });
 
-// Make calculateMaxFileSize and changeLanguage global so they can be accessed from outside
+// Make calculateMaxFileSize, changeLanguage, and dismissError global so they can be accessed from outside
 window.calculateMaxFileSize = calculateMaxFileSize;
 window.changeLanguage = changeLanguage;
+window.dismissError = dismissError;

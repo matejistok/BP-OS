@@ -24,10 +24,13 @@
   "selectBlockType": "Vyberte Typ Bloku",
   "remove": "Odstrániť",
   "addBlocksToSeeFormula": "Pridajte bloky pre zobrazenie vzorca",
-  "errorDivisibleBy": "Chyba: Veľkosť bloku musí byť deliteľná ",
-  "errorValidSize": "Zadajte platnú veľkosť bloku.",
-  "errorMinSize": "Chyba: Veľkosť bloku musí byť aspoň ",
-  "errorMinSizeEnd": "bajtov (aktuálna veľkosť ukazovateľa)!",
-  "errorSelectType": "Najprv vyberte typ pre všetky existujúce bloky",
+  "pageTitle": "Veľkosť blokov súborového systému",
+  "errors": {
+    "errorDivisibleBy": "Chyba: Veľkosť bloku musí byť deliteľná ",
+    "errorValidSize": "Zadajte platnú veľkosť bloku.",
+    "errorMinSize": "Chyba: Veľkosť bloku musí byť aspoň ",
+    "errorMinSizeEnd": "bajtov (aktuálna veľkosť ukazovateľa)!",
+    "errorSelectType": "Najprv vyberte typ pre všetky existujúce bloky"
+  },
   "enterBlockSize": "Zadajte veľkosť bloku"
 }

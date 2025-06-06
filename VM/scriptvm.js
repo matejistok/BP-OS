@@ -39,6 +39,82 @@ let pageDirectoryInfo = {
   PD3: null
 };
 
+// Track active error messages
+const activeErrors = new Set();
+
+// Function to show styled error messages with translation
+function showError(message) {
+  // Don't show the same error message twice
+  if (activeErrors.size > 0) {
+    return;
+  }
+  
+  // Add to active errors
+  activeErrors.add(message);
+  
+  // Look for known error messages in the translations
+  let translatedMessage = message;
+  
+  // Check if this is a known error that needs translation
+  if (translations[currentLanguage] && translations[currentLanguage].errors) {
+    for (const [key, errorText] of Object.entries(translations[currentLanguage].errors)) {
+      // Simple message replacement for exact matches
+      if (message === translations['en'].errors[key]) {
+        translatedMessage = errorText;
+        break;
+      }
+      
+      // Handle parametrized error messages
+      if (message.includes('%s') && translations['en'].errors[key].includes('%s')) {
+        const englishPattern = translations['en'].errors[key].replace('%s', '(.+)');
+        const match = message.match(new RegExp(englishPattern));
+        if (match && match[1]) {
+          translatedMessage = errorText.replace('%s', match[1]);
+          break;
+        }
+      }
+    }
+  }
+  
+  // Create error notification element
+  const errorNotification = document.createElement('div');
+  errorNotification.className = 'error-notification';
+  errorNotification.innerHTML = `
+    <div class="error-icon">⚠️</div>
+    <div class="error-message">${translatedMessage}</div>
+    <div class="error-close" onclick="dismissError(this, '${encodeURIComponent(message)}')">×</div>
+  `;
+  
+  // Add to body
+  document.body.appendChild(errorNotification);
+  
+  // Fade in
+  setTimeout(() => {
+    errorNotification.style.opacity = '1';
+    errorNotification.style.transform = 'translateY(0)';
+  }, 10);
+}
+
+// Function to dismiss an error
+function dismissError(closeButton, encodedMessage) {
+  const message = decodeURIComponent(encodedMessage);
+  const errorNotification = closeButton.parentElement;
+  
+  // Remove from active errors set
+  activeErrors.delete(message);
+  
+  // Animate out
+  errorNotification.style.opacity = '0';
+  errorNotification.style.transform = 'translateY(20px)';
+  
+  // Remove from DOM after animation
+  setTimeout(() => {
+    if (errorNotification.parentElement) {
+      errorNotification.remove();
+    }
+  }, 500);
+}
+
 // Function to load language data from JSON file
 function loadLanguage(lang) {
   fetch(`VM/lang/${lang}.json`)
@@ -593,6 +669,11 @@ function drawArrows() {
   if (l0IndexPos && ppn3Pos) {
     // Arrow from L0Index to PPN of Page Directory 3
     drawMultiCornerArrow([
+//      [l0IndexPos.x + 25, l0IndexPos.bottom], 
+//      [l0IndexPos.x + 25, l0IndexPos.bottom + 30], 
+//      [width * 0.42, l0IndexPos.bottom + 30], 
+//      [width * 0.42, ppn3Pos.y], 
+//      [ppn3Pos.left - 40, ppn3Pos.y]  // End directly at the left side of the PPN3 element
       [l0IndexPos.x + 25, l0IndexPos.bottom], 
       [l0IndexPos.x + 25, l0IndexPos.bottom + 30], 
       [width * 0.42, l0IndexPos.bottom + 30], 
@@ -604,6 +685,9 @@ function drawArrows() {
   if (satpPos) {
     // Arrow from SATP to Page Directory 1
     drawMultiCornerArrow([
+//      [satpPos.x - 40, satpPos.top], 
+//      [satpPos.x - 40, height * 0.265], 
+//      [width * 0.06, height * 0.265]  // End at the exact address position
       [satpPos.x - 40, satpPos.top], 
       [satpPos.x - 40, height * 0.265], 
       [width * 0.06, height * 0.265]  // End at the exact address position
@@ -868,7 +952,7 @@ function drawVirtualAddress(x, y) {
   if (!translations[currentLanguage]) return;
   
   hoverElements.length = 0; // Clear hover elements
-  fill(173, 216, 230);      // Blue for virtual address
+  fill(40, 190, 219);      // Blue for virtual address
   stroke(0);
   rect(x, y, width * 0.04, height * 0.05);       // EXT
   rect(x, y - height * 0.03, width * 0.04, height * 0.03);
@@ -1011,7 +1095,18 @@ function drawPageDirectory(x, y, Lnum, Lindex, PPN, color, key, pdnumber) {
   }
 
   textSize(14);
-  text(translations[currentLanguage].pageDirectory, x + 25, y + 300 + 20);
+  // Get the specific level for this page directory based on pdnumber
+  let directoryLevel = '';
+  if (pdnumber === 'PD1') {
+    directoryLevel = 'L2';
+  } else if (pdnumber === 'PD2') {
+    directoryLevel = 'L1';
+  } else if (pdnumber === 'PD3') {
+    directoryLevel = 'L0';
+  }
+
+  // Display level-specific page directory label
+  text(translations[currentLanguage].pageDirectory + ' ' + directoryLevel, x + 15, y + 300 + 20);
   text(translations[currentLanguage].address + ": " + PPN, x, y - 10);
 }
 
@@ -1147,8 +1242,8 @@ function mousePressed() {
             if (element.key === 'L0' && newValue === '0') {
               // L0 can be 0 only if both L2 and L1 are 0
               if (editableElements.L2 !== '0' || editableElements.L1 !== '0') {
-                alert(translations[currentLanguage].l0DependencyError || 
-                      "L0 can be size 0 only when both L2 and L1 are size 0");
+                showError(translations[currentLanguage].errors.l0DependencyError || 
+                          "L0 can be size 0 only when both L2 and L1 are size 0.");
                 inputBox.remove();
                 redraw();
                 return false;
@@ -1156,8 +1251,8 @@ function mousePressed() {
             } else if (element.key === 'L1' && newValue === '0') {
               // L1 can be 0 only if L2 is 0
               if (editableElements.L2 !== '0') {
-                alert(translations[currentLanguage].l1DependencyError || 
-                      "L1 can be size 0 only when L2 is size 0");
+                showError(translations[currentLanguage].errors.l1DependencyError || 
+                          "L1 can be size 0 only when L2 is size 0.");
                 inputBox.remove();
                 redraw();
                 return false;
@@ -1188,47 +1283,59 @@ function mousePressed() {
               editableElements.L0Index = '';
             }
             
+            // Track if L1 was changed when L2 is zero (special case for UI updates)
             if (element.key === 'L1' && editableElements.L2 === '0' && newValue !== '9') {
               l1Changed = true;
             }
           } else {
-            alert(translations[currentLanguage].valueErrorNumber);
+            // Show error if the input isn't a valid number (for L0, L1, L2)
+            showError(translations[currentLanguage].errors.valueErrorNumber);
             return false;
           }
         } else if (['L2Index', 'L1Index', 'L0Index'].includes(element.key)) {
+          // For index values, calculate the maximum allowed value based on the size of that level
           const maxIndex = Math.pow(2, parseInt(editableElements[element.key.replace('Index', '')]));
+          
+          // Validate that the index is a positive number and less than the maximum allowed value
           if (/^[0-9]+$/.test(newValue) && parseInt(newValue) < maxIndex) {
             editableElements[element.key] = newValue;
           } else {
-            alert(`${translations[currentLanguage].valueErrorRange} ${maxIndex - 1}.`);
+            // Show an error with the specific range limit if validation fails
+            showError(`${translations[currentLanguage].errors.valueErrorRange} ${maxIndex - 1}.`);
             return false;
           }
         } else if (['PPN1', 'PPN2', 'PPN3', 'SATP'].includes(element.key)) {
+          // For PPN values and SATP, check if it's a valid hexadecimal
           if (/^[0-9a-fA-F]+$/.test(newValue)) {
-            // Check if the value exceeds FFFF (16 bits)
+            // Ensure the hex value doesn't exceed 16 bits (0xFFFF)
             if (parseInt(newValue, 16) > 0xFFFF) {
-              alert(translations[currentLanguage].valueErrorHexRange || 
-                    "Value must be a hexadecimal number not exceeding FFFF.");
+              // Show error for values too large for a 16-bit field
+              showError(translations[currentLanguage].errors.valueErrorHexRange || 
+                        "Value must be a hexadecimal number not exceeding FFFF.");
               inputBox.remove();
               redraw();
               return false;
             } else {
+              // Store valid hex value with '0x' prefix and uppercase letters
               editableElements[element.key] = '0x' + newValue.toUpperCase();
             }
           } else {
-            alert(translations[currentLanguage].valueErrorHex);
+            // Show error if input contains non-hex characters
+            showError(translations[currentLanguage].errors.valueErrorHex);
             inputBox.remove();
             redraw();
             return false;
           }
         } else if (element.key === 'Offset') {
+          // Special handling for the offset field (last part of the address)
           if (/^[0-9a-fA-F]+$/.test(newValue)) {
-            // Convert to uppercase and ensure it doesn't exceed FFF (12 bits)
+            // Convert to uppercase for consistent display
             newValue = newValue.toUpperCase();
             
-            // Check if the value exceeds FFF (12 bits)
+            // Validate that offset doesn't exceed 12 bits (0xFFF)
             if (parseInt(newValue, 16) > 0xFFF) {
-              alert("Offset cannot exceed FFF (12 bits)");
+              // Show specific error for offset exceeding maximum allowed value
+              showError(translations[currentLanguage].errors.offsetErrorRange);
               inputBox.remove();
               redraw();
               return false;
@@ -1236,7 +1343,7 @@ function mousePressed() {
               editableElements[element.key] = '0x' + newValue;
             }
           } else {
-            alert(translations[currentLanguage].valueErrorHex);
+            showError(translations[currentLanguage].errors.valueErrorHex);
             inputBox.remove();
             redraw();
             return false;
@@ -1339,3 +1446,6 @@ function drawDottedLine(x1, y1, x2, y2, spacing) {
 
 // Expose changeLanguage function globally
 window.changeLanguage = changeLanguage;
+
+// Expose dismissError function globally
+window.dismissError = dismissError;
